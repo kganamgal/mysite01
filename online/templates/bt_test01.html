@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>在线尝试 Bootstrap 实例</title>
+</head>
+<body>
+  <div class="container">
+
+    <div id="test"></div>
+    <div id="pie_main" style="height: 300px;"></div>
+    
+  </div>
+
+
+  <!-- Jquery组件引用 -->
+  <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+  <!-- bootstrap组件引用 -->
+  <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- bootstrap-table组件引用 -->
+  <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.css">  
+  <script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+  <script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.js"></script>
+  <!-- 右键菜单相关组件 -->
+  <script src="https://cdn.bootcss.com/bootstrap-contextmenu/0.3.4/bootstrap-contextmenu.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/prettify/r224/prettify.js"></script>
+  <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+  <!-- echarts -->
+  <script type="text/javascript" src="/statics/js/echarts.min.js"></script>  
+  <!-- edwin常用函数集合 -->
+  <script type="text/javascript" src="/statics/js/often_by_Edwin.js"></script>
+
+  <script type="text/javascript">$(main);
+
+    function main(){
+      var myChart = echarts.init(document.getElementById('pie_main'));
+      option = {
+          title : {
+              text: '某站点用户访问来源',
+              subtext: '纯属虚构',
+              left: 'center',
+          },
+          tooltip : {
+              trigger: 'item',
+              formatter: "{a} <br/>{b} : {c} ({d}%)"
+          },
+          series : [
+              {
+                  name: '访问来源',
+                  type: 'pie',
+                  radius : '55%',
+                  center: ['50%', '60%'],
+                  data:[
+                      {value:335, name:'直接访问'},
+                      {value:310, name:'邮件营销'},
+                      {value:234, name:'联盟广告'},
+                      {value:135, name:'视频广告'},
+                      {value:1548, name:'搜索引擎'}
+                  ],
+                  // itemStyle: {
+                  //     emphasis: {
+                  //         shadowBlur: 10,
+                  //         shadowOffsetX: 0,
+                  //         shadowColor: 'rgba(0, 0, 0, 0.5)'
+                  //     }
+                  // }
+              }
+          ]
+      };
+      myChart.setOption(option);
+
+    }
+
+  </script>
+
+</body>
+</html>

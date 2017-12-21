@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link rel="stylesheet" type="text/css" href="/statics/css/tree_table201711222128.css">
+		
+		<title>生成动态tree</title>
+		<script src="http://apps.bdimg.com/libs/jquery/1.11.1/jquery.min.js"></script>
+		<script type="text/javascript">
+			$(main);
+
+		    function main(){
+		    	var tree_datas;
+
+		    	$(window).load(windowOnLoad);
+	          	// create_tree();
+	    	}
+
+    		function windowOnLoad(){
+    			// $.ajax({ 
+    			//     type: "GET", 
+    			//     url: "/statics/css/tree_table.css", 
+    			//     dataType: "text", 
+    			//     cache: false, 
+    			//     ifModified :true 
+    			// }); 
+    			// 初始化表格
+    	        $.post("{% url 'ajax_jquery_tree' %}", {}, tree_postOnLoad);
+    		}
+
+    		        // 向服务器端请求关于树的数据
+            function tree_postOnLoad(ret){
+                tree_datas = ret;
+
+                create_tree('#id_tree_table', '#id_tree_table_content', tree_datas, click_tree_postOnLoad);
+            }
+                // 将树数据组装成树arg=(树ul的id， 树中要装载的数据———套装数列，单击事件回调函数)
+                function create_tree(id_treeUl, id_treeTabCnt, data_tree, tree_click_func){
+                    // 建立treeList
+                    var outerUl = $(id_treeUl);
+                    outerUl.empty();
+                    //建立tableContent
+                    $(id_treeTabCnt).empty();
+                    // 建立递归解树
+                    function makeTree(nodeRoot, data){
+                        var nodeChild = nodeRoot
+                        for (i in data){
+                            if (data[i][0].constructor == Array)
+                            {
+                                makeTree(nodeChild, data[i]);
+                            }else{
+                                // 添加treeList
+                                var li = $('<li id=\"id_li_'+data[i][0]+'\">'+(data[i][2] || data[i][1])+'</li>');
+                                var ul = $('<ul id=\"id_ul_'+data[i][0]+'\"></ul>');
+                                li.addClass('tree_table');
+                                ul.addClass('tree_table');
+                                nodeRoot.append(li);
+                                li.append(ul);
+                                // 添加tableCnt
+                                var tr = $('<tr id=\"id_tr_'+data[i][0]+'\"></tr>');
+                                for (var n = 3; n <= 12; n++) {
+                                	tr.append($('<td id=\"id_td_'+data[i][0]+'_'+n+'\">'+(data[i][n] || '')+'</td>'));
+                                }
+                                $(id_treeTabCnt).append(tr);
+                                nodeChild = ul;
+                            }
+                        }
+                    }
+                    makeTree(outerUl, data_tree);
+                    $('ul.tree_table:empty').remove();   // 清除空的ul
+
+                    //设置包含ul子元素的li元素的样式
+                    $(id_treeUl + ' li:has(ul)').css(
+                    {
+                        'list-style-image': 'url(/statics/images/+.gif)'            // 设置项目符号图标为“+”
+                    });
+
+                    //隐藏当前 li 的所有子元素
+                    $(id_treeUl + ' li:has(ul)').children().hide();
+                    //隐藏与之对应的全部tr
+                    $(id_treeUl + ' li:has(ul)').find('li').each(function(){
+                        var id = this.id.split('_')[2];
+                        $('#id_tr_'+id).hide();
+                    })
+
+                    //如果li包含ul，则绑定click事件
+                    $(id_treeUl + ' li:has(ul)').click(function(event){
+                        var click_refpos = event.pageX - $(event.target).offset().left;  // 取得鼠标点击的相对位置（-16 ~ -9之间说明点在+号上）
+                        if (this==event.target && click_refpos >= -16 && click_refpos <= -9) {//如果当前li就是事件触发的目标对象
+                            if ($(this).children().is(':hidden')) 
+                            {
+                                //如果当前li的子元素隐藏，则修改li的项目符号图标为“-”并显示所有子元素
+                                $(this).css('list-style-image','url(/statics/images/-.gif)').children().show();
+                                //如果当前li的子元素隐藏，则显示所有子元素对应的tr
+                                $(this).children('ul').children('li').each(function(){          // 子节点的子节点展开时，关闭本体再展开时，会让表和树的展开不一致←←←←←←←←←←
+                                    var id = this.id.split('_')[2];
+                                    $('#id_tr_'+id).show();
+                                })
+                            }
+                            else
+                            {
+                                //否则修改li的项目符号图标为“+”，并隐藏所有子元素
+                                $(this).css('list-style-image', 'url(/statics/images/+.gif)').children().hide();
+                                //如果当前li的子元素隐藏，则隐藏所有子元素对应的tr
+                                $(this).find('li').each(function(){
+                                    var id = this.id.split('_')[2];
+                                    $('#id_tr_'+id).hide();
+                                })
+                            }
+                        }else if (click_refpos > 0) { // 点击本体时
+                            // 高亮选中的item
+                            var id = event.target.id.split("_")[2];
+                            $(id_treeUl + ' li').css('background', 'white');
+                            $('#id_li_' + id).css('background', 'rgb(120, 211, 210)');
+                            //高亮选中其后的table
+                            $(id_treeTabCnt + ' tr').css('background', 'white');
+                            $('#id_tr_' + id).css('background', 'rgb(120, 211, 210)');
+
+                            //刷新表格
+                            // $.post("{% url 'ajax_table_company' %}", {'clicked_id': id}, tree_click_func);
+                        }
+                        return false;
+                    })
+                    //绑定tr的click事件
+                    $(id_treeTabCnt + ' tr').click(function(event){
+                        // 高亮选中的item
+                        var id = event.target.id.split("_")[2];
+                        $(id_treeUl + ' li').css('background', 'white');
+                        $('#id_li_' + id).css('background', 'rgb(120, 211, 210)');
+                        //高亮选中其后的table
+                        $(id_treeTabCnt + ' tr').css('background', 'white');
+                        $('#id_tr_' + id).css('background', 'rgb(120, 211, 210)');
+
+                        return false;
+                    })
+                }
+            // 树中的单击事件
+            function click_tree_postOnLoad(ret){}
+		</script>
+	</head>
+	<body>
+        <div style="width: auto; padding: 0px;">
+    		<div id="div_1" style="width: 250px; height: 500px; border: red solid thin; outline: thick; overflow: auto; display: inline-block; padding: 0px;">
+    			<ul id="id_tree_table" class="tree_table" style="width: 1000px; margin-left: -20px; margin-top: 0px;"></ul>
+    		</div>
+			<div id="div_2" style="width: 1040px; height: 500px; border: red solid thin; outline: thick; overflow: top left; display: inline-block; padding: 0px;">
+                <table id="id_tree_table_content" class="tree_table_content"></table>
+            </div>
+		</div>
+	</body>
+</html>

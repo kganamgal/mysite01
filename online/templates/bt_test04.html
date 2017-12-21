@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>在线尝试 Bootstrap 实例</title>
+</head>
+<body>
+  <div>
+     <ul id="treeDemo" class="ztree" style="width: 300px; height: 500px; background: white;"></ul>
+  </div>
+
+
+  <!-- Jquery组件引用 -->
+  <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+  <!-- bootstrap组件引用 -->
+  <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- bootstrap-table组件引用 -->
+  <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.css">  
+  <script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+  <script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.js"></script>
+  <!-- zTree组件引用 -->
+  <link rel="stylesheet" href="/statics/css/demo.css" type="text/css">
+  <link rel="stylesheet" href="/statics/css/zTreeStyle/zTreeStyle.css" type="text/css">
+  <script type="text/javascript" src="/statics/js/jquery.ztree.core.js"></script>
+
+  <script type="text/javascript">$(main);
+
+    function main(){
+
+      // 初次加载页面
+      $(window).load(windowOnLoad);
+
+    }
+
+    function windowOnLoad(){
+      // ajax数据
+      $.post("{% url 'ajax_ztree_test01' %}", {}, table_postOnLoad);    
+    }   
+
+      function table_postOnLoad(ret){
+        var zTreeObj;
+        // zTree 的参数配置，深入使用请参考 API 文档（setting 配置详解）
+        var setting = {
+            data:{//表示tree的数据格式
+                simpleData:{
+                    enable:true,//表示使用简单数据模式
+                    idKey:"Id",//设置之后id为在简单数据模式中的父子节点关联的桥梁
+                    pIdKey:"PId",//设置之后pid为在简单数据模式中的父子节点关联的桥梁和id互相对应
+                    rootPId:"null"//pid为null的表示根节点
+                }
+            },
+
+            view:{//表示tree的显示状态
+                selectMulti: false, //表示禁止多选
+                expandSpeed: "fast",
+            },
+
+            check:{//表示tree的节点在点击时的相关设置
+                enable:true,//是否显示radio/checkbox
+                chkStyle:"checkbox",//值为checkbox或者radio表示
+                checkboxType:{p:"",s:""},//表示父子节点的联动效果
+                radioType:"level"//设置tree的分组
+            },
+
+            callback: {
+                onClick: function(event, treeId, treeNode) {
+                           console.log(treeNode.立项识别码);  
+                         }
+            },
+        }
+        // zTree 的数据属性，深入使用请参考 API 文档（zTreeNode 节点数据详解）
+        var zNodes = ret;
+        zTreeObj = $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+      }
+
+    function TableInit(id_table, table_data, table_colum) {
+      $(id_table).bootstrapTable({
+        data: table_data,
+        striped: true,
+        cache: false,
+        height: 500,
+        sortable: true,
+        sortOrder: "asc",
+        showColumns: true,
+        showRefresh: true,
+        minimumCountColumns: 2,
+        clickToSelect: true,
+        // uniqueId: "单位识别码",
+        showToggle: true,
+        cardView: false,
+        detailView: false,
+        columns: table_colum,
+        search: true,
+        singleSelect: true,
+        showFooter: true,
+      })
+    }
+
+    function toThousands(num){
+      var str_num = String(num).split('.');
+      if (str_num.length == 1) {      // 无小数点
+        return (num || 0).toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,') + '.00';
+      }else if (str_num[1].length == 1) {
+        return (str_num[0] || 0).toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,') + '.' + str_num[1] + '0';
+      }else if (str_num[1].length == 2) {
+        return (str_num[0] || 0).toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,') + '.' + str_num[1];
+      }else if (str_num[1].length > 2) {
+        return (str_num[0] || 0).toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,') + '.' + str_num[1].slice(0, 2);
+      }
+    }
+
+    function toPercents(num){
+      if (num === null) {
+        return '';
+      }else{
+        return (num*100).toFixed(2) + '\%';
+      }
+    }
+
+  </script>
+
+</body>
+</html>

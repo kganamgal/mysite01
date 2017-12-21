@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>在线尝试 Bootstrap 实例</title>
+</head>
+<body>
+
+	<table id="tb_test" class="table table-condensed table-striped"></table>
+	
+
+
+	<!-- Jquery组件引用 -->
+	<script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+	<!-- bootstrap组件引用 -->
+	<link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<!-- bootstrap-table组件引用 -->
+	<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.css">  
+	<script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+	<script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.js"></script>
+
+	<script type="text/javascript">$(main);
+
+		function main(){
+
+		  // 初次加载页面
+		  $(window).load(windowOnLoad);
+
+		}
+
+		function windowOnLoad(){
+			// ajax数据
+      $.post("{% url 'ajax_bt_test01' %}", {}, table_postOnLoad);    
+    }  	
+
+  		function table_postOnLoad(ret){
+      	// t_rows = JSON.parse(ret);
+      	console.log(ret);
+      	TableInit("#tb_test");
+      }
+
+    function TableInit(id_table) {
+    	$(id_table).bootstrapTable({
+    		url: "{% url 'ajax_bt_test01' %}",
+    		method: 'post',
+    		striped: true,
+    		cache: false,
+    		height: 300,
+    		sortable: false,
+    		sortOrder: "asc",
+    		showColumns: true,
+    		showRefresh: true,
+    		minimumCountColumns: 2,
+    		clickToSelect: true,
+    		uniqueId: "单位识别码",
+    		showToggle: true,
+    		cardView: false,
+    		detailView: false,
+    		columns: [
+    		          {checkbox: true}, 
+    		          {field: '单位识别码',
+                   title: '单位识别码'},
+    		          {field: '单位名称',
+                   title: '单位名称'},
+    		          {field: '单位类别',
+                   title: '单位类别'},
+    		          {field: '单位性质',
+                   title: '单位性质'},
+    		          {field: '法定代表人',
+                   title: '法定代表人'},
+    		          {field: '注册资金',
+                   title: '注册资金'},
+    		          {field: '单位资质',
+                   title: '单位资质'},
+    		          {field: '银行账号',
+                   title: '银行账号'},
+    		          {field: '联系人',
+                   title: '联系人'},
+    		          {field: '联系方式',
+                   title: '联系方式'},
+    		          {field: '单位备注',
+                   title: '单位备注'},
+                 ],
+      })
+    }
+
+	</script>
+
+</body>
+</html>

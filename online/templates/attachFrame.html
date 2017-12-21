@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>表单群</title>
+  <style type="text/css">
+    .selected {
+      color: maroon;
+    }
+    strong {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <!-- 不可见部分 -->
+  <!-- <input type="file" id="id_file_dialog"> style="display: none;" mce_style="display:none"> -->
+  <a href="#" id="id_file_download" style="display: none;" download=""><span id="id_a_span">123</span></a>
+  <div id="id_container" class="container-fluid">
+    <!-- 按钮列 -->
+    <div class="row clearfix" style="margin: 0px;">
+      <div class="btn-toolbar" role="toolbar" style="float: right;">
+         <button class="btn btn-default btn-01" style="" type="button" id="id_btn_Download">下载</button>
+         <button class="btn btn-default btn-01" style="" type="button" id="id_btn_Upload" disabled="disabled">上传</button>
+         <button class="btn btn-default btn-01" style="" type="button" id="id_btn_Delete" disabled="disabled">删除</button>
+      </div>
+    </div>
+    <!-- 表格 -->
+    <div class="row clearfix" style="margin: 0px;">
+      <div class="table-responsive" style="overflow: auto; font-size: 12px; cursor: default;">
+        <table id="id_tree_table" class="table table-condensed" style="white-space: nowrap;"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Jquery组件引用 -->
+  <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+  <!-- bootstrap组件引用 -->
+  <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- bootstrap-table组件引用 -->
+  <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.css">  
+  <script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+  <script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.js"></script>
+  <!-- layer -->
+  <script type="text/javascript" src="/statics/js/layer.js"></script>  
+  <!-- edwin常用函数集合 -->
+  <script type="text/javascript" src="/statics/js/often_by_Edwin_201712182301.js"></script>
+
+  <script type="text/javascript">
+    $.ajaxSetup({
+        data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+    });
+
+    var child_data = {};
+    var UDID = parent.child_data['UDID'];
+    var key_frame = parent.child_data['key_frame'];
+    $(main);
+
+    function main(){
+      // 初次加载页面
+      $(window).load(windowOnLoad);
+    }
+
+    function windowOnLoad(){
+      var heads = ['文件名', '文件类型', '修改时间', '文件大小',];
+      var _columns = [{radio: true}];
+      for (var i in heads) {
+        _columns.push(
+          {field: heads[i],
+           title: heads[i],
+           sortable: true,
+           halign: 'center',
+           align: 'center',
+           valign: 'middle',
+           width: '100px',
+           // formatter: function(value, row, index){},
+          }
+        )
+      }
+      _columns[1].width = '300px';
+      _columns[1].align = 'left';
+      _columns[4].formatter = function(value, row, index){
+        if (value < 1024) {
+           return value + ' B'
+        }else if (value < 1024*1024) {
+           return toThousands(value / 1024) + ' KB'
+        }else if (value < 1024*1024*1024) {
+           return toThousands(value / 1024 / 1024) + ' MB'
+        }else if (value < 1024*1024*1024*1024) {
+           return toThousands(value / 1024 / 1024 / 1024) + ' GB'
+        }
+      }
+      // 获取表格数据
+      $.ajax(
+        {
+          url: "{% url 'list_file' %}", 
+          type: 'POST',
+          data: { 'key_frame': key_frame,
+                  'UDID': UDID,
+          }, 
+          success: InitTable,
+        }
+      );
+      // $.post("{% url 'list_file' %}", {'key_frame': key_frame, 'UDID': UDID,}, InitTable);
+      function InitTable(ret) {
+        if (ret === 'No Permission') {
+          alert('您没有权限获取文件列表');
+          return;
+        }
+        var _data = ret.file_list;
+        $('#id_tree_table').bootstrapTable('destroy');
+        $('#id_tree_table').bootstrapTable({
+          data: _data,
+          striped: false,
+          cache: false,
+          sortable: true,
+          sortOrder: "asc",
+          height: 500,
+          minimumCountColumns: 2,
+          uniqueId: '文件名',
+          clickToSelect: true,
+          detailView: false,
+          columns: _columns,
+        });
+      }
+      // 为各按钮注册事件
+      $(document).on('click', '#id_btn_Download', function(){
+        // 取得当前被选择的文件名
+        var selected_row = $(".selected");
+        var filename = $(selected_row[0]).attr("data-uniqueid");
+        if (!filename) {
+          layer.alert('请先选择一个文件');
+          return;
+        }
+        // 获取文件url
+        $.ajax(
+          {
+            url: "{% url 'get_file_url' %}", 
+            type: 'POST',
+            data: { 'key_frame': key_frame,
+                    'UDID': UDID,
+                    'filename': filename,
+            }, 
+            success: function(ret) {
+              if (ret === 'No Permission') {
+                alert('您没有权限下载此文件');
+                return;
+              }
+              var url_file = ret.url_file;
+              $('#id_file_download').attr("href", url_file);
+              $('#id_a_span').click();
+            },
+          });
+        // $.post("{% url 'get_file_url' %}", {'key_frame': key_frame, 'UDID': UDID, 'filename': filename,}, function(ret) {
+        //   var url_file = ret.url_file;
+        //   $('#id_file_download').attr("href", url_file);
+        //   $('#id_a_span').click();
+        // });
+      });
+    }
+  
+  </script>
+
+</body>
+</html>
