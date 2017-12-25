@@ -12,7 +12,7 @@ class table_User(models.Model):
     def __str__(self):
         return self.用户名
     class Meta:
-        db_table = 'TABEL_USER' #自定义表名称为mytable
+        db_table = 'tabel_user' #自定义表名称为mytable
         verbose_name = '用户表' #指定在admin管理界面中显示的名称 
         app_label = 'online'
         ordering = ['DB_id']
@@ -24,7 +24,7 @@ class table_Version(models.Model):
     def __str__(self):
         return self.允许的最低版本
     class Meta:
-        db_table = 'TABEL_版本管理'
+        db_table = 'tabel_版本管理'
         verbose_name = '版本管理表'
         app_label = 'online'
         ordering = ['DB_id']
@@ -56,7 +56,7 @@ class table_Permission(models.Model):
     def __str__(self):
         return self.用户名
     class Meta:
-        db_table = 'TABEL_权限信息'
+        db_table = 'tabel_权限信息'
         verbose_name = '权限信息表'
         app_label = 'online'
         ordering = ['DB_id']
@@ -77,7 +77,7 @@ class table_Company(models.Model):
     def __str__(self):
         return self.单位名称
     class Meta:
-        db_table = 'TABEL_单位信息'
+        db_table = 'tabel_单位信息'
         verbose_name = '单位信息表'
         app_label = 'online'
         ordering = ['单位识别码']
@@ -98,7 +98,7 @@ class table_Initiation(models.Model):
         return '{}-{}'.format(self.项目名称, self.分项名称)
     class Meta:
         unique_together = ('项目名称', '分项名称')
-        db_table = 'TABEL_立项信息'
+        db_table = 'tabel_立项信息'
         verbose_name = '立项信息表'
         app_label = 'online'
         ordering = ['立项识别码']
@@ -121,7 +121,7 @@ class table_Bidding(models.Model):
     def __str__(self):
         return '{}-{}'.format(self.招标方式, self.中标价)
     class Meta:
-        db_table = 'TABEL_招标信息'
+        db_table = 'tabel_招标信息'
         verbose_name = '招标信息表'
         app_label = 'online'
         ordering = ['招标识别码']
@@ -153,7 +153,7 @@ class table_Contract(models.Model):
     def __str__(self):
         return '{}-{}'.format(self.合同类别, self.合同名称)
     class Meta:
-        db_table = 'TABEL_合同信息'
+        db_table = 'tabel_合同信息'
         verbose_name = '合同信息表'
         app_label = 'online'
         ordering = ['合同识别码']
@@ -170,7 +170,7 @@ class table_Budget(models.Model):
         return '{}-{}'.format(self.预算名称, self.预算周期)
     class Meta:
         unique_together = ('预算名称', '预算周期')
-        db_table = 'TABEL_预算信息'
+        db_table = 'tabel_预算信息'
         verbose_name = '预算信息表'
         app_label = 'online'
         ordering = ['预算识别码']
@@ -203,7 +203,7 @@ class table_Payment(models.Model):
     def __str__(self):
         return '{}-{}'.format(self.付款事由, self.本次付款额)
     class Meta:
-        db_table = 'TABEL_付款信息'
+        db_table = 'tabel_付款信息'
         verbose_name = '付款信息表'
         app_label = 'online'
         ordering = ['付款识别码']
@@ -229,7 +229,7 @@ class table_SubContract(models.Model):
     def __str__(self):
         return '{}-{}'.format(self.分包合同类别, self.分包合同名称)
     class Meta:
-        db_table = 'TABEL_分包合同信息'
+        db_table = 'tabel_分包合同信息'
         verbose_name = '分包合同信息表'
         app_label = 'online'
         ordering = ['分包合同识别码']
@@ -251,7 +251,7 @@ class table_Alteration(models.Model):
     def __str__(self):
         return '{}-{}'.format(self.变更类型, self.变更主题)
     class Meta:
-        db_table = 'TABEL_变更信息'
+        db_table = 'tabel_变更信息'
         verbose_name = '变更信息表'
         app_label = 'online'
         ordering = ['变更识别码']
