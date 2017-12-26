@@ -77,192 +77,144 @@
 	</div>
 
   <!-- Jquery组件引用 -->
-  <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/statics/js/jquery.min.js"></script>
   <!-- bootstrap组件引用 -->
-  <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="/statics/css/bootstrap.min.css">
+  <script src="/statics/js/bootstrap.min.js"></script>
   <!-- bootstrap-table组件引用 -->
-  <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.css">  
-  <script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
-  <script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.js"></script>
+  <link rel="stylesheet" href="/statics/css/bootstrap-table.css">
+  <script src="/statics/js/bootstrap-table.min.js"></script>
+  <script src="/statics/js/bootstrap-table-zh-CN.js"></script>
   <!-- 右键菜单相关组件 -->
-  <script src="https://cdn.bootcss.com/bootstrap-contextmenu/0.3.4/bootstrap-contextmenu.js"></script>
-  <script src="http://cdnjs.cloudflare.com/ajax/libs/prettify/r224/prettify.js"></script>
-  <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+  <script src="/statics/js/bootstrap-contextmenu.js"></script>
+  <script src="/statics/js/prettify.js"></script>
+  <link href="/statics/css/bootstrap-combined.min.css" rel="stylesheet">
   <!-- echarts -->
-  <script type="text/javascript" src="/statics/js/echarts.min.js"></script>  
+  <script type="text/javascript" src="/statics/js/echarts.min.js"></script>
   <!-- layer -->
-  <script type="text/javascript" src="/statics/js/layer.js"></script>  
+  <script type="text/javascript" src="/statics/js/layer.js"></script>
   <!-- edwin常用函数集合 -->
   <script type="text/javascript" src="/statics/js/often_by_Edwin_201712182301.js"></script>
 
   <script type="text/javascript">
     $.ajaxSetup({
-        data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+      data: {
+        csrfmiddlewaretoken: '{{ csrf_token }}'
+      },
     });
-    
-    var child_data = {};    
+
+    var child_data = {};
     var dict_Chn_Eng = {
-      '单位':     'Company',
-      '立项':     'Init',
-      '招标':     'Bidding',
-      '合同':     'Contract',
-      '变更':     'Alteration',
+      '单位': 'Company',
+      '立项': 'Init',
+      '招标': 'Bidding',
+      '合同': 'Contract',
+      '变更': 'Alteration',
       '分包合同': 'SubContract',
-      '预算':     'Budget',
-      '付款':     'Payment',
+      '预算': 'Budget',
+      '付款': 'Payment',
     };
     $(main);
 
-    function main(){
+    function main() {
       // 初次加载页面
       $(window).load(windowOnLoad);
     }
 
-    function windowOnLoad(){
+    function windowOnLoad() {
 
       // 获取树表数据
-      $.ajax(
-        {
-          url: "{% url 'ajax_treeTable' %}", 
-          type: 'POST',
-          data: {}, 
-          success: table_postOnLoad,
-        }
-      );
+      $.ajax({
+        url: "{% url 'ajax_treeTable' %}",
+        type: 'POST',
+        data: {},
+        success: table_postOnLoad,
+      });
       // $.post("{% url 'ajax_treeTable' %}", {}, table_postOnLoad);
 
       // 为大图注册双击事件
-      $(document).on('click', "#id_chart", function(){
-                                layer.open({
-                                  type: 2,
-                                  title: '',
-                                  area: ['80%', '85%'], 
-                                  content: "{% url 'big_Pie' %}",
-                                  success: function(layero, index) {},
-                                });
+      $(document).on('click', "#id_chart", function() {
+        layer.open({
+          type: 2,
+          title: '',
+          area: ['80%', '85%'],
+          content: "{% url 'big_Pie' %}",
+          success: function(layero, index) {},
+        });
       });
       // 为各按钮注册事件
-      $(document).on('click', "#id_btn_Company", function(){
-                                    child_data['key_table'] = '单位';
-                                    child_data['Init_UDID'] = null;
-                                    var key_url = dict_Chn_Eng[child_data['key_table']];
-                                    var content_url = "{% url 'tableFrame' 'ewhuvlk' %}"
-                                    layer.open({
-                                      type: 2,
-                                      btn: ['确定', '取消'],
-                                      title: child_data['key_table'] + '信息管理',
-                                      maxmin: true,
-                                      area: ['100%', '100%'],  
-                                      content: content_url.replace('ewhuvlk', key_url),
-                                    });
+      $(document).on('click', "#id_btn_Company", function() {
+        child_data['key_table'] = '单位';
+        child_data['Init_UDID'] = null;
+        var key_url = dict_Chn_Eng[child_data['key_table']];
+        var content_url = "{% url 'tableFrame' 'ewhuvlk' %}";
+        window.open(content_url.replace('ewhuvlk', key_url));     // 在新窗口中打开模块
+        // layer.open({
+        //   type: 2,
+        //   btn: ['确定', '取消'],
+        //   title: child_data['key_table'] + '信息管理',
+        //   maxmin: true,
+        //   area: ['100%', '100%'],
+        //   content: content_url.replace('ewhuvlk', key_url),
+        // });
       });
-      $(document).on('click', "#id_btn_Init", function(){
-                                    child_data['key_table'] = '立项';
-                                    child_data['Init_UDID'] = null;
-                                    var key_url = dict_Chn_Eng[child_data['key_table']];
-                                    var content_url = "{% url 'tableFrame' 'ewhuvlk' %}"
-                                    layer.open({
-                                      type: 2,
-                                      btn: ['确定', '取消'],
-                                      title:child_data['key_table'] + '信息管理',
-                                      area: ['100%', '100%'],  
-                                      maxmin: true,
-                                      content: content_url.replace('ewhuvlk', key_url),
-                                    });
+      $(document).on('click', "#id_btn_Init", function() {
+        child_data['key_table'] = '立项';
+        child_data['Init_UDID'] = null;
+        var key_url = dict_Chn_Eng[child_data['key_table']];
+        var content_url = "{% url 'tableFrame' 'ewhuvlk' %}";
+        window.open(content_url.replace('ewhuvlk', key_url));
       });
-      $(document).on('click', "#id_btn_Bidding", function(){
-                                    child_data['key_table'] = '招标';
-                                    child_data['Init_UDID'] = null;
-                                    var key_url = dict_Chn_Eng[child_data['key_table']];
-                                    var content_url = "{% url 'tableFrame' 'ewhuvlk' %}"
-                                    layer.open({
-                                      type: 2,
-                                      btn: ['确定', '取消'],
-                                      title: child_data['key_table'] + '信息管理',
-                                      area: ['100%', '100%'],  
-                                      maxmin: true,
-                                      content: content_url.replace('ewhuvlk', key_url),
-                                    });
+      $(document).on('click', "#id_btn_Bidding", function() {
+        child_data['key_table'] = '招标';
+        child_data['Init_UDID'] = null;
+        var key_url = dict_Chn_Eng[child_data['key_table']];
+        var content_url = "{% url 'tableFrame' 'ewhuvlk' %}";
+        window.open(content_url.replace('ewhuvlk', key_url));
       });
-      $(document).on('click', "#id_btn_Contract", function(){
-                                    child_data['key_table'] = '合同';
-                                    child_data['Init_UDID'] = null;
-                                    var key_url = dict_Chn_Eng[child_data['key_table']];
-                                    var content_url = "{% url 'tableFrame' 'ewhuvlk' %}"
-                                    layer.open({
-                                      type: 2,
-                                      btn: ['确定', '取消'],
-                                      title: child_data['key_table'] + '信息管理',
-                                      area: ['100%', '100%'], 
-                                      maxmin: true,
-                                      content: content_url.replace('ewhuvlk', key_url),
-                                    });
+      $(document).on('click', "#id_btn_Contract", function() {
+        child_data['key_table'] = '合同';
+        child_data['Init_UDID'] = null;
+        var key_url = dict_Chn_Eng[child_data['key_table']];
+        var content_url = "{% url 'tableFrame' 'ewhuvlk' %}";
+        window.open(content_url.replace('ewhuvlk', key_url));
       });
-      $(document).on('click', "#id_btn_Alteration", function(){
-                                    child_data['key_table'] = '变更';
-                                    child_data['Init_UDID'] = null;
-                                    var key_url = dict_Chn_Eng[child_data['key_table']];
-                                    var content_url = "{% url 'tableFrame' 'ewhuvlk' %}"
-                                    layer.open({
-                                      type: 2,
-                                      btn: ['确定', '取消'],
-                                      title: child_data['key_table'] + '信息管理',
-                                      area: ['100%', '100%'],  
-                                      maxmin: true,
-                                      content: content_url.replace('ewhuvlk', key_url),
-                                    });
+      $(document).on('click', "#id_btn_Alteration", function() {
+        child_data['key_table'] = '变更';
+        child_data['Init_UDID'] = null;
+        var key_url = dict_Chn_Eng[child_data['key_table']];
+        var content_url = "{% url 'tableFrame' 'ewhuvlk' %}";
+        window.open(content_url.replace('ewhuvlk', key_url));
       });
-      $(document).on('click', "#id_btn_SubCont", function(){
-                                    child_data['key_table'] = '分包合同';
-                                    child_data['Init_UDID'] = null;
-                                    var key_url = dict_Chn_Eng[child_data['key_table']];
-                                    var content_url = "{% url 'tableFrame' 'ewhuvlk' %}"
-                                    layer.open({
-                                      type: 2,
-                                      btn: ['确定', '取消'],
-                                      title: child_data['key_table'] + '信息管理',
-                                      area: ['100%', '100%'],  
-                                      maxmin: true,
-                                      content: content_url.replace('ewhuvlk', key_url),
-                                    });
+      $(document).on('click', "#id_btn_SubCont", function() {
+        child_data['key_table'] = '分包合同';
+        child_data['Init_UDID'] = null;
+        var key_url = dict_Chn_Eng[child_data['key_table']];
+        var content_url = "{% url 'tableFrame' 'ewhuvlk' %}";
+        window.open(content_url.replace('ewhuvlk', key_url));
       });
-      $(document).on('click', "#id_btn_Budget", function(){
-                                    child_data['key_table'] = '预算';
-                                    child_data['Init_UDID'] = null;
-                                    var key_url = dict_Chn_Eng[child_data['key_table']];
-                                    var content_url = "{% url 'tableFrame' 'ewhuvlk' %}"
-                                    layer.open({
-                                      type: 2,
-                                      btn: ['确定', '取消'],
-                                      title: child_data['key_table'] + '信息管理',
-                                      area: ['100%', '100%'],  
-                                      maxmin: true,
-                                      content: content_url.replace('ewhuvlk', key_url),
-                                    });
+      $(document).on('click', "#id_btn_Budget", function() {
+        child_data['key_table'] = '预算';
+        child_data['Init_UDID'] = null;
+        var key_url = dict_Chn_Eng[child_data['key_table']];
+        var content_url = "{% url 'tableFrame' 'ewhuvlk' %}";
+        window.open(content_url.replace('ewhuvlk', key_url));
       });
-      $(document).on('click', "#id_btn_Payment", function(){
-                                    child_data['key_table'] = '付款';
-                                    child_data['Init_UDID'] = null;
-                                    var key_url = dict_Chn_Eng[child_data['key_table']];
-                                    var content_url = "{% url 'tableFrame' 'ewhuvlk' %}"
-                                    layer.open({
-                                      type: 2,
-                                      btn: ['确定', '取消'],
-                                      title: child_data['key_table'] + '信息管理',
-                                      area: ['100%', '100%'],  
-                                      maxmin: true,
-                                      content: content_url.replace('ewhuvlk', key_url),
-                                    });
+      $(document).on('click', "#id_btn_Payment", function() {
+        child_data['key_table'] = '付款';
+        child_data['Init_UDID'] = null;
+        var key_url = dict_Chn_Eng[child_data['key_table']];
+        var content_url = "{% url 'tableFrame' 'ewhuvlk' %}";
+        window.open(content_url.replace('ewhuvlk', key_url));
       });
-    }   
+    }
 
-    function table_postOnLoad(ret){
+    function table_postOnLoad(ret) {
       if (ret === 'No Permission') {
         alert('您没有权限获取系统概览数据');
         return
       }
-      var datas = formatTreeTableData(ret);        
+      var datas = formatTreeTableData(ret);
 
       // 构造columns
       var columns = [];
@@ -270,101 +222,110 @@
       var heads = ['加减', '项目名称', '合同名称', '项目概算', '概算已分配率', '概算付款比', '招标方式', '中标价', '合同值', '合同付款比', '已付款'];
       for (var i in heads) {
         if (heads[i] === '项目名称') {
-          columns.push(
-              {field: heads[i],
-               title: heads[i],
-               halign: 'center',
-               align: 'left',
-               valign: 'middle',
-               width: '200px',
-               formatter: function(value, row, index){
-                            var n = row['层级'];
-                            var prefix = '';
-                            for (var i=0; i<n; i++) {
-                              prefix = '&nbsp;&nbsp;&nbsp;&nbsp;'+ prefix
-                            }
-                            return prefix + '<b>'+value+'</b>';
-                          },
-              })
-        }else if (heads[i] === '加减') {
-          columns.push(
-              {field: heads[i],
-               title: '',
-               halign: 'center',
-               align: 'left',
-               valign: 'middle',
-               formatter: function(value, row, index){
-                            var img_plus_url = '/statics/images/+.gif';
-                            var img_minus_url = '/statics/images/-.gif';
-                            var n = row['层级'];
-                            var prefix = '';
-                            for (var i=0; i<n; i++) {
-                              prefix = '&nbsp;&nbsp;'+ prefix
-                            }
-                            if (value === '+') {
-                              return prefix + '<img src=\"'+img_plus_url+'\"  alt=\"+\" />';
-                            }else if (value === '-') {
-                              return prefix + '<img src=\"'+img_minus_url+'\"  alt=\"+\" />';
-                            }else{
-                              return '';
-                            }
-                          }
-              })
-        }else if (heads[i] in {'项目概算':0, '中标价':0, '合同值':0, '已付款':0}) {
-          columns.push(
-              {field: heads[i],
-               title: heads[i],
-               halign: 'center',
-               align: 'right',
-               valign: 'middle',
-               formatter: function(value, row, index){
-                            if (value === null) {
-                              return value;
-                            }else{
-                              return toThousands(value);
-                            }
-                          }
-              })
-        }else if (heads[i] in {'概算已分配率':0, '概算付款比':0, '合同付款比':0}) {
-          columns.push(
-              {field: heads[i],
-               title: heads[i],
-               halign: 'center',
-               align: 'center',
-               valign: 'middle',
-               formatter: function(value, row, index){
-                            if (value === null) {
-                              return value;
-                            }else{
-                              return toPercents(value);
-                            }
-                          }
-              })
-        }else{
-          columns.push(
-              {field: heads[i],
-               title: heads[i],
-               halign: 'center',
-               align: 'center',
-               valign: 'middle',
-              })
+          columns.push({
+            field: heads[i],
+            title: heads[i],
+            halign: 'center',
+            align: 'left',
+            valign: 'middle',
+            width: '200px',
+            formatter: function(value, row, index) {
+              var n = row['层级'];
+              var prefix = '';
+              for (var i = 0; i < n; i++) {
+                prefix = '&nbsp;&nbsp;&nbsp;&nbsp;' + prefix
+              }
+              return prefix + '<b>' + value + '</b>';
+            },
+          })
+        } else if (heads[i] === '加减') {
+          columns.push({
+            field: heads[i],
+            title: '',
+            halign: 'center',
+            align: 'left',
+            valign: 'middle',
+            formatter: function(value, row, index) {
+              var img_plus_url = '/statics/images/+.gif';
+              var img_minus_url = '/statics/images/-.gif';
+              var n = row['层级'];
+              var prefix = '';
+              for (var i = 0; i < n; i++) {
+                prefix = '&nbsp;&nbsp;' + prefix
+              }
+              if (value === '+') {
+                return prefix + '<img src=\"' + img_plus_url + '\"  alt=\"+\" />';
+              } else if (value === '-') {
+                return prefix + '<img src=\"' + img_minus_url + '\"  alt=\"+\" />';
+              } else {
+                return '';
+              }
+            }
+          })
+        } else if (heads[i] in {
+            '项目概算': 0,
+            '中标价': 0,
+            '合同值': 0,
+            '已付款': 0
+          }) {
+          columns.push({
+            field: heads[i],
+            title: heads[i],
+            halign: 'center',
+            align: 'right',
+            valign: 'middle',
+            formatter: function(value, row, index) {
+              if (value === null) {
+                return value;
+              } else {
+                return toThousands(value);
+              }
+            }
+          })
+        } else if (heads[i] in {
+            '概算已分配率': 0,
+            '概算付款比': 0,
+            '合同付款比': 0
+          }) {
+          columns.push({
+            field: heads[i],
+            title: heads[i],
+            halign: 'center',
+            align: 'center',
+            valign: 'middle',
+            formatter: function(value, row, index) {
+              if (value === null) {
+                return value;
+              } else {
+                return toPercents(value);
+              }
+            }
+          })
+        } else {
+          columns.push({
+            field: heads[i],
+            title: heads[i],
+            halign: 'center',
+            align: 'center',
+            valign: 'middle',
+          })
         }
       }
 
-      $('#id_tree_table').bootstrapTable('destroy');  // 销毁        
-      treeTableInit("#id_tree_table", datas, columns);    // 初始化
+      $('#id_tree_table').bootstrapTable('destroy'); // 销毁
+      treeTableInit("#id_tree_table", datas, columns); // 初始化
 
       // 保证表头对齐
-      $(window).resize(function () {
+      $(window).resize(function() {
         $('#id_tree_table').bootstrapTable('resetView');
       })
     }
 
     function formatTreeTableData(data) {
       //将有子项的都标记成+
-      for (var i=0; i<data.length-1; i++) {
+      for (var i = 0; i < data.length - 1; i++) {
         var Level_thisRow = data[i]['层级'];
-        var Level_nextRow = data[i+1]['层级'];
+        var Level_nextRow = data[i + 1]['层级'];
         if (Level_thisRow < Level_nextRow) {
           data[i]['加减'] = '+';
         }
@@ -373,7 +334,7 @@
       for (var i in data) {
         if (data[i]['层级'] > 0) {
           data[i].隐藏 = true;
-        }else{
+        } else {
           data[i].隐藏 = false;
         }
       }
@@ -393,25 +354,33 @@
         uniqueId: "立项识别码",
         detailView: false,
         columns: table_colum,
-        singleSelect: true,     
-        onClickCell: table_Tree_On_Click_Cell,   
+        singleSelect: true,
+        onClickCell: table_Tree_On_Click_Cell,
       })
       // 注册单击事件，实现展开折叠
       // $(document).on('click-cell.bs.table', id_table, table_Tree_On_Click_Cell)
-      function table_Tree_On_Click_Cell(field, value, row, $element){
+      function table_Tree_On_Click_Cell(field, value, row, $element) {
         var n = table_data.indexOf(row);
         if (field === '加减') {
           // 加减互变
           if (value === '+') {
-            $(id_table).bootstrapTable('updateCell', {index: n, field: '加减', value: '-'});
-          }else if (value === '-') {
-            $(id_table).bootstrapTable('updateCell', {index: n, field: '加减', value: '+'});
+            $(id_table).bootstrapTable('updateCell', {
+              index: n,
+              field: '加减',
+              value: '-'
+            });
+          } else if (value === '-') {
+            $(id_table).bootstrapTable('updateCell', {
+              index: n,
+              field: '加减',
+              value: '+'
+            });
           }
           // 显示-后面的
-          for (var i=0; i<table_data.length-1; i++) {
+          for (var i = 0; i < table_data.length - 1; i++) {
             if (table_data[i].加减 === '-') { // 检测到某行为-，将此-后所有为该层级+1的行都显现
               var Level_thisRow = table_data[i]['层级'];
-              for (var j=i+1; j<table_data.length; j++) {
+              for (var j = i + 1; j < table_data.length; j++) {
                 if (table_data[j]['层级'] === Level_thisRow + 1) {
                   table_data[j].隐藏 = false;
                 }
@@ -420,14 +389,14 @@
                   break;
                 }
               }
-              
+
             }
           }
           // // 隐藏+后面的
-          for (var i=0; i<table_data.length-1; i++) {
+          for (var i = 0; i < table_data.length - 1; i++) {
             if (table_data[i].加减 === '+') { // 检测到某行为+，将此+后所有大于该层级的行都隐藏
               var Level_thisRow = table_data[i]['层级'];
-              for (var j=i+1; j<table_data.length; j++) {
+              for (var j = i + 1; j < table_data.length; j++) {
                 if (table_data[j]['层级'] > Level_thisRow) {
                   table_data[j].隐藏 = true;
                 }
@@ -441,27 +410,30 @@
           // 设置可见
           for (var i in table_data) {
             if (table_data[i].隐藏) {
-              $('#id_tree_table').bootstrapTable('hideRow', {index: i});
-            }else{
-              $('#id_tree_table').bootstrapTable('showRow', {index: i});
+              $('#id_tree_table').bootstrapTable('hideRow', {
+                index: i
+              });
+            } else {
+              $('#id_tree_table').bootstrapTable('showRow', {
+                index: i
+              });
             }
           }
 
-        }else{
+        } else {
           var UDID = row.立项识别码;
           // 高亮所在行
           $(".selected").removeClass("selected");
-          $(id_table + ' tr[data-uniqueid='+UDID+']').addClass("selected");
+          $(id_table + ' tr[data-uniqueid=' + UDID + ']').addClass("selected");
           // 生成概览
-          $.ajax(
-            {
-              url: "{% url 'getDataForOverview' %}", 
-              type: 'POST',
-              data: {'UDID': UDID,
-                    }, 
-              success: getDataForOverview,
-            }
-          );
+          $.ajax({
+            url: "{% url 'getDataForOverview' %}",
+            type: 'POST',
+            data: {
+              'UDID': UDID,
+            },
+            success: getDataForOverview,
+          });
           // $.post("{% url 'getDataForOverview' %}", {'UDID': UDID}, getDataForOverview);
           function getDataForOverview(myString) {
             if (myString === 'No Permission') {
@@ -471,15 +443,14 @@
             $('#id_overviewInfo').html(myString);
           }
           // 生成图表
-          $.ajax(
-            {
-              url: "{% url 'get_Pie_Data' %}", 
-              type: 'POST',
-              data: {'UDID': UDID,
-                    }, 
-              success: get_Pie_Data,
-            }
-          );
+          $.ajax({
+            url: "{% url 'get_Pie_Data' %}",
+            type: 'POST',
+            data: {
+              'UDID': UDID,
+            },
+            success: get_Pie_Data,
+          });
           // $.post("{% url 'get_Pie_Data' %}", {'UDID': UDID}, get_Pie_Data);
           function get_Pie_Data(chart_data) {
             if (chart_data === 'No Permission') {
@@ -490,7 +461,7 @@
             child_data['chart_data'] = chart_data;
           }
         }
-        
+
         // 添加右键菜单
         var UDID;
         $('#id_tree_table tr').contextmenu({
@@ -499,22 +470,24 @@
             UDID = $(event.currentTarget).attr('data-uniqueid');
             // 高亮所在行
             $(".selected").removeClass("selected");
-            $(id_table + ' tr[data-uniqueid='+UDID+']').addClass("selected");
+            $(id_table + ' tr[data-uniqueid=' + UDID + ']').addClass("selected");
             // 生成概览
-            $.post("{% url 'getDataForOverview' %}", {'UDID': UDID}, getDataForOverview);
+            $.post("{% url 'getDataForOverview' %}", {
+              'UDID': UDID
+            }, getDataForOverview);
+
             function getDataForOverview(myString) {
               $('#id_overviewInfo').html(myString);
             }
             // 生成图表
-            $.ajax(
-              {
-                url: "{% url 'get_Pie_Data' %}", 
-                type: 'POST',
-                data: {'UDID': UDID,
-                      }, 
-                success: get_Pie_Data,
-              }
-            );
+            $.ajax({
+              url: "{% url 'get_Pie_Data' %}",
+              type: 'POST',
+              data: {
+                'UDID': UDID,
+              },
+              success: get_Pie_Data,
+            });
             // $.post("{% url 'get_Pie_Data' %}", {'UDID': UDID}, get_Pie_Data);
             function get_Pie_Data(chart_data) {
               if (chart_data === 'No Permission') {
@@ -530,7 +503,7 @@
             child_data['Init_UDID'] = UDID;
             var key_url = dict_Chn_Eng[child_data['key_table']];
             var content_url = "{% url 'tableFrame' 'ewhuvlk' %}"
-            layer.open({                  
+            layer.open({
               type: 2,
               btn: ['确定', '取消'],
               title: child_data['key_table'] + '信息管理',
@@ -543,9 +516,11 @@
       // 初始折叠
       for (var i in table_data) {
         if (table_data[i].隐藏) {
-          $('#id_tree_table').bootstrapTable('hideRow', {index: i});
+          $('#id_tree_table').bootstrapTable('hideRow', {
+            index: i
+          });
         }
-      }      
+      }
       // 添加右键菜单
       var UDID;
       $('#id_tree_table tr').contextmenu({
@@ -554,17 +529,16 @@
           UDID = $(event.currentTarget).attr('data-uniqueid');
           // 高亮所在行
           $(".selected").removeClass("selected");
-          $(id_table + ' tr[data-uniqueid='+UDID+']').addClass("selected");
+          $(id_table + ' tr[data-uniqueid=' + UDID + ']').addClass("selected");
           // 生成概览
-          $.ajax(
-            {
-              url: "{% url 'getDataForOverview' %}", 
-              type: 'POST',
-              data: {'UDID': UDID,
-                    }, 
-              success: getDataForOverview,
-            }
-          );
+          $.ajax({
+            url: "{% url 'getDataForOverview' %}",
+            type: 'POST',
+            data: {
+              'UDID': UDID,
+            },
+            success: getDataForOverview,
+          });
           // $.post("{% url 'getDataForOverview' %}", {'UDID': UDID}, getDataForOverview);
           function getDataForOverview(myString) {
             if (myString === 'No Permission') {
@@ -574,15 +548,14 @@
             $('#id_overviewInfo').html(myString);
           }
           // 生成图表
-          $.ajax(
-            {
-              url: "{% url 'get_Pie_Data' %}", 
-              type: 'POST',
-              data: {'UDID': UDID,
-                    }, 
-              success: get_Pie_Data,
-            }
-          );
+          $.ajax({
+            url: "{% url 'get_Pie_Data' %}",
+            type: 'POST',
+            data: {
+              'UDID': UDID,
+            },
+            success: get_Pie_Data,
+          });
           // $.post("{% url 'get_Pie_Data' %}", {'UDID': UDID}, get_Pie_Data);
           function get_Pie_Data(chart_data) {
             if (chart_data === 'No Permission') {
@@ -599,17 +572,16 @@
           var key_url = dict_Chn_Eng[child_data['key_table']];
           var content_url = "{% url 'tableFrame' 'ewhuvlk' %}"
           layer.open({
-            type: 2,                                      
+            type: 2,
             btn: ['确定', '取消'],
             title: child_data['key_table'] + '信息管理',
-            area: ['100%', '100%'],  
+            area: ['100%', '100%'],
             maxmin: true,
             content: content_url.replace('ewhuvlk', key_url),
           });
         },
       });
-    }    
-
+    }
   </script>
 
 </body>

@@ -35,22 +35,24 @@
   </div>
 
   <!-- Jquery组件引用 -->
-  <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/statics/js/jquery.min.js"></script>
   <!-- bootstrap组件引用 -->
-  <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="/statics/css/bootstrap.min.css">
+  <script src="/statics/js/bootstrap.min.js"></script>
   <!-- bootstrap-table组件引用 -->
-  <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.css">  
-  <script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
-  <script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.js"></script>
+  <link rel="stylesheet" href="/statics/css/bootstrap-table.css">
+  <script src="/statics/js/bootstrap-table.min.js"></script>
+  <script src="/statics/js/bootstrap-table-zh-CN.js"></script>
   <!-- layer -->
-  <script type="text/javascript" src="/statics/js/layer.js"></script>  
+  <script type="text/javascript" src="/statics/js/layer.js"></script>
   <!-- edwin常用函数集合 -->
   <script type="text/javascript" src="/statics/js/often_by_Edwin_201712182301.js"></script>
 
   <script type="text/javascript">
     $.ajaxSetup({
-        data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+      data: {
+        csrfmiddlewaretoken: '{{ csrf_token }}'
+      },
     });
 
     var child_data = {};
@@ -58,51 +60,51 @@
     var key_frame = parent.child_data['key_frame'];
     $(main);
 
-    function main(){
+    function main() {
       // 初次加载页面
       $(window).load(windowOnLoad);
     }
 
-    function windowOnLoad(){
-      var heads = ['文件名', '文件类型', '修改时间', '文件大小',];
-      var _columns = [{radio: true}];
+    function windowOnLoad() {
+      var heads = ['文件名', '文件类型', '修改时间', '文件大小', ];
+      var _columns = [{
+        radio: true
+      }];
       for (var i in heads) {
-        _columns.push(
-          {field: heads[i],
-           title: heads[i],
-           sortable: true,
-           halign: 'center',
-           align: 'center',
-           valign: 'middle',
-           width: '100px',
-           // formatter: function(value, row, index){},
-          }
-        )
+        _columns.push({
+          field: heads[i],
+          title: heads[i],
+          sortable: true,
+          halign: 'center',
+          align: 'center',
+          valign: 'middle',
+          width: '100px',
+          // formatter: function(value, row, index){},
+        })
       }
       _columns[1].width = '300px';
       _columns[1].align = 'left';
-      _columns[4].formatter = function(value, row, index){
+      _columns[4].formatter = function(value, row, index) {
         if (value < 1024) {
-           return value + ' B'
-        }else if (value < 1024*1024) {
-           return toThousands(value / 1024) + ' KB'
-        }else if (value < 1024*1024*1024) {
-           return toThousands(value / 1024 / 1024) + ' MB'
-        }else if (value < 1024*1024*1024*1024) {
-           return toThousands(value / 1024 / 1024 / 1024) + ' GB'
+          return value + ' B'
+        } else if (value < 1024 * 1024) {
+          return toThousands(value / 1024) + ' KB'
+        } else if (value < 1024 * 1024 * 1024) {
+          return toThousands(value / 1024 / 1024) + ' MB'
+        } else if (value < 1024 * 1024 * 1024 * 1024) {
+          return toThousands(value / 1024 / 1024 / 1024) + ' GB'
         }
       }
       // 获取表格数据
-      $.ajax(
-        {
-          url: "{% url 'list_file' %}", 
-          type: 'POST',
-          data: { 'key_frame': key_frame,
-                  'UDID': UDID,
-          }, 
-          success: InitTable,
-        }
-      );
+      $.ajax({
+        url: "{% url 'list_file' %}",
+        type: 'POST',
+        data: {
+          'key_frame': key_frame,
+          'UDID': UDID,
+        },
+        success: InitTable,
+      });
       // $.post("{% url 'list_file' %}", {'key_frame': key_frame, 'UDID': UDID,}, InitTable);
       function InitTable(ret) {
         if (ret === 'No Permission') {
@@ -126,7 +128,7 @@
         });
       }
       // 为各按钮注册事件
-      $(document).on('click', '#id_btn_Download', function(){
+      $(document).on('click', '#id_btn_Download', function() {
         // 取得当前被选择的文件名
         var selected_row = $(".selected");
         var filename = $(selected_row[0]).attr("data-uniqueid");
@@ -135,24 +137,24 @@
           return;
         }
         // 获取文件url
-        $.ajax(
-          {
-            url: "{% url 'get_file_url' %}", 
-            type: 'POST',
-            data: { 'key_frame': key_frame,
-                    'UDID': UDID,
-                    'filename': filename,
-            }, 
-            success: function(ret) {
-              if (ret === 'No Permission') {
-                alert('您没有权限下载此文件');
-                return;
-              }
-              var url_file = ret.url_file;
-              $('#id_file_download').attr("href", url_file);
-              $('#id_a_span').click();
-            },
-          });
+        $.ajax({
+          url: "{% url 'get_file_url' %}",
+          type: 'POST',
+          data: {
+            'key_frame': key_frame,
+            'UDID': UDID,
+            'filename': filename,
+          },
+          success: function(ret) {
+            if (ret === 'No Permission') {
+              alert('您没有权限下载此文件');
+              return;
+            }
+            var url_file = ret.url_file;
+            $('#id_file_download').attr("href", url_file);
+            $('#id_a_span').click();
+          },
+        });
         // $.post("{% url 'get_file_url' %}", {'key_frame': key_frame, 'UDID': UDID, 'filename': filename,}, function(ret) {
         //   var url_file = ret.url_file;
         //   $('#id_file_download').attr("href", url_file);
@@ -160,7 +162,6 @@
         // });
       });
     }
-  
   </script>
 
 </body>

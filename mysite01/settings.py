@@ -35,7 +35,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'bootstrap_admin', 
+    'bootstrap_admin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -61,7 +61,7 @@ ROOT_URLCONF = 'mysite01.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'),],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'), ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -131,18 +131,19 @@ USE_TZ = True
 # STATIC_URL = '/statics/'
 # STATIC_ROOT= os.path.join(BASE_DIR, 'statics')
 # STATICFILES_DIRS = (
-#      os.path.join(BASE_DIR, 'app01/statics'),               
+#      os.path.join(BASE_DIR, 'app01/statics'),
 # )
 # TEMPLATE_DIRS = (
 #     os.path.join(BASE_DIR, 'templates'),
 # )
-# 自己app下添加一个statics文件夹页面引用 
+# 自己app下添加一个statics文件夹页面引用
 # <img src="/statics/images/1.jpg"
 
 STATIC_URL = '/statics/'
-STATIC_ROOT= os.path.join(BASE_DIR, 'statics')   # 页面引用 <img src="/statics/images/1.jpg"
+# 页面引用 <img src="/statics/images/1.jpg"
+STATIC_ROOT = os.path.join(BASE_DIR, 'statics')
 STATICFILES_DIRS = (
-     os.path.join(BASE_DIR, 'online/statics'),
+    os.path.join(BASE_DIR, 'online/statics'),
 )
 
 
@@ -151,10 +152,10 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-            'standard': {
-                 'format': '%(levelname)s %(asctime)s %(message)s',
-            },
+        'standard': {
+            'format': '%(levelname)s %(asctime)s %(message)s',
         },
+    },
     'handlers': {
         'read': {
             'level': 'INFO',

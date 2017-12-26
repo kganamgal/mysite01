@@ -6,8 +6,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from django.shortcuts import render,render_to_response
-from django.http import HttpResponse,HttpResponseRedirect
+from django.shortcuts import render, render_to_response
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 from django.http import JsonResponse
 from django import forms
@@ -19,21 +19,27 @@ from .db_api import *
 
 # from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
+
+
 def logUserOperation(request, logname, how='', what=''):
     if logname == 'read':
         return
     logging.getLogger(logname).info('《【%s《】《【%s《】《【%s《】《【%s《】《【%s《】' % (
-        str(datetime.datetime.now()), 
-        request.META.get('HTTP_X_FORWARDED_FOR').split(',')[-1].strip() if request.META.get('HTTP_X_FORWARDED_FOR') else request.META.get('REMOTE_ADDR'),
-        request.session.get('username'), 
-        how, 
+        str(datetime.datetime.now()),
+        request.META.get('HTTP_X_FORWARDED_FOR').split(
+            ',')[-1].strip() if request.META.get('HTTP_X_FORWARDED_FOR') else request.META.get('REMOTE_ADDR'),
+        request.session.get('username'),
+        how,
         what,
     ))
 
 # 表单
-class UserForm(forms.Form): 
+
+
+class UserForm(forms.Form):
     username = forms.CharField(label='用户名', max_length=50)
-    password = forms.CharField(label='密　码', max_length=50, widget=forms.PasswordInput())
+    password = forms.CharField(
+        label='密　码', max_length=50, widget=forms.PasswordInput())
 
 # --------------------页面--------------------
 dict_Eng_Chn = {'Company':     '单位',
@@ -44,7 +50,8 @@ dict_Eng_Chn = {'Company':     '单位',
                 'SubContract': '分包合同',
                 'Budget':      '预算',
                 'Payment':     '付款',
-}
+                }
+
 
 def login(request):
     '''
@@ -53,18 +60,20 @@ def login(request):
     if request.method == 'POST':
         uf = UserForm(request.POST)
         if uf.is_valid():
-            #获取表单用户密码
+            # 获取表单用户密码
             username = uf.cleaned_data['username']
             password = uf.cleaned_data['password']
             password_hash = hash_sha256(password)
-            #获取的表单数据与数据库进行比较
-            user = table_User.objects.filter(用户名__exact=username, 密码__exact=password_hash)
+            # 获取的表单数据与数据库进行比较
+            user = table_User.objects.filter(
+                用户名__exact=username, 密码__exact=password_hash)
             if user:
                 # 将username写入session
                 request.session['username'] = username
                 request.session.set_expiry(0)
-                #比较成功，跳转至URL: overview                
-                logUserOperation(request, 'login_out', sys._getframe().f_code.co_name)
+                # 比较成功，跳转至URL: overview
+                logUserOperation(request, 'login_out',
+                                 sys._getframe().f_code.co_name)
                 response = HttpResponseRedirect(reverse('overview'))
                 return response
             else:
@@ -74,7 +83,8 @@ def login(request):
                 return HttpResponse(Cnt)
     else:
         uf = UserForm()
-    return render(request, 'login.html', {'uf':uf})
+    return render(request, 'login.html', {'uf': uf})
+
 
 def logout(request):
     '''
@@ -83,9 +93,10 @@ def logout(request):
     logUserOperation(request, 'login_out', sys._getframe().f_code.co_name)
     # 清空session
     request.session['username'] = ''
-    #比较成功，跳转至登录页
+    # 比较成功，跳转至登录页
     response = HttpResponseRedirect(reverse('login'))
     return response
+
 
 def overview(request):
     '''
@@ -100,6 +111,7 @@ def overview(request):
     else:
         return render(request, 'overview.html', {'username': username})
 
+
 def big_Pie(request):
     '''
         A page which can zoom chart.
@@ -112,6 +124,7 @@ def big_Pie(request):
     else:
         return render(request, 'big_Pie.html')
 
+
 def tableFrame(request, key_table):
     '''
         A page which can display list of data.
@@ -123,6 +136,7 @@ def tableFrame(request, key_table):
         return HttpResponse(Cnt)
     else:
         return render(request, 'tableFrame.html')
+
 
 def inputFrame(request, key_table):
     '''
@@ -137,6 +151,7 @@ def inputFrame(request, key_table):
     else:
         return render(request, 'inputFrame.html')
 
+
 def attachFrame(request, key_table):
     '''
         A page which can display attachments-list of an item.
@@ -149,7 +164,6 @@ def attachFrame(request, key_table):
         return HttpResponse(Cnt)
     else:
         return render(request, 'attachFrame.html')
-
 
 
 # --------------------AJAX--------------------
@@ -168,6 +182,7 @@ def ajax_treeTable(request):
         logUserOperation(request, 'read', sys._getframe().f_code.co_name)
         return HttpResponse(json.dumps(return_json, ensure_ascii=False, cls=CJsonEncoder), content_type='application/json')
 
+
 def getDataForOverview(request):
     '''
         There is 1 argument(UDID) to input.
@@ -184,7 +199,7 @@ def getDataForOverview(request):
         try:
             UDID = int(request.POST.get('UDID'))
             assert UDID > 0
-        except:        
+        except:
             return HttpResponse('')
         # 根据该立项识别码查询数据库
         Init_Infos = read_For_Initiation_GridDialog('WHERE 立项识别码=%s', [UDID])
@@ -195,31 +210,39 @@ def getDataForOverview(request):
         Count_Payment = get_Count_Payment(list_selfAndGrandchildren)
         Payed = get_Sum_Money_Payment(list_selfAndGrandchildren)
         # 构造字符串
-        mystring = '本项目编号：{}，项目名称：{}{}'.format(UDID, Init_Infos[0].get('项目名称'), Init_Infos[0].get('分项名称') or '')
+        mystring = '本项目编号：{}，项目名称：{}{}'.format(
+            UDID, Init_Infos[0].get('项目名称'), Init_Infos[0].get('分项名称') or '')
         if Init_Infos[0].get('父项立项识别码'):
-            mystring += '</br>本项目父项：{}{}'.format(Init_Infos[0].get('父项项目名称'), Init_Infos[0].get('父项分项名称') or '')
-        mystring += '</br>建设单位：{}，代建单位：{}'.format(Init_Infos[0].get('建设单位名称'), Init_Infos[0].get('代建单位名称') or '')
+            mystring += '</br>本项目父项：{}{}'.format(Init_Infos[0].get(
+                '父项项目名称'), Init_Infos[0].get('父项分项名称') or '')
+        mystring += '</br>建设单位：{}，代建单位：{}'.format(
+            Init_Infos[0].get('建设单位名称'), Init_Infos[0].get('代建单位名称') or '')
         if Count_Children:
             mystring += '</br>本项目共有{}个子项'.format(Count_Children)
         else:
             mystring += '</br>本项目无子项'
         if Contract_Infos:
-            mystring += '</br>本项目签订的合同名称：{}，合同类别：{}'.format(Contract_Infos[0].get('合同名称'), Contract_Infos[0].get('合同类别'))
+            mystring += '</br>本项目签订的合同名称：{}，合同类别：{}'.format(
+                Contract_Infos[0].get('合同名称'), Contract_Infos[0].get('合同类别'))
         else:
             mystring += '</br>本项目未签订合同'
         if Bidding_Infos:
-            mystring += '</br>通过<strong>{}</strong>方式确定了供应商：<strong>{}</strong>'.format(Bidding_Infos[0].get('招标方式'), Bidding_Infos[0].get('中标单位名称'))
-        mystring += '</br>本项目概算：<strong>{}</strong>万元'.format(thousands(float(Init_Infos[0].get('项目概算') or 0)))
+            mystring += '</br>通过<strong>{}</strong>方式确定了供应商：<strong>{}</strong>'.format(
+                Bidding_Infos[0].get('招标方式'), Bidding_Infos[0].get('中标单位名称'))
+        mystring += '</br>本项目概算：<strong>{}</strong>万元'.format(
+            thousands(float(Init_Infos[0].get('项目概算') or 0)))
         if Count_Payment:
-            mystring += '</br>截至目前，本项目已付款{}次，共支付<strong>{}</strong>万元'.format(Count_Payment, thousands(Payed))
+            mystring += '</br>截至目前，本项目已付款{}次，共支付<strong>{}</strong>万元'.format(
+                Count_Payment, thousands(Payed))
         else:
             mystring += '</br>截至目前，本项目尚未开始付款'
         mystring += '。'
         # 输出字符串
         result = str(mystring)
-        logUserOperation(request, 'read', sys._getframe().f_code.co_name, 
-            'UDID={}'.format(UDID))
+        logUserOperation(request, 'read', sys._getframe().f_code.co_name,
+                         'UDID={}'.format(UDID))
         return HttpResponse(result)
+
 
 def get_Pie_Data(request):
     '''
@@ -238,7 +261,7 @@ def get_Pie_Data(request):
         try:
             UDID = int(request.POST.get('UDID'))
             assert UDID > 0
-        except:        
+        except:
             return HttpResponse(json.dumps({}, ensure_ascii=False), content_type='application/json')
         try:
             Init_obj = table_Initiation.objects.filter(立项识别码=UDID)
@@ -255,17 +278,20 @@ def get_Pie_Data(request):
             subTitle_text = this_project
             item_describe = '额度'
             chart_data = []
-            children_UDIDs = list(x.get('立项识别码') for x in table_Initiation.objects.filter(父项立项识别码=UDID).values('立项识别码'))
+            children_UDIDs = list(x.get('立项识别码') for x in table_Initiation.objects.filter(
+                父项立项识别码=UDID).values('立项识别码'))
             undistributed_estimate = float(this_estimate or 0.0)
             for each_UDID in children_UDIDs:
-                each_Init_obj = table_Initiation.objects.filter(立项识别码=each_UDID)[0]
+                each_Init_obj = table_Initiation.objects.filter(立项识别码=each_UDID)[
+                    0]
                 project = each_Init_obj.分项名称 or each_Init_obj.项目名称
                 estimate = float(each_Init_obj.项目概算 or 0.0)
                 undistributed_estimate -= estimate
                 chart_data.append({'value': estimate, 'name': project})
             undistributed_estimate = max(undistributed_estimate, 0.0)
             if undistributed_estimate > 0:
-                chart_data.append({'value': undistributed_estimate, 'name': '未分配概算'})
+                chart_data.append(
+                    {'value': undistributed_estimate, 'name': '未分配概算'})
         else:                           # 若无 输出付款比例图
             title_text = '付款情况'
             subTitle_text = this_project
@@ -287,10 +313,11 @@ def get_Pie_Data(request):
             notYet_payment = max(notYet_payment, 0.0)
             if notYet_payment > 0:
                 chart_data.append({'value': notYet_payment, 'name': '未付款额'})
-        logUserOperation(request, 'read', sys._getframe().f_code.co_name, 
-            'UDID={}'.format(UDID))
-        return HttpResponse(json.dumps({'mySeries': chart_data, 'myTitle': title_text, 'mySubTitle': subTitle_text, 'myDescribe': item_describe}, 
-                                        ensure_ascii=False), content_type='application/json')
+        logUserOperation(request, 'read', sys._getframe().f_code.co_name,
+                         'UDID={}'.format(UDID))
+        return HttpResponse(json.dumps({'mySeries': chart_data, 'myTitle': title_text, 'mySubTitle': subTitle_text, 'myDescribe': item_describe},
+                                       ensure_ascii=False), content_type='application/json')
+
 
 def list_file(request):
     '''
@@ -310,13 +337,14 @@ def list_file(request):
         try:
             UDID = int(request.POST.get('UDID'))
             assert UDID > 0
-        except:        
+        except:
             return HttpResponse(json.dumps({}, ensure_ascii=False), content_type='application/json')
         file_list = operateOSS().listfile(key_frame, UDID)
-        logUserOperation(request, 'read', sys._getframe().f_code.co_name, 
-            'key_frame={}, UDID={}'.format(key_frame, UDID))
-        return HttpResponse(json.dumps({'file_list': file_list,}, 
-                                        ensure_ascii=False), content_type='application/json')
+        logUserOperation(request, 'read', sys._getframe().f_code.co_name,
+                         'key_frame={}, UDID={}'.format(key_frame, UDID))
+        return HttpResponse(json.dumps({'file_list': file_list, },
+                                       ensure_ascii=False), content_type='application/json')
+
 
 def get_file_url(request):
     '''
@@ -338,14 +366,16 @@ def get_file_url(request):
             UDID = int(request.POST.get('UDID'))
             assert UDID > 0
         except:
-            logUserOperation(request, 'read', sys._getframe().f_code.co_name, 'GET_FAILED')
+            logUserOperation(
+                request, 'read', sys._getframe().f_code.co_name, 'GET_FAILED')
             return HttpResponse(json.dumps({}, ensure_ascii=False), content_type='application/json')
         filename = request.POST.get('filename')
         url_file = operateOSS().get_file_url(key_frame, UDID, filename)
-        logUserOperation(request, 'read', sys._getframe().f_code.co_name, 
-            'url_file={}'.format(url_file))
-        return HttpResponse(json.dumps({'url_file': url_file,}, 
-                                        ensure_ascii=False), content_type='application/json')
+        logUserOperation(request, 'read', sys._getframe().f_code.co_name,
+                         'url_file={}'.format(url_file))
+        return HttpResponse(json.dumps({'url_file': url_file, },
+                                       ensure_ascii=False), content_type='application/json')
+
 
 def ajax_table_data(request):
     '''
@@ -392,29 +422,33 @@ def ajax_table_data(request):
         '付款':     read_For_Payment_GridDialog,
     }
     try:
-        Init_UDID = int(request.POST.get('Init_UDID'))    # 取得被点击的tree-item的id，即立项识别码
+        # 取得被点击的tree-item的id，即立项识别码
+        Init_UDID = int(request.POST.get('Init_UDID'))
         assert Init_UDID > 0
-        logUserOperation(request, 'read', sys._getframe().f_code.co_name, 
-            'key_table={}, Init_UDID={}'.format(key_table, Init_UDID))
+        logUserOperation(request, 'read', sys._getframe().f_code.co_name,
+                         'key_table={}, Init_UDID={}'.format(key_table, Init_UDID))
         # 取得该立项下全部后代节点
         if key_table == '预算':
             grandchildern_ids = get_All_Budget_Grandchildren_UDID(Init_UDID)
-            t_rows = dict_API[key_table]('where 预算识别码 in %s', [grandchildern_ids + [Init_UDID]])
+            t_rows = dict_API[key_table](
+                'where 预算识别码 in %s', [grandchildern_ids + [Init_UDID]])
         else:
             grandchildern_ids = get_All_Grandchildren_UDID(Init_UDID)
-            t_rows = dict_API[key_table]('where 立项识别码 in %s', [grandchildern_ids + [Init_UDID]])
+            t_rows = dict_API[key_table](
+                'where 立项识别码 in %s', [grandchildern_ids + [Init_UDID]])
     except:
-        logUserOperation(request, 'read', sys._getframe().f_code.co_name, 
-            'key_table={}'.format(key_table))
+        logUserOperation(request, 'read', sys._getframe().f_code.co_name,
+                         'key_table={}'.format(key_table))
         t_rows = dict_API[key_table]()
     t_head = dict_Head[key_table]
     t_type = dict_Type[key_table]
     return_json = {'t_head': json.dumps(t_head, ensure_ascii=False, cls=CJsonEncoder),
                    't_type': json.dumps(t_type, ensure_ascii=False, cls=CJsonEncoder),
                    't_rows': json.dumps(t_rows, ensure_ascii=False, cls=CJsonEncoder),
-                  }
-    
+                   }
+
     return HttpResponse(json.dumps(return_json, ensure_ascii=False, cls=CJsonEncoder), content_type='application/json')
+
 
 def ajax_tree_data(request):
     '''
@@ -433,6 +467,6 @@ def ajax_tree_data(request):
         '预算':     read_Budget_For_TreeList,
     }
     return_json = dict_API[key_tree]()
-    logUserOperation(request, 'read', sys._getframe().f_code.co_name, 
-        'key_tree={}'.format(key_tree))
+    logUserOperation(request, 'read', sys._getframe().f_code.co_name,
+                     'key_tree={}'.format(key_tree))
     return HttpResponse(json.dumps(return_json, ensure_ascii=False, cls=CJsonEncoder), content_type='application/json')

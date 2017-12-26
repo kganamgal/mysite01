@@ -5,6 +5,9 @@
 # @Last Modified by:   Administrator
 # @Last Modified time: 2017-12-21 09:06:48
 
+# thePD = pd.DataFrame(list(table_Initiation.objects.values('立项识别码', '父项立项识别码')))
+
+
 from django.db import connection
 import online.userConst as uc
 from online.models import *
@@ -16,14 +19,21 @@ import numpy as np
 import hashlib
 import sys
 import json
-import decimal, datetime
+import decimal
+import datetime
 import oss2
 
 # 格式化字符串
+
+
 def thousands(n): return '{:>,.2f}'.format(n)
+
+
 def percents(n): return '{:>.2f}'.format((n or 0) * 100) + '%'
 
 # HASH加密函数
+
+
 def hash_sha256(string):
     '''
         Return a RSA string.
@@ -33,6 +43,8 @@ def hash_sha256(string):
     return m.hexdigest()
 
 # 将对象转化为字典
+
+
 def classToDict(obj):
     '''
         Transfer a object to a dictionary.
@@ -52,7 +64,10 @@ def classToDict(obj):
         return dict
 
 # Json的参数，用来转化date和decimal
+
+
 class CJsonEncoder(json.JSONEncoder):
+
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
             return obj.strftime('%Y-%m-%d %H:%M:%S')
@@ -70,6 +85,7 @@ class CJsonEncoder(json.JSONEncoder):
         else:
             return json.JSONEncoder.default(self, obj)
 
+
 def dictfetchall(cursor):
     '''
         Return all rows from a cursor as a dict
@@ -78,6 +94,8 @@ def dictfetchall(cursor):
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 # 树型数据
+
+
 def format_Details_By_Tree():
     # 预自建过程
     sql1 = '''
@@ -92,7 +110,7 @@ def format_Details_By_Tree():
     sql4 = '''
         TRUNCATE TABLE tmp_pay_table;
         '''
-        # 将自身的立项识别码及全部子项的立项识别码导入表tmp_UDID_table
+    # 将自身的立项识别码及全部子项的立项识别码导入表tmp_UDID_table
     sql5 = '''
         DROP PROCEDURE IF EXISTS get_all_children;
         '''
@@ -173,11 +191,14 @@ def format_Details_By_Tree():
         dict_data[key] = da
     # 将层级数据结构转化为dataframe
     array_hierarchy = np.array(hierarchy)
-    frame_hierarchy = pd.DataFrame(array_hierarchy, columns=['立项识别码', '父项立项识别码'])
+    frame_hierarchy = pd.DataFrame(
+        array_hierarchy, columns=['立项识别码', '父项立项识别码'])
+
     def get_All_Roots():
         frame = frame_hierarchy[frame_hierarchy['父项立项识别码'].isnull()]
         list_frame = frame['立项识别码'].values.tolist()
         return [[x, 0] for x in list_frame]
+
     def get_All_Children(UDID, deep=0):    # 只获取子代，不获得更深后代
         frame = frame_hierarchy[frame_hierarchy['父项立项识别码'] == UDID]
         list_frame = frame['立项识别码'].values.tolist()
@@ -185,6 +206,7 @@ def format_Details_By_Tree():
     # 开始迭代获取数据层级
     roots_info = get_All_Roots()
     # 访问这些根节点，取得每个根节点的所有子项，存入其中
+
     def fix_treeTable_datas(roots_info):
         # 取得逻辑骨架，再将细节附着在骨架上
         i = 0
@@ -198,11 +220,12 @@ def format_Details_By_Tree():
                 roots_info = prefix + children + suffix
             i += 1
         for i in range(len(roots_info)):
-            Id , Level = roots_info[i]
+            Id, Level = roots_info[i]
             roots_info[i] = {'立项识别码': Id, '层级': Level}
             roots_info[i].update(dict_data.get(Id))
         return roots_info
     return fix_treeTable_datas(roots_info)
+
 
 def read_For_TreeList():
     # 正式
@@ -215,8 +238,11 @@ def read_For_TreeList():
         return dictfetchall(cursor)
 
 # 单位管理
+
+
 def read_For_Company_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
-    sql = 'SELECT {} FROM tabel_单位信息 '.format(', '.join(uc.CompanyColLabels)) + where_sql + ' ' + order_sql
+    sql = 'SELECT {} FROM tabel_单位信息 '.format(
+        ', '.join(uc.CompanyColLabels)) + where_sql + ' ' + order_sql
     sql_list = where_list + order_list
     with connection.cursor() as cursor:
         cursor.execute(sql, sql_list)
@@ -224,6 +250,8 @@ def read_For_Company_GridDialog(where_sql='', where_list=[], order_sql='', order
         # return [list(x) for x in cursor.fetchall()]
 
 # 立项管理
+
+
 def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     # 预自建过程
     sql1 = '''
@@ -238,7 +266,7 @@ def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='', or
     sql4 = '''
         TRUNCATE TABLE tmp_pay_table;
         '''
-        # 将自身的立项识别码及全部子项的立项识别码导入表tmp_UDID_table
+    # 将自身的立项识别码及全部子项的立项识别码导入表tmp_UDID_table
     sql5 = '''
         DROP PROCEDURE IF EXISTS get_all_children;
         '''
@@ -320,6 +348,7 @@ def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='', or
         cursor.execute(sql, sql_list)
         return dictfetchall(cursor)
 
+
 def get_All_Grandchildren(UDID):
     '''
         取得某项下全部子项、孙项等的立项识别码
@@ -328,7 +357,7 @@ def get_All_Grandchildren(UDID):
     	  set global log_bin_trust_function_creators=1;
           DROP FUNCTION IF EXISTS queryChildrenAreaInfo;
           '''
-    sql2 =''' 
+    sql2 = ''' 
           CREATE FUNCTION `queryChildrenAreaInfo` (areaId INT)
           RETURNS VARCHAR(4000)
           BEGIN
@@ -354,6 +383,8 @@ def get_All_Grandchildren(UDID):
         return dictfetchall(cursor)
 
 # 招标管理
+
+
 def read_For_Bidding_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM 
                  (SELECT           招标识别码, A.立项识别码 AS 立项识别码, 项目名称, 分项名称, 招标方式, 招标单位识别码, 
@@ -372,6 +403,8 @@ def read_For_Bidding_GridDialog(where_sql='', where_list=[], order_sql='', order
         return dictfetchall(cursor)
 
 # 合同管理
+
+
 def read_For_Contract_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM 
                  (SELECT           A.合同识别码, A.立项识别码, 项目名称, 分项名称, 项目概算, A.招标识别码, 招标方式, 合同编号, 合同名称,
@@ -396,6 +429,8 @@ def read_For_Contract_GridDialog(where_sql='', where_list=[], order_sql='', orde
         return dictfetchall(cursor)
 
 # 分包合同管理
+
+
 def read_For_SubContract_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM 
              (SELECT           分包合同识别码, A.立项识别码, 项目名称, 分项名称, A.合同识别码, 合同编号 AS 总包合同编号,
@@ -418,6 +453,8 @@ def read_For_SubContract_GridDialog(where_sql='', where_list=[], order_sql='', o
         return dictfetchall(cursor)
 
 # 变更管理
+
+
 def read_For_Alteration_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM 
              (SELECT           变更识别码, A.立项识别码, 项目名称, 分项名称, A.合同识别码, 合同编号, 
@@ -439,8 +476,10 @@ def read_For_Alteration_GridDialog(where_sql='', where_list=[], order_sql='', or
         return dictfetchall(cursor)
 
 # 预算管理
+
+
 def read_For_Budget_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
-    sql = '''SELECT {} FROM 
+    sql = '''SELECT {} FROM
              (SELECT           A.预算识别码, A.父项预算识别码, B.预算名称 AS 父项预算名称, A.预算名称, A.预算周期, A.预算总额,
                                已付款 AS 预算已付额, A.预算总额-已付款 AS 预算余额, 已付款/A.预算总额 AS 预算已付比,
                                A.预算备注
@@ -453,6 +492,7 @@ def read_For_Budget_GridDialog(where_sql='', where_list=[], order_sql='', order_
         cursor.execute(sql, sql_list)
         return dictfetchall(cursor)
 
+
 def read_Budget_For_TreeList():
     # 正式
     sql = '''SELECT 预算识别码 AS Id, CONCAT(ifnull(预算名称, ''), ifnull(预算周期, '')) AS name, 父项预算识别码 AS PId
@@ -462,6 +502,7 @@ def read_Budget_For_TreeList():
     with connection.cursor() as cursor:
         cursor.execute(sql)
         return dictfetchall(cursor)
+
 
 def format_Budget_Details_By_Tree():
     sql1 = '''SELECT 预算识别码, 预算名称, 预算周期, 预算总额 FROM tabel_预算信息'''
@@ -477,11 +518,14 @@ def format_Budget_Details_By_Tree():
         dict_data[da[0]] = da[1:]
     # 将层级数据结构转化为dataframe
     array_hierarchy = np.array(hierarchy)
-    frame_hierarchy = pd.DataFrame(array_hierarchy, columns=['预算识别码', '父项预算识别码'])
+    frame_hierarchy = pd.DataFrame(
+        array_hierarchy, columns=['预算识别码', '父项预算识别码'])
+
     def get_All_Roots():
         frame = frame_hierarchy[frame_hierarchy['父项预算识别码'].isnull()]
         list_frame = frame['预算识别码'].values.tolist()
         return [[x, 0] for x in list_frame]
+
     def get_All_Children(UDID, deep=0):
         frame = frame_hierarchy[frame_hierarchy['父项预算识别码'] == UDID]
         list_frame = frame['预算识别码'].values.tolist()
@@ -489,6 +533,7 @@ def format_Budget_Details_By_Tree():
     # 开始迭代获取数据层级
     roots_info = get_All_Roots()
     # 访问这些根节点，取得每个根节点的所有子项，存入其中
+
     def zipLeaves(roots_info):
         for i in range(len(roots_info)):
             UDID = roots_info[i][0]
@@ -503,6 +548,8 @@ def format_Budget_Details_By_Tree():
     return roots_info
 
 # 付款管理
+
+
 def read_For_Payment_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM 
              (SELECT           A.付款识别码, 付款登记时间, 付款支付时间, A.立项识别码, I.项目名称, I.分项名称,
@@ -542,6 +589,8 @@ def read_For_Payment_GridDialog(where_sql='', where_list=[], order_sql='', order
         return dictfetchall(cursor)
 
 # 其余查询API
+
+
 def get_Children_Count(UDID):
     '''
         make sure UDID is int.
@@ -553,6 +602,7 @@ def get_Children_Count(UDID):
         return len(table_Initiation.objects.filter(父项立项识别码=UDID))
     except:
         return
+
 
 def get_All_Grandchildren_UDID(UDID):
     '''
@@ -582,9 +632,10 @@ def get_All_Grandchildren_UDID(UDID):
         with connection.cursor() as cursor:
             cursor.execute(sql, sql_list)
             fetchall = cursor.fetchall()[0][0].split(',')[2:]
-            return list(map(lambda x:int(x), fetchall))
+            return list(map(lambda x: int(x), fetchall))
     except:
         return []
+
 
 def get_All_Budget_Grandchildren_UDID(UDID):
     '''
@@ -596,7 +647,7 @@ def get_All_Budget_Grandchildren_UDID(UDID):
               set global log_bin_trust_function_creators=1;
               DROP FUNCTION IF EXISTS queryBudgetChildrenAreaInfo;
               '''
-        sql2 =''' 
+        sql2 = ''' 
               CREATE FUNCTION `queryBudgetChildrenAreaInfo` (areaId INT)
               RETURNS VARCHAR(4000)
               BEGIN
@@ -618,9 +669,10 @@ def get_All_Budget_Grandchildren_UDID(UDID):
             cursor.execute(sql2)
             cursor.execute(sql, sql_list)
             fetchall = cursor.fetchall()[0][0].split(',')[2:]
-            return list(map(lambda x:int(x), fetchall))
+            return list(map(lambda x: int(x), fetchall))
     except:
         return []
+
 
 def get_Count_Payment(list_UDID):
     '''
@@ -634,6 +686,7 @@ def get_Count_Payment(list_UDID):
     except:
         return
 
+
 def get_Sum_Money_Payment(list_UDID):
     '''
         make sure UDID is list with int.
@@ -646,16 +699,20 @@ def get_Sum_Money_Payment(list_UDID):
     except:
         return
 
+
 class getUserPermission():
     '''
         Check a user wether has a permission.
         Obj(username).func() returns True or False.
     '''
+
     def __init__(self, username=''):
         '''
             Initialize a object by a user's username
         '''
-        self.__filterObj = table_Permission.objects.filter(用户名__exact=str(username))
+        self.__filterObj = table_Permission.objects.filter(
+            用户名__exact=str(username))
+
     def user_Is_Exist(self):
         '''
             Judge a use whether exist.
@@ -666,6 +723,7 @@ class getUserPermission():
         else:
             return False
     # 以下为打开网页或窗口的权限
+
     def can_Visit_Overview(self):
         '''
             If a user is exist, and his field(查看数据概览) is True, then return True.
@@ -674,6 +732,7 @@ class getUserPermission():
         if not self.user_Is_Exist():
             return False
         return self.__filterDict.get('查看数据概览')
+
     def can_Visit_Table(self, classify=''):
         '''
             If a user is exist, and his field(查看XX信息) is True, then return True.
@@ -682,6 +741,7 @@ class getUserPermission():
         if not self.user_Is_Exist():
             return False
         return self.__filterDict.get('查看%s信息' % classify)
+
     def can_Visit_Attachment(self, classify=''):
         '''
             If a user is exist, and his field(查看单位信息) >= 2, then return True.
@@ -691,6 +751,7 @@ class getUserPermission():
             return False
         return (self.__filterDict.get('查看%s信息' % classify) or 0) >= 2
     # 读取数据权限
+
     def can_Read_Overview(self):
         '''
             If a user is exist, and his field(查看数据概览) is True, then return True.
@@ -699,6 +760,7 @@ class getUserPermission():
         if not self.user_Is_Exist():
             return False
         return self.__filterDict.get('查看数据概览')
+
     def can_Read_Table(self, classify=''):
         '''
             If a user is exist, and his field(查看XX信息) is True, then return True.
@@ -707,6 +769,7 @@ class getUserPermission():
         if not self.user_Is_Exist():
             return False
         return self.__filterDict.get('查看%s信息' % classify)
+
     def can_Get_Attachment_List(self, classify=''):
         '''
             If a user is exist, and his field(查看XX信息) is >= 2, then return True.
@@ -715,6 +778,7 @@ class getUserPermission():
         if not self.user_Is_Exist():
             return False
         return (self.__filterDict.get('查看%s信息' % classify) or 0) >= 2
+
     def can_Download_Attachment(self, classify=''):
         '''
             If a user is exist, and his field(查看XX信息) is >= 3, then return True.
@@ -723,7 +787,8 @@ class getUserPermission():
         if not self.user_Is_Exist():
             return False
         return (self.__filterDict.get('查看%s信息' % classify) or 0) >= 3
-    # 写入数据权限    
+    # 写入数据权限
+
     def can_Upload_Attachment(self, classify=''):
         '''
             If a user is exist, and his field(查看单位信息) >= 2, then return True.
@@ -733,22 +798,28 @@ class getUserPermission():
             return False
         return (self.__filterDict.get('查看%s信息' % classify) or 0) >= 2
 
+
 class operateOSS():
     '''
         Operation of Ali-OSS2.
     '''
     __bucket_name = 'sy-erp'
+
     def __init__(self):
         '''
             Initialize a object with connecting server.
         '''
         self.signoss()
+
     def signoss(self):
         '''
             Connecting server.
         '''
-        auth = oss2.Auth('LTAIiM9nh4F41qKR', 'FIWNICi6h6mJxaPFz5nU4Zu32yraIn')    # 密码为w开头6位
-        self.bucket = oss2.Bucket(auth, 'http://oss-cn-shanghai.aliyuncs.com', self.__bucket_name)
+        auth = oss2.Auth('LTAIiM9nh4F41qKR',
+                         'FIWNICi6h6mJxaPFz5nU4Zu32yraIn')    # 密码为w开头6位
+        self.bucket = oss2.Bucket(
+            auth, 'http://oss-cn-shanghai.aliyuncs.com', self.__bucket_name)
+
     def listfile(self, classify, UDID):
         '''
             Get a list of all files with given classify(立项/招标/合同/付款/预算 etc.) and UDID.
@@ -765,9 +836,11 @@ class operateOSS():
                 except:
                     f_type = ''
                 f_time = str(datetime.datetime.fromtimestamp(b.last_modified))
-                f_size = b.size or 0                
-                result.append({'文件名': f_name, '文件类型': f_type, '修改时间': f_time, '文件大小': f_size})
+                f_size = b.size or 0
+                result.append({'文件名': f_name, '文件类型': f_type,
+                               '修改时间': f_time, '文件大小': f_size})
         return result
+
     def get_file_url(self, classify, UDID, filename):
         '''
             Get a URL of a file with given classify(立项/招标/合同/付款/预算 etc.), UDID and filename.
