@@ -7,6 +7,9 @@
 
 # thePD = pd.DataFrame(list(table_Initiation.objects.values('立项识别码', '父项立项识别码')))
 
+# from collections import Iterable
+# isinstance('abc',Iterable) # 判断目标是否可迭代
+
 
 from django.db import connection
 import online.userConst as uc
@@ -146,9 +149,9 @@ def format_Details_By_Tree():
                 if not done THEN
                     TRUNCATE TABLE tmp_UDID_table;
                     CALL get_all_children(UDID);
-                    INSERT INTO tmp_pay_table (立项识别码, 已分配概算, 已付款) 
-                        (SELECT UDID, 
-                        (SELECT SUM(项目概算) FROM tabel_立项信息 WHERE 父项立项识别码=UDID), 
+                    INSERT INTO tmp_pay_table (立项识别码, 已分配概算, 已付款)
+                        (SELECT UDID,
+                        (SELECT SUM(项目概算) FROM tabel_立项信息 WHERE 父项立项识别码=UDID),
                         ifnull(SUM(本次付款额),0) FROM tabel_付款信息 WHERE 立项识别码 IN (SELECT 立项识别码 FROM tmp_UDID_table));
                 end if;
             until done end repeat;
@@ -159,8 +162,8 @@ def format_Details_By_Tree():
         CALL proc_tmp();
     '''
     # 正式
-    sql10 = '''SELECT           I.立项识别码 AS 立项识别码, ifnull(分项名称, 项目名称) AS 项目名称, 合同名称, 项目概算, 
-                                  已分配概算/项目概算 AS 概算已分配率, T.已付款/项目概算 AS 概算付款比, 
+    sql10 = '''SELECT           I.立项识别码 AS 立项识别码, ifnull(分项名称, 项目名称) AS 项目名称, 合同名称, 项目概算,
+                                  已分配概算/项目概算 AS 概算已分配率, T.已付款/项目概算 AS 概算付款比,
                                   招标方式, 中标价, 合同值_最新值 AS 合同值, P.已付款/合同值_最新值 AS 合同付款比, T.已付款, 分包合同数量
                  FROM             (SELECT * FROM tabel_立项信息 ORDER BY 立项识别码) AS I
                        LEFT JOIN  tabel_招标信息 AS B ON I.立项识别码=B.立项识别码
@@ -302,9 +305,9 @@ def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='', or
                 if not done THEN
                     TRUNCATE TABLE tmp_UDID_table;
                     CALL get_all_children(UDID);
-                    INSERT INTO tmp_pay_table (立项识别码, 已分配概算, 已付款) 
-                        (SELECT UDID, 
-                        (SELECT SUM(项目概算) FROM tabel_立项信息 WHERE 父项立项识别码=UDID), 
+                    INSERT INTO tmp_pay_table (立项识别码, 已分配概算, 已付款)
+                        (SELECT UDID,
+                        (SELECT SUM(项目概算) FROM tabel_立项信息 WHERE 父项立项识别码=UDID),
                         ifnull(SUM(本次付款额),0) FROM tabel_付款信息 WHERE 立项识别码 IN (SELECT 立项识别码 FROM tmp_UDID_table));
                 end if;
             until done end repeat;
@@ -315,7 +318,7 @@ def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='', or
         CALL proc_tmp();
     '''
     # 正式
-    sql = '''SELECT {} FROM 
+    sql = '''SELECT {} FROM
              (SELECT           A.立项识别码, A.项目名称, A.分项名称, A.父项立项识别码, B.项目名称 AS 父项项目名称, B.分项名称 AS 父项分项名称,
                                A.建设单位识别码, U1.单位名称 AS 建设单位名称, A.代建单位识别码, U2.单位名称 AS 代建单位名称, 
                                A.立项文件名称, A.立项时间, A.项目概算, A.项目概算-T.已分配概算 AS 未分配概算, T.已付款/A.项目概算 AS 概算付款比, A.立项备注
@@ -357,14 +360,14 @@ def get_All_Grandchildren(UDID):
     	  set global log_bin_trust_function_creators=1;
           DROP FUNCTION IF EXISTS queryChildrenAreaInfo;
           '''
-    sql2 = ''' 
+    sql2 = '''
           CREATE FUNCTION `queryChildrenAreaInfo` (areaId INT)
           RETURNS VARCHAR(4000)
           BEGIN
               DECLARE sTemp VARCHAR(4000);
               DECLARE sTempChd VARCHAR(4000);
               SET sTemp = '$';
-              SET sTempChd = cast(areaId as char);      
+              SET sTempChd = cast(areaId as char);
               WHILE sTempChd is not NULL DO
                   SET sTemp = CONCAT(sTemp,',',sTempChd);
                   SELECT group_concat(立项识别码) INTO sTempChd FROM tabel_立项信息 where FIND_IN_SET(父项立项识别码,sTempChd)>0;
@@ -386,7 +389,7 @@ def get_All_Grandchildren(UDID):
 
 
 def read_For_Bidding_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
-    sql = '''SELECT {} FROM 
+    sql = '''SELECT {} FROM
                  (SELECT           招标识别码, A.立项识别码 AS 立项识别码, 项目名称, 分项名称, 招标方式, 招标单位识别码, 
                                    U1.单位名称 AS 招标单位名称, 招标代理识别码, U2.单位名称 AS 招标代理单位名称, 项目概算,
                                    预算控制价, 招标文件定稿时间, 公告邀请函发出时间, 开标时间, 中标通知书发出时间, 
@@ -406,7 +409,7 @@ def read_For_Bidding_GridDialog(where_sql='', where_list=[], order_sql='', order
 
 
 def read_For_Contract_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
-    sql = '''SELECT {} FROM 
+    sql = '''SELECT {} FROM
                  (SELECT           A.合同识别码, A.立项识别码, 项目名称, 分项名称, 项目概算, A.招标识别码, 招标方式, 合同编号, 合同名称,
                                    合同主要内容, 合同类别, 甲方识别码, U1.单位名称 AS 甲方单位名称, 乙方识别码, U2.单位名称 AS 乙方单位名称, 
                                    丙方识别码, U3.单位名称 AS 丙方单位名称, 丁方识别码, U4.单位名称 AS 丁方单位名称,
@@ -432,7 +435,7 @@ def read_For_Contract_GridDialog(where_sql='', where_list=[], order_sql='', orde
 
 
 def read_For_SubContract_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
-    sql = '''SELECT {} FROM 
+    sql = '''SELECT {} FROM
              (SELECT           分包合同识别码, A.立项识别码, 项目名称, 分项名称, A.合同识别码, 合同编号 AS 总包合同编号,
                                合同名称 AS 总包合同名称, 合同主要内容 AS 总包合同主要内容, 合同类别 AS 总包合同类别, 
                                合同值_最新值 AS 总包合同值, 分包合同编号, 分包合同名称, 分包合同主要内容, 分包合同类别,
@@ -456,7 +459,7 @@ def read_For_SubContract_GridDialog(where_sql='', where_list=[], order_sql='', o
 
 
 def read_For_Alteration_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
-    sql = '''SELECT {} FROM 
+    sql = '''SELECT {} FROM
              (SELECT           变更识别码, A.立项识别码, 项目名称, 分项名称, A.合同识别码, 合同编号, 
                                合同名称, 合同类别, 合同值_签订时, 甲方识别码, U1.单位名称 AS 甲方单位名称, 乙方识别码, U2.单位名称 AS 乙方单位名称,
                                丙方识别码, U3.单位名称 AS 丙方单位名称, 丁方识别码, U4.单位名称 AS 丁方单位名称,
@@ -551,7 +554,7 @@ def format_Budget_Details_By_Tree():
 
 
 def read_For_Payment_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
-    sql = '''SELECT {} FROM 
+    sql = '''SELECT {} FROM
              (SELECT           A.付款识别码, 付款登记时间, 付款支付时间, A.立项识别码, I.项目名称, I.分项名称,
                                A.合同识别码, 合同名称, 合同类别, 合同编号, 付款批次, 付款事由,
                                A.付款单位识别码, U1.单位名称 AS 付款单位名称, U1.银行账号 AS 付款单位账号,
@@ -608,7 +611,34 @@ def get_All_Grandchildren_UDID(UDID):
     '''
         make sure UDID is int.
         取得某项下全部后代的立项识别码
-        return a list(filled by int) or a black list.
+        return a list(filled by int) or a blank list.
+    '''
+    db_Id_PId = pd.DataFrame(
+        list(table_Initiation.objects.values('立项识别码', '父项立项识别码')))
+
+    def getChildren(UDID):
+        return list(db_Id_PId[db_Id_PId.父项立项识别码 == UDID].立项识别码)
+
+    def getGrandChildren(UDID):
+        result = []
+        children_UDID = getChildren(UDID)
+        if children_UDID:       # 如果UDID下还有子项
+            for x in children_UDID:
+                result += getGrandChildren(x)
+            return result + [UDID]
+        else:           # 如果UDID为叶子
+            return [UDID]
+
+    result = getGrandChildren(UDID)
+    result.remove(UDID)
+    result.sort()
+    return result
+
+def old_get_All_Grandchildren_UDID(UDID):
+    '''
+        make sure UDID is int.
+        取得某项下全部后代的立项识别码
+        return a list(filled by int) or a blank list.
     '''
     try:
         UDID = int(UDID)
@@ -620,7 +650,7 @@ def get_All_Grandchildren_UDID(UDID):
                   DECLARE sTemp VARCHAR(4000);
                   DECLARE sTempChd VARCHAR(4000);
                   SET sTemp = '$';
-                  SET sTempChd = cast(areaId as char);      
+                  SET sTempChd = cast(areaId as char);
                   WHILE sTempChd is not NULL DO
                       SET sTemp = CONCAT(sTemp,',',sTempChd);
                       SELECT group_concat(立项识别码) INTO sTempChd FROM tabel_立项信息 where FIND_IN_SET(父项立项识别码,sTempChd)>0;
@@ -647,14 +677,14 @@ def get_All_Budget_Grandchildren_UDID(UDID):
               set global log_bin_trust_function_creators=1;
               DROP FUNCTION IF EXISTS queryBudgetChildrenAreaInfo;
               '''
-        sql2 = ''' 
+        sql2 = '''
               CREATE FUNCTION `queryBudgetChildrenAreaInfo` (areaId INT)
               RETURNS VARCHAR(4000)
               BEGIN
                   DECLARE sTemp VARCHAR(4000);
                   DECLARE sTempChd VARCHAR(4000);
                   SET sTemp = '$';
-                  SET sTempChd = cast(areaId as char);      
+                  SET sTempChd = cast(areaId as char);
                   WHILE sTempChd is not NULL DO
                       SET sTemp = CONCAT(sTemp,',',sTempChd);
                       SELECT group_concat(预算识别码) INTO sTempChd FROM tabel_预算信息 where FIND_IN_SET(父项预算识别码,sTempChd)>0;
