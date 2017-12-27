@@ -229,8 +229,18 @@ def format_Details_By_Tree():
         return roots_info
     return fix_treeTable_datas(roots_info)
 
-
 def read_For_TreeList():
+    # 正式
+    sql = '''SELECT 立项识别码 AS Id, ifnull(分项名称, 项目名称) AS name, 父项立项识别码 AS PId
+               FROM tabel_立项信息
+           ORDER BY 立项识别码
+          '''
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
+        return dictfetchall(cursor)
+
+
+def old_read_For_TreeList():
     # 正式
     sql = '''SELECT 立项识别码 AS Id, ifnull(分项名称, 项目名称) AS name, 父项立项识别码 AS PId
                FROM tabel_立项信息
@@ -390,9 +400,9 @@ def get_All_Grandchildren(UDID):
 
 def read_For_Bidding_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM
-                 (SELECT           招标识别码, A.立项识别码 AS 立项识别码, 项目名称, 分项名称, 招标方式, 招标单位识别码, 
+                 (SELECT           招标识别码, A.立项识别码 AS 立项识别码, 项目名称, 分项名称, 招标方式, 招标单位识别码,
                                    U1.单位名称 AS 招标单位名称, 招标代理识别码, U2.单位名称 AS 招标代理单位名称, 项目概算,
-                                   预算控制价, 招标文件定稿时间, 公告邀请函发出时间, 开标时间, 中标通知书发出时间, 
+                                   预算控制价, 招标文件定稿时间, 公告邀请函发出时间, 开标时间, 中标通知书发出时间,
                                    中标单位识别码, U3.单位名称 AS 中标单位名称, 中标价, 招标备注
                   FROM             tabel_招标信息 AS A
                        LEFT JOIN   tabel_立项信息 AS I ON A.立项识别码=I.立项识别码
@@ -668,6 +678,31 @@ def old_get_All_Grandchildren_UDID(UDID):
 
 
 def get_All_Budget_Grandchildren_UDID(UDID):
+    '''
+        取得某预算下全部子项、孙项等的预算识别码
+    '''
+    db_Id_PId = pd.DataFrame(
+        list(table_Budget.objects.values('预算识别码', '父项预算识别码')))
+
+    def getChildren(UDID):
+        return list(db_Id_PId[db_Id_PId.父项预算识别码 == UDID].预算识别码)
+
+    def getGrandChildren(UDID):
+        result = []
+        children_UDID = getChildren(UDID)
+        if children_UDID:       # 如果UDID下还有子项
+            for x in children_UDID:
+                result += getGrandChildren(x)
+            return result + [UDID]
+        else:           # 如果UDID为叶子
+            return [UDID]
+
+    result = getGrandChildren(UDID)
+    result.remove(UDID)
+    result.sort()
+    return result
+
+def old_get_All_Budget_Grandchildren_UDID(UDID):
     '''
         取得某预算下全部子项、孙项等的预算识别码
     '''
