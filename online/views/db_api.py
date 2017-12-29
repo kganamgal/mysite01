@@ -617,7 +617,7 @@ def get_Children_Count(UDID):
         return
 
 
-def get_All_Grandchildren_UDID(UDID):
+def new_get_All_Grandchildren_UDID(UDID):
     '''
         make sure UDID is int.
         取得某项下全部后代的立项识别码
@@ -644,7 +644,7 @@ def get_All_Grandchildren_UDID(UDID):
     result.sort()
     return result
 
-def old_get_All_Grandchildren_UDID(UDID):
+def get_All_Grandchildren_UDID(UDID):
     '''
         make sure UDID is int.
         取得某项下全部后代的立项识别码
@@ -702,7 +702,7 @@ def get_All_Budget_Grandchildren_UDID(UDID):
     result.sort()
     return result
 
-def old_get_All_Budget_Grandchildren_UDID(UDID):
+def get_All_Budget_Grandchildren_UDID(UDID):
     '''
         取得某预算下全部子项、孙项等的预算识别码
     '''

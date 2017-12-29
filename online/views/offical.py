@@ -149,7 +149,7 @@ def inputFrame(request, key_table):
         Cnt = '您没有权限查看<%s>信息<br/>' % dict_Eng_Chn.get(key_table)
         return HttpResponse(Cnt)
     else:
-        return render(request, 'inputFrame.html')
+        return render(request, 'inputFrame_' + key_table + '.html')
 
 
 def attachFrame(request, key_table):
