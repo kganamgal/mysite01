@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>表单群</title>
+  <title>单位信息详情</title>
   <style type="text/css">
     .selected {
       color: maroon;
@@ -23,7 +23,199 @@
   </style>
 </head>
 <body>
-  <div id="id_container" class="container-fluid"></div>
+  <div id="id_container" class="container-fluid">
+
+    <!-- 基本资料 -->
+    <div name="Section_基本资料">
+      <div class="row clearfix">
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <h5 style="text-align: center;">基本资料</h5>
+        </div>
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <button id="id_button_基本资料" class="btn btn-default btn-edit" type="button">修改</button>
+        </div>
+      </div>
+      <div class="row clearfix" style="margin-bottom: 6px;">
+        <!-- 单位识别码 -->
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">
+            单位识别码
+          </label>
+        </div>
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <input type="text" name="单位识别码" id="id_单位识别码" class="style_input" style="width: 100%;font-size: 12px;" />
+        </div>
+        <!-- 单位名称 -->
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">
+            单位名称
+          </label>
+        </div>
+        <div class="col-sm-4" style="padding: 0px; margin: 0px;">
+          <input type="text" name="单位名称" id="id_单位名称" class="style_input" style="width: 100%;font-size: 12px;" />
+        </div>
+      </div>
+      <div class="row clearfix" style="margin-bottom: 6px;">
+        <!-- 法定代表人 -->
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">
+            法定代表人
+          </label>
+        </div>
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <input type="text" name="法定代表人" id="id_法定代表人" class="style_input" style="width: 100%;font-size: 12px;" />
+        </div>
+        <!-- 单位类别 -->
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">
+            单位类别
+          </label>
+        </div>
+        <div class="col-sm-2" style="padding: 0px; margin: 0px;">
+          <input type="text" name="单位类别" id="id_单位类别" class="style_input" style="width: 100%;font-size: 12px;" />
+        </div>
+        <!-- 单位性质 -->
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">
+            单位性质
+          </label>
+        </div>
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <input type="text" name="单位性质" id="id_单位性质" class="style_input" style="width: 100%;font-size: 12px;" />
+        </div>
+      </div>
+      <hr />
+    </div>
+
+    <!-- 企业实力 -->
+    <div name="Section_企业实力">
+      <div class="row clearfix">
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <h5 style="text-align: center;">企业实力</h5>
+        </div>
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <button id="id_button_企业实力" class="btn btn-default btn-edit" type="button">修改</button>
+        </div>
+      </div>
+      <div class="row clearfix" style="margin-bottom: 6px;">
+        <!-- 注册资金 -->
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">
+            注册资金
+          </label>
+        </div>
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <input type="text" name="注册资金" id="id_注册资金" class="style_float" style="width: 100%;font-size: 12px;" />
+        </div>
+        <!-- 单位资质 -->
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">
+            单位资质
+          </label>
+        </div>
+        <div class="col-sm-4" style="padding: 0px; margin: 0px;">
+          <textarea type="text" name="单位资质" id="id_单位资质" class="style_text" style="resize: none; width: 100%; height: 50px; text-align: left; font-size: 12px;" />
+          </textarea>
+        </div>
+      </div>
+      <hr />
+    </div>
+
+    <!-- 财务资料 -->
+    <div name="Section_财务资料">
+      <!-- 第三版块 -->
+      <div class="row clearfix">
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <h5 style="text-align: center;">财务资料</h5>
+        </div>
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <button id="id_button_财务资料" class="btn btn-default btn-edit" type="button">修改</button>
+        </div>
+      </div>
+      <div class="row clearfix" style="margin-bottom: 6px;">
+        <!-- 银行账号 -->
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">
+            银行账号
+          </label>
+        </div>
+        <div class="col-sm-6" style="padding: 0px; margin: 0px;">
+          <textarea type="text" name="银行账号" id="id_银行账号" class="style_input" style="resize: none; width: 100%; height: 50px; text-align: left; font-size: 12px;" />
+          </textarea>
+        </div>
+      </div>
+      <hr />
+    </div>
+
+    <!-- 概算资料 -->
+    <div name="Section_联系资料">
+      <div class="row clearfix">
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <h5 style="text-align: center;">联系资料</h5>
+        </div>
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <button id="id_button_联系资料" class="btn btn-default btn-edit" type="button">修改</button>
+        </div>
+      </div>
+      <div class="row clearfix" style="margin-bottom: 6px;">
+        <!-- 联系人 -->
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">
+            联系人
+          </label>
+        </div>
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <input type="text" name="联系人" id="id_联系人" class="style_input" style="width: 100%;font-size: 12px;" />
+        </div>
+        <!-- 联系方式 -->
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">
+            联系方式
+          </label>
+        </div>
+        <div class="col-sm-4" style="padding: 0px; margin: 0px;">
+          <input type="text" name="联系方式" id="id_联系方式" class="style_input" style="width: 100%;font-size: 12px;" />
+        </div>
+      </div>
+      <hr />
+    </div>
+
+    <!-- 其他资料 -->
+    <div name="Section_其他资料">
+      <div class="row clearfix">
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <h5 style="text-align: center;">其他资料</h5>
+        </div>
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <button id="id_button_其他资料" class="btn btn-default btn-edit" type="button">修改</button>
+        </div>
+      </div>
+      <div class="row clearfix" style="margin-bottom: 6px;">
+        <!-- 单位备注 -->
+        <div class="col-sm-1" style="padding: 0px; margin: 0px;">
+          <label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">
+            单位备注
+          </label>
+        </div>
+        <div class="col-sm-6" style="padding: 0px; margin: 0px;">
+          <textarea type="text" name="单位备注" id="id_单位备注" class="style_text" style="resize: none; width: 100%; height: 100px; text-align: left; font-size: 12px;" />
+          </textarea>
+        </div>
+      </div>
+      <hr />
+    </div>
+
+    <!-- 按钮组 -->
+    <div class="row clearfix" style="margin-top: 4px;">
+      <div class="btn-toolbar" role="toolbar" style="float: left;">
+        <button class="btn btn-default btn-01 btn-bottom" id="id_btn_Attach">查看附件</button>
+        <button class="btn btn-default btn-01 btn-bottom" id="id_btn_Table" >生成表格</button>
+        <button class="btn btn-default btn-01 btn-bottom" id="id_btn_Save"  >保存</button>
+        <button class="btn btn-default btn-01 btn-bottom" id="id_btn_Cancel">取消</button>
+      </div>
+    </div>
+
+  </div>
 
   <!-- Jquery组件引用 -->
   <script src="/statics/js/jquery.min.js"></script>
@@ -70,17 +262,6 @@
     }
 
     function windowOnLoad() {
-      // 根据data_head_type的内容生成input
-      var div_forms = $('#id_container');
-      div_forms.empty();
-      //添加新的一行
-      var div_row_forms = $('<div class=\"row clearfix\" style=\"margin-bottom: 6px;\">');
-      div_forms.append(div_row_forms);
-      //每行加三列内容
-      var i = 0;
-      var label;
-      var form;
-      var div_col_forms;
       // 数据呈现控件
       for (var key in data_head_type) {
         // 格式化数据
@@ -92,51 +273,16 @@
         } else if (data_head_type[key] == '百分比') {
           input_value = toPercents(input_value);
         }
-        // 构造数据容器
-        div_col_forms = $('<div class=\"col-lg-1\" style=\"padding: 0px; margin: 0px;\"></div>');
-        label = $('<label style=\"font-size: 12px; padding-top: 4px; float: right;\">' + key + '&nbsp</label>');
-        div_col_forms.append(label);
-        div_row_forms.append(div_col_forms);
-        div_col_forms = $('<div class=\"col-lg-3\" style=\"padding: 0px; margin: 0px;\"></div>');
-        if (data_head_type[key] == '文本型') {
-          form = $('<textarea type=\"text\" name=\"' + key + '\" rows=\"3\" id=\"id_' + key + '\" disabled=\"disabled\" class=\"style_text\" style=\"width: 100%;font-size: 12px;\">' + input_value + '</textarea>');
-        } else if (data_head_type[key] == '浮点型') { // 这里使用了input-group，在文本框的最后加上了<修改>按钮
-          form = $('<div class=\"input-group\"><input type=\"text\" name=\"' + key + '\" id=\"id_' + key + '\" disabled=\"disabled\" class=\"style_float\" style=\"width: 100%;font-size: 12px;\" value=\"' + input_value + '\" /><span class=\"input-group-btn\"><button id=\"id_button_' + key + '\" class=\"btn btn-default\" type=\"button\">修改</button></span></div>');
-        } else if (data_head_type[key] == '百分比') {
-          form = $('<div class=\"input-group\"><input type=\"text\" name=\"' + key + '\" id=\"id_' + key + '\" disabled=\"disabled\" class=\"style_percent\" style=\"width: 100%;font-size: 12px;\" value=\"' + input_value + '\" /><span class=\"input-group-btn\"><button id=\"id_button_' + key + '\" class=\"btn btn-default\" type=\"button\">修改</button></span></div>');
-        } else {
-          form = $('<div class=\"input-group\"><input type=\"text\" name=\"' + key + '\" id=\"id_' + key + '\" disabled=\"disabled\" class=\"style_input\" style=\"width: 100%;font-size: 12px;\" value=\"' + input_value + '\" /><span class=\"input-group-btn\"><button id=\"id_button_' + key + '\" class=\"btn btn-default\" type=\"button\">修改</button></span></div>');
-        }
-        // if (data_head_type[key] in {
-        //     '浮点型': 0,
-        //     '百分比': 0
-        //   }) {
-        //   form.css('text-align', 'right');
-        // };
-        div_col_forms.append(form);
-        div_row_forms.append(div_col_forms);
-        if (i < 2) {
-          i++;
-        } else {
-          i = 0;
-          div_row_forms = $('<div class=\"row clearfix\" style=\"margin-bottom: 6px;\">');
-          div_forms.append(div_row_forms);
-        }
+        // 填充数值
+        $('#id_' + key).val(input_value);
       }
-      // 按钮组
-      var div_row_forms = $('<div class=\"row clearfix\" style=\"margin-top: 4px;\">');
-      div_forms.append(div_row_forms);
-      var div_btn_toolbar = $('<div class=\"btn-toolbar\" role=\"toolbar\" style=\"float: right;\"></div>');
-      div_row_forms.append($(div_btn_toolbar));
-      div_btn_toolbar.append($('<button class=\"btn btn-default btn-01\" style=\"\" type=\"button\" id=\"id_btn_New\" disabled=\"disabled\"   >新建</    button>'));
-      div_btn_toolbar.append($('<button class=\"btn btn-default btn-01\" style=\"\" type=\"button\" id=\"id_btn_Edit\" disabled=\"disabled\"  >修改</    button>'));
-      div_btn_toolbar.append($('<button class=\"btn btn-default btn-01\" style=\"\" type=\"button\" id=\"id_btn_Delete\" disabled=\"disabled\">删除</    button>'));
-      div_btn_toolbar.append($('<button class=\"btn btn-default btn-01\" style=\"\" type=\"button\" id=\"id_btn_Attach\"                      >查看附件</button>'));
-      div_btn_toolbar.append($('<button class=\"btn btn-default btn-01\" style=\"\" type=\"button\" id=\"id_btn_Table\" disabled=\"disabled\" >生成表格</button>'));
-      div_btn_toolbar.append($('<button class=\"btn btn-default btn-01\" style=\"\" type=\"button\" id=\"id_btn_Save\" disabled=\"disabled\"  >保存</    button>'));
-      div_btn_toolbar.append($('<button class=\"btn btn-default btn-01\" style=\"\" type=\"button\" id=\"id_btn_Cancel\" disabled=\"disabled\">取消</    button>'));
+      // 将修改按钮设为不可用
+      $('.btn-edit,.btn-bottom').attr('disabled', 'disabled');
+      // 将input和textarea设为不可用
+      $('input,textarea').attr('readonly', 'readonly');
       // 为各按钮注册事件
       // 查看附件
+      $('#id_btn_Attach').removeAttr('disabled');
       $(document).on('click', '#id_btn_Attach', function() {
         child_data['key_frame'] = key_frame;
         var UDID = $('input')[0].value;

@@ -9,7 +9,7 @@
       color: maroon;
     }
     strong {
-    	color: red;
+      color: red;
     }
     .btn-01{
       height: 50px;
@@ -19,7 +19,7 @@
   </style>
 </head>
 <body>
-	<!-- 非可见组件 -->
+  <!-- 非可见组件 -->
   <div id="context-menu">
     <ul id="ul_context-menu" class="dropdown-menu" role="menu" style="font-size: 12px;">
       <li id="id_jump_target_立项"><a tabindex="-1" href="#" operator="top">跳转至<strong>立项</strong></a></li>
@@ -36,45 +36,45 @@
       <p style="height: 60px; background-color: orange; line-height: 60px;">新城镇公司工程合同管理系统</p>
     </div>
     <div class="row clearfix" style="margin-top: 0px;">
-			<div class="col-lg-1 column" style="padding: 0px;">
-				<!-- 按钮列 -->
-				<div class="btn-toolbar" role="toolbar">
-					 <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_Company"   >单位管理</button>
-					 <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_Init"      >立项管理</button>
-					 <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_Bidding"   >招标管理</button>
-					 <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_Contract"  >合同管理</button>
-					 <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_Alteration">合同变更</button>
+      <div class="col-lg-1 column" style="padding: 0px;">
+        <!-- 按钮列 -->
+        <div class="btn-toolbar" role="toolbar">
+           <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_Company"   >单位管理</button>
+           <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_Init"      >立项管理</button>
+           <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_Bidding"   >招标管理</button>
+           <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_Contract"  >合同管理</button>
+           <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_Alteration">合同变更</button>
            <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_SubCont"   >分包管理</button>
-					 <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_Budget"    >预算管理</button>
-					 <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_Payment"   >付款管理</button>
-				</div>
-			</div>
-			<div class="col-lg-9 column" style="padding: 0px;">
-				<!-- 树表 -->
-				<div class="table-responsive" style="overflow: auto; font-size: 12px; cursor: default;">
-				  <table id="id_tree_table" class="table table-condensed" style="white-space: nowrap;"></table>
-				</div>
-			</div>
-			<div class="col-lg-2 column" style="padding: 0px;">
-				<!-- 图表 -->
-				<div id="id_chart" style="height: 200px;"></div>
-				<!-- 概览描述 -->
-				<p id="id_overviewInfo" style="font-size: 12px; padding: 10px;"></p>
-			</div>
-		</div>
+           <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_Budget"    >预算管理</button>
+           <button class="btn btn-default btn-01" style="width: 95%;" type="button" id="id_btn_Payment"   >付款管理</button>
+        </div>
+      </div>
+      <div class="col-lg-9 column" style="padding: 0px;">
+        <!-- 树表 -->
+        <div class="table-responsive" style="overflow: auto; font-size: 12px; cursor: default;">
+          <table id="id_tree_table" class="table table-condensed" style="white-space: nowrap;"></table>
+        </div>
+      </div>
+      <div class="col-lg-2 column" style="padding: 0px;">
+        <!-- 图表 -->
+        <div id="id_chart" style="height: 200px;"></div>
+        <!-- 概览描述 -->
+        <p id="id_overviewInfo" style="font-size: 12px; padding: 10px;"></p>
+      </div>
+    </div>
   </div>
-		<div class="row clearfix">
-			<!-- 备注 -->
-			<div class="col-lg-12 column" style="height: 50px; background-color: orange; text-align: center;">
-				<p style="line-height: 25px; font-size: 12px">
+    <div class="row clearfix">
+      <!-- 备注 -->
+      <div class="col-lg-12 column" style="height: 50px; background-color: orange; text-align: center;">
+        <p style="line-height: 25px; font-size: 12px">
           <span>{{ username }}，欢迎您登陆系统。</span>
           <a href="{% url 'logout' %}">点击此处注销</a>
           <br />本系统由顾翔开发制作。对系统的建议请联系：
           <a href="mailto:edwin_gu@163.com">顾翔的电子邮箱</a>
-				</p>
-			</div>
-		</div>
-	</div>
+        </p>
+      </div>
+    </div>
+  </div>
 
   <!-- Jquery组件引用 -->
   <script src="/statics/js/jquery.min.js"></script>
