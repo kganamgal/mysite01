@@ -36,11 +36,11 @@ function accMinus(arg1, arg2) {
   arg2 = arg2.toString().replace(re, '');
   return accAdd(arg1, -arg2)
 }
-function accMul(arg1, arg2) {  
+function accMul(arg1, arg2) {
   var re = new RegExp(",", "g");
   arg1 = arg1.toString().replace(re, '');
   arg2 = arg2.toString().replace(re, '');
-  var m = 0, s1 = arg1.toString(), s2 = arg2.toString();  
+  var m = 0, s1 = arg1.toString(), s2 = arg2.toString();
   try {m += s1.split(".")[1].length} catch(e) {};
   try {m += s2.split(".")[1].length} catch(e) {};
   return Number(s1.replace(".", "")) * Number(s2.replace(".", "")) / Math.pow(10, m);
@@ -53,10 +53,10 @@ function accDiv (arg1, arg2) {
   try {t1 = arg1.toString().split(".")[1].length} catch(e) {};
   try {t2 = arg2.toString().split(".")[1].length} catch(e) {};
   with (Math) {
-      r1 = Number(arg1.toString().replace(".", ""));      
+      r1 = Number(arg1.toString().replace(".", ""));
       r2 = Number(arg2.toString().replace(".", ""));
       return (r1 / r2) * pow(10, t2 - t1);
-  }  
+  }
 }
 
 function makeChart(div_id, chart_data, chart_title, item_describe) {
@@ -162,7 +162,7 @@ function Queue(){
           return true;
       }else{
           return false;
-      }    
+      }
   }
   //返回数组中元素的个数
   function count(){
@@ -293,7 +293,7 @@ function caluByRpn(expression, printLog=false) {
         stackOperator.push(A);
         if (printLog) {console.log(`将【${A}】压入符栈`)};
       };
-    };        
+    };
   };
 
   // 扫描完成后，把Operator栈的元素依次出栈，然后依次压入Operand队列中。

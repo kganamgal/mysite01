@@ -249,6 +249,14 @@
           })
         }
       }
+      // 计数
+      columns[0].footerFormatter = function(rows) {
+        var count = 0;
+        for (var i in rows) {
+          count += 1;
+        }
+        return '共有'+count+'条记录';
+      }
       // 求和
       var footer_list = [];
       if (key_table === '合同') {
@@ -283,7 +291,7 @@
       // 为自定义搜索框注册事件
       $(document).on('keypress', '#id_conditional_search', function(event) {
         text = this.value;
-        if (text.length > 0 && event.charCode === 13) { // 按下回车时
+        if (text.length > 0 && (event.charCode === 13 || event.charCode === 0)) { // 按下回车时
           // 这里用新的逆波兰逻辑
           // 构造正则表达式，用于将列名加上element的头
           var head_pattern = '^';
@@ -298,11 +306,20 @@
             // 深度复制一个element
             var ele = {};
             $.extend(ele, element);
-            var result = TablecaluByRpn(text, ele);
+            var result = TablecaluByRpn(text, ele, false);
             return result;
           });
 
           function TablecaluByRpn(expression, obj, printLog = false) {
+            // 预处理输入字符串，将日期替换掉
+            var tempDict = {};
+            var dateList = expression.match(/\d{4}-\d{1,2}-\d{1,2}/g);
+            if (dateList) {
+              for (var i = 0; i < dateList.length; i++) {
+                tempDict['tempObject' + i] = dateList[i];
+                expression = expression.replace(dateList[i], 'tempObject' + i);
+              };
+            };
             // expression += '\0';
             // 运算符优先级表
             var dict_priority = {
@@ -467,6 +484,10 @@
                   A = obj[A];
                 } else if (A == '【空白】') {
                   A = null;
+                };
+                // 将数队列中的tempObj替换回原值
+                if (A in tempDict) {
+                  A = tempDict[A];
                 };
                 stackResult.push(A);
                 if (printLog) {
@@ -640,6 +661,9 @@
               }
             };
 
+            if (printLog) {
+              console.log(`最终结果为：【${stackResult.peek()}】`)
+            };
             return stackResult.peek();
           };
           // 重新加载表格数据
@@ -776,7 +800,7 @@
           //   table_data = JSON.parse(ret.t_rows);
           //   $(id_table).bootstrapTable('load', table_data);
           //   // 将树表完全折叠并取消选择
-          //   try {                                                
+          //   try {
           //     var treeObj = $.fn.zTree.getZTreeObj('id_zTree');
           //     treeObj.expandAll(false);
           //     treeObj.cancelSelectedNode();

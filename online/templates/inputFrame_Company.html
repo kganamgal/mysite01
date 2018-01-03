@@ -64,6 +64,7 @@
         'section_word':   '基本资料',
         'section_btn':    true,
         'key_word':       ['单位识别码',    '单位名称',    'nextLine',     '法定代表人',   '单位类别',    '单位性质',],
+        'short_key':      ['单位识别码',    '单位名称',    'nextLine',     '法定代表人',   '单位类别',    '单位性质',],
         'input_type':     ['text',         'text',      'nextLine',     'text',        'text',       'text',],
         'value_type':     ['input',        'input',     'nextLine',     'input',       'input',      'input',],
         'input_width':    [1,              4,           'nextLine',      1,             2,            1,],
@@ -75,6 +76,7 @@
         'section_word':   '企业实力',
         'section_btn':    true,
         'key_word':       ['注册资金',      '单位资质',    ],
+        'short_key':      ['注册资金',      '单位资质',    ],
         'input_type':     ['text',         'textarea',   ],
         'value_type':     ['float',        'text',       ],
         'input_width':    [1,               4,           ],
@@ -86,6 +88,7 @@
         'section_word':   '财务资料',
         'section_btn':    false,
         'key_word':       ['银行账号',     ],
+        'short_key':      ['银行账号',     ],
         'input_type':     ['textarea',    ],
         'value_type':     ['text',        ],
         'input_width':    [6,             ],
@@ -97,6 +100,7 @@
         'section_word':   '联系资料',
         'section_btn':    true,
         'key_word':       ['联系人',   '联系方式',   ],
+        'short_key':      [null,       null,       ],
         'input_type':     ['text',    'text',      ],
         'value_type':     ['input',   'input',     ],
         'input_width':    [1,         4,           ],
@@ -108,6 +112,7 @@
         'section_word':   '其他资料',
         'section_btn':    true,
         'key_word':       ['单位备注', ],
+        'short_key':      [null, ],
         'input_type':     ['textarea',],
         'value_type':     ['text',    ],
         'input_width':    [6,         ],
@@ -162,6 +167,7 @@
         html_row = $('<div class="row clearfix" style="margin-bottom: 6px;"></div>');
         for (j = 0; j < composing[i].key_word.length; j++) {
           key_word     = composing[i].key_word[j];
+          short_key    = composing[i].short_key[j] || key_word;
           input_type   = composing[i].input_type[j];
           value_type   = composing[i].value_type[j];
           input_width  = composing[i].input_width[j];
@@ -169,7 +175,7 @@
           font_size    = composing[i].font_size[j];
           edit_btn     = composing[i].edit_btn[j];
           if (input_type == 'text' || input_type == 'date') {   // 对一般文本/日期 表单
-            html_unit = '<div class="col-sm-1" style="padding: 0px; margin: 0px;"><label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">'+key_word+'</label></div>';
+            html_unit = '<div class="col-sm-1" style="padding: 0px; margin: 0px;"><label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">'+short_key+'</label></div>';
             if (edit_btn) {   // 附带<修改>按钮时
               html_unit += '<div class="col-sm-'+input_width+'" style="padding: 0px; margin: 0px;"><div class="input-group"><input type="'+input_type+'" name="'+key_word+'" id="id_'+key_word+'" class="style_'+value_type+'" style="width: 100%;font-size: '+font_size+'px;" /><span class="input-group-btn"><button id="id_button_'+key_word+'" class="btn btn-default btn-edit" type="button">修改</button></span></div></div>';
             }else{    // 不带<修改>按钮时
@@ -178,7 +184,7 @@
             // 将html添加进行
             html_row.append($(html_unit));
           }else if (input_type == 'textarea') {   // 对富文本表单
-            html_unit = $('<div class="col-sm-1" style="padding: 0px; margin: 0px;"><label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">'+key_word+'</label></div><div class="col-sm-'+input_width+'" style="padding: 0px; margin: 0px;"><textarea type="text" name="'+key_word+'" id="id_'+key_word+'" class="style_'+value_type+'" style="resize: none; width: 100%; height: '+input_height+'px; text-align: left; font-size: '+font_size+'px;" /></textarea></div>');
+            html_unit = $('<div class="col-sm-1" style="padding: 0px; margin: 0px;"><label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">'+short_key+'</label></div><div class="col-sm-'+input_width+'" style="padding: 0px; margin: 0px;"><textarea type="text" name="'+key_word+'" id="id_'+key_word+'" class="style_'+value_type+'" style="resize: none; width: 100%; height: '+input_height+'px; text-align: left; font-size: '+font_size+'px;" /></textarea></div>');
             // 将html添加进行
             html_row.append(html_unit);
           }else if (input_type == 'nextLine'){    // 对换行符

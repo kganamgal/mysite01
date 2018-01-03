@@ -25,7 +25,7 @@ def ajax_table_company(request):
         # 取得该立项下全部后代节点
         grandchildern_ids = get_All_Grandchildren(clicked_id)
         t_rows = read_For_Payment_GridDialog('where 立项识别码 in %s', [grandchildern_ids + [clicked_id]])
-    except:        
+    except:
         t_rows = read_For_Payment_GridDialog()
     t_head = uc.PaymentColLabels
     t_type = uc.PaymentColLabels_Type
@@ -92,7 +92,7 @@ def ajax_table_data(request):
         else:
             grandchildern_ids = get_All_Grandchildren_UDID(Init_UDID)
             t_rows = dict_API[key_table]('where 立项识别码 in %s', [grandchildern_ids + [Init_UDID]])
-    except:        
+    except:
         t_rows = dict_API[key_table]()
     t_head = dict_Head[key_table]
     t_type = dict_Type[key_table]
@@ -114,5 +114,5 @@ def ajax_tree_data(request):
 
 @csrf_exempt
 def ajax_treeTable(request):
-    return_json = format_Details_By_Tree()    
+    return_json = format_Details_By_Tree()
     return HttpResponse(json.dumps(return_json, ensure_ascii=False, cls=CJsonEncoder), content_type='application/json')
