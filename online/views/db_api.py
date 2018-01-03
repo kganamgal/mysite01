@@ -329,9 +329,9 @@ def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='', or
     '''
     # 正式
     sql = '''SELECT {} FROM
-             (SELECT           A.立项识别码, A.项目名称, A.分项名称, A.父项立项识别码, B.项目名称 AS 父项项目名称, B.分项名称 AS 父项分项名称,
-                               A.建设单位识别码, U1.单位名称 AS 建设单位名称, A.代建单位识别码, U2.单位名称 AS 代建单位名称, 
-                               A.立项文件名称, A.立项时间, A.项目概算, A.项目概算-T.已分配概算 AS 未分配概算, T.已付款/A.项目概算 AS 概算付款比, A.立项备注
+             (SELECT           A.立项识别码, A.项目名称, A.分项名称, A.父项立项识别码, B.项目名称 AS 父项项目名称, B.分项名称 AS 父项分项名称, B.项目概算 AS 父项项目概算,
+                               A.建设单位识别码, U1.单位名称 AS 建设单位名称, A.代建单位识别码, U2.单位名称 AS 代建单位名称,
+                               A.立项文件名称, A.立项时间, A.项目概算, T.已分配概算, A.项目概算-T.已分配概算 AS 未分配概算, T.已分配概算/A.项目概算 AS 概算分配比, T.已付款 AS 概算已付款额, A.项目概算-T.已付款 AS 概算可付余额, T.已付款/A.项目概算 AS 概算付款比, A.立项备注
               FROM             tabel_立项信息 AS A
                    LEFT JOIN   tabel_立项信息 AS B  ON A.父项立项识别码=B.立项识别码
                    LEFT JOIN   tabel_单位信息 AS U1 ON A.建设单位识别码=U1.单位识别码
