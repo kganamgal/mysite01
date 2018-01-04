@@ -379,7 +379,7 @@ def get_file_url(request):
 
 def ajax_table_data(request):
     '''
-        There is 2 argument(key_table, Init_UDID) to input.        
+        There is 2 argument(key_table, Init_UDID) to input.
         key_table is classify(单位/立项/合同...) of an item.
         Init_UDID is the subject UDID of very item.
         This function can find out all children and grandchildren of very item, and give a list with all details of them.
@@ -432,19 +432,29 @@ def ajax_table_data(request):
             grandchildern_ids = get_All_Budget_Grandchildren_UDID(Init_UDID)
             t_rows = dict_API[key_table](
                 'where 预算识别码 in %s', [grandchildern_ids + [Init_UDID]])
+            try:
+                t_UDID = dict_API[key_table]('where 预算识别码 = %s', [Init_UDID])[0].get(key_table+'识别码')
+            except:
+                t_UDID = None
         else:
             grandchildern_ids = get_All_Grandchildren_UDID(Init_UDID)
             t_rows = dict_API[key_table](
                 'where 立项识别码 in %s', [grandchildern_ids + [Init_UDID]])
+            try:
+                t_UDID = dict_API[key_table]('where 立项识别码 = %s', [Init_UDID])[0].get(key_table+'识别码')
+            except:
+                t_UDID = None
     except:
         logUserOperation(request, 'read', sys._getframe().f_code.co_name,
                          'key_table={}'.format(key_table))
         t_rows = dict_API[key_table]()
+        t_UDID = None
     t_head = dict_Head[key_table]
     t_type = dict_Type[key_table]
     return_json = {'t_head': json.dumps(t_head, ensure_ascii=False, cls=CJsonEncoder),
                    't_type': json.dumps(t_type, ensure_ascii=False, cls=CJsonEncoder),
                    't_rows': json.dumps(t_rows, ensure_ascii=False, cls=CJsonEncoder),
+                   't_UDID': t_UDID,
                    }
 
     return HttpResponse(json.dumps(return_json, ensure_ascii=False, cls=CJsonEncoder), content_type='application/json')

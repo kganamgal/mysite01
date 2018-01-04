@@ -715,8 +715,10 @@
                 'Init_UDID': Init_UDID,
               },
               success: function(ret) {
-                table_data = JSON.parse(ret.t_rows);
-                $('#id_bootstrap_table').bootstrapTable('load', table_data);
+                table_data = JSON.parse(ret.t_rows);        // 读取该项及该项子孙数据
+                $('#id_bootstrap_table').bootstrapTable('load', table_data);      // 加载进表格
+                $(".selected").removeClass("selected");
+                $("[data-uniqueid='"+ret.t_UDID+"']").addClass("selected");      // 选中该行
               },
             });
             // $.post("{% url 'ajax_table_data' %}", {'key_table': key_table, 'Init_UDID': Init_UDID,},

@@ -265,7 +265,7 @@ def read_For_Company_GridDialog(where_sql='', where_list=[], order_sql='', order
 # 立项管理
 
 
-def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
+def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='ORDER BY 立项识别码', order_list=[]):
     # 预自建过程
     sql1 = '''
         CREATE TEMPORARY TABLE IF NOT EXISTS tmp_UDID_table (立项识别码 INT);
@@ -273,11 +273,17 @@ def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='', or
     sql2 = '''
         CREATE TEMPORARY TABLE IF NOT EXISTS tmp_pay_table (立项识别码 INT, 已分配概算 DECIMAL(12, 2), 已付款 DECIMAL(12, 2));
         '''
+    sql2_5 = '''
+        CREATE TEMPORARY TABLE IF NOT EXISTS tmp_parent_pay_table (立项识别码 INT, 已分配概算 DECIMAL(12, 2), 已付款 DECIMAL(12, 2));
+        '''
     sql3 = '''
         TRUNCATE TABLE tmp_UDID_table;
         '''
     sql4 = '''
         TRUNCATE TABLE tmp_pay_table;
+        '''
+    sql4_5 = '''
+        TRUNCATE TABLE tmp_parent_pay_table;
         '''
     # 将自身的立项识别码及全部子项的立项识别码导入表tmp_UDID_table
     sql5 = '''
@@ -319,6 +325,10 @@ def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='', or
                         (SELECT UDID,
                         (SELECT SUM(项目概算) FROM tabel_立项信息 WHERE 父项立项识别码=UDID),
                         ifnull(SUM(本次付款额),0) FROM tabel_付款信息 WHERE 立项识别码 IN (SELECT 立项识别码 FROM tmp_UDID_table));
+                    INSERT INTO tmp_parent_pay_table (立项识别码, 已分配概算, 已付款)
+                        (SELECT UDID,
+                        (SELECT SUM(项目概算) FROM tabel_立项信息 WHERE 父项立项识别码=UDID),
+                        ifnull(SUM(本次付款额),0) FROM tabel_付款信息 WHERE 立项识别码 IN (SELECT 立项识别码 FROM tmp_UDID_table));
                 end if;
             until done end repeat;
             close idCur;
@@ -329,14 +339,20 @@ def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='', or
     '''
     # 正式
     sql = '''SELECT {} FROM
-             (SELECT           A.立项识别码, A.项目名称, A.分项名称, A.父项立项识别码, B.项目名称 AS 父项项目名称, B.分项名称 AS 父项分项名称, B.项目概算 AS 父项项目概算,
+             (SELECT           A.立项识别码, A.项目名称, A.分项名称, A.父项立项识别码, B.项目名称 AS 父项项目名称,
+                               B.分项名称 AS 父项分项名称, B.项目概算 AS 父项项目概算,
+                               ifnull(B.项目概算, 0)-ifnull(TP.已分配概算, 0)+ifnull(A.项目概算, 0) AS 项目概算上限,
                                A.建设单位识别码, U1.单位名称 AS 建设单位名称, A.代建单位识别码, U2.单位名称 AS 代建单位名称,
-                               A.立项文件名称, A.立项时间, A.项目概算, T.已分配概算, A.项目概算-T.已分配概算 AS 未分配概算, T.已分配概算/A.项目概算 AS 概算分配比, T.已付款 AS 概算已付款额, A.项目概算-T.已付款 AS 概算可付余额, T.已付款/A.项目概算 AS 概算付款比, A.立项备注
+                               A.立项文件名称, A.立项时间, A.项目概算, T.已分配概算, A.项目概算-T.已分配概算 AS 未分配概算,
+                               T.已分配概算/A.项目概算 AS 概算分配比, T.已付款 AS 概算已付款额, A.项目概算-T.已付款 AS 概算可付余额,
+                               T.已付款/A.项目概算 AS 概算付款比, A.立项备注
               FROM             tabel_立项信息 AS A
                    LEFT JOIN   tabel_立项信息 AS B  ON A.父项立项识别码=B.立项识别码
                    LEFT JOIN   tabel_单位信息 AS U1 ON A.建设单位识别码=U1.单位识别码
                    LEFT JOIN   tabel_单位信息 AS U2 ON A.代建单位识别码=U2.单位识别码
-                   LEFT JOIN   tmp_pay_table AS T ON A.立项识别码=T.立项识别码) AS Origin
+                   LEFT JOIN   tmp_pay_table AS T ON A.立项识别码=T.立项识别码
+                   LEFT JOIN   tmp_parent_pay_table AS TP ON A.父项立项识别码=TP.立项识别码
+                   ) AS Origin
           '''.format(', '.join(uc.InitiationColLabels)) + where_sql + ' ' + order_sql
     sql_list = where_list + order_list
     with connection.cursor() as cursor:
@@ -344,9 +360,13 @@ def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='', or
     with connection.cursor() as cursor:
         cursor.execute(sql2)
     with connection.cursor() as cursor:
+        cursor.execute(sql2_5)
+    with connection.cursor() as cursor:
         cursor.execute(sql3)
     with connection.cursor() as cursor:
         cursor.execute(sql4)
+    with connection.cursor() as cursor:
+        cursor.execute(sql4_5)
     with connection.cursor() as cursor:
         cursor.execute(sql5)
     with connection.cursor() as cursor:
@@ -470,10 +490,10 @@ def read_For_SubContract_GridDialog(where_sql='', where_list=[], order_sql='', o
 
 def read_For_Alteration_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM
-             (SELECT           变更识别码, A.立项识别码, 项目名称, 分项名称, A.合同识别码, 合同编号, 
+             (SELECT           变更识别码, A.立项识别码, 项目名称, 分项名称, A.合同识别码, 合同编号,
                                合同名称, 合同类别, 合同值_签订时, 甲方识别码, U1.单位名称 AS 甲方单位名称, 乙方识别码, U2.单位名称 AS 乙方单位名称,
                                丙方识别码, U3.单位名称 AS 丙方单位名称, 丁方识别码, U4.单位名称 AS 丁方单位名称,
-                               变更类型, 变更编号, 变更主题, 变更登记日期, 变更生效日期, 
+                               变更类型, 变更编号, 变更主题, 变更登记日期, 变更生效日期,
                                变更原因, 预估变更额度, 预估变更额度/合同值_签订时 AS 预估变更率, 变更额度, 变更额度/合同值_签订时 AS 变更率, 变更备注
               FROM             tabel_变更信息 AS A
                    LEFT JOIN   tabel_立项信息 AS I ON A.立项识别码=I.立项识别码
@@ -491,16 +511,115 @@ def read_For_Alteration_GridDialog(where_sql='', where_list=[], order_sql='', or
 # 预算管理
 
 
-def read_For_Budget_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
+def read_For_Budget_GridDialog(where_sql='', where_list=[], order_sql='ORDER BY 预算识别码', order_list=[]):
+    # 预自建过程
+    sql1 = '''
+        CREATE TEMPORARY TABLE IF NOT EXISTS tmp_UDID_table (预算识别码 INT);
+        '''
+    sql2 = '''
+        CREATE TEMPORARY TABLE IF NOT EXISTS tmp_pay_table (预算识别码 INT, 已分配预算 DECIMAL(12, 2), 已付款 DECIMAL(12, 2));
+        '''
+    sql2_5 = '''
+        CREATE TEMPORARY TABLE IF NOT EXISTS tmp_parent_pay_table (预算识别码 INT, 已分配预算 DECIMAL(12, 2), 已付款 DECIMAL(12, 2));
+        '''
+    sql3 = '''
+        TRUNCATE TABLE tmp_UDID_table;
+        '''
+    sql4 = '''
+        TRUNCATE TABLE tmp_pay_table;
+        '''
+    sql4_5 = '''
+        TRUNCATE TABLE tmp_parent_pay_table;
+        '''
+    # 将自身的立项识别码及全部子项的立项识别码导入表tmp_UDID_table
+    sql5 = '''
+        DROP PROCEDURE IF EXISTS get_all_children;
+        '''
+    sql6 = '''
+        CREATE PROCEDURE `get_all_children` (areaId INT)
+        BEGIN
+            DECLARE sTemp VARCHAR(4000);
+            DECLARE sTempChd VARCHAR(4000);
+            SET sTemp = '$';
+            SET sTempChd = cast(areaId as char);
+            INSERT INTO tmp_UDID_table (预算识别码) VALUES(areaId);
+            WHILE sTempChd is not NULL DO
+                SET sTemp = CONCAT(sTemp,',',sTempChd);
+                INSERT INTO tmp_UDID_table (预算识别码) SELECT 预算识别码 FROM tabel_预算信息 WHERE FIND_IN_SET(父项预算识别码,sTempChd)>0;
+                SELECT group_concat(预算识别码) INTO sTempChd FROM tabel_预算信息 WHERE FIND_IN_SET(父项预算识别码,sTempChd)>0;
+            END WHILE;
+        END;
+    '''
+    # 遍历预算信息表，将预算识别码-项下已付款存入临时表tmp_pay_table
+    sql7 = '''
+        drop procedure if exists proc_tmp;
+        '''
+    sql8 = '''
+        create procedure `proc_tmp`()
+        BEGIN
+            declare done int default 0;
+            declare UDID bigint;
+            declare idCur cursor for select 预算识别码 from tabel_预算信息 ORDER BY 预算识别码;
+            declare continue handler for not FOUND set done = 1;
+            open idCur;
+            REPEAT
+                fetch idCur into UDID;
+                if not done THEN
+                    TRUNCATE TABLE tmp_UDID_table;
+                    CALL get_all_children(UDID);
+                    INSERT INTO tmp_pay_table (预算识别码, 已分配预算, 已付款)
+                        (SELECT UDID,
+                        (SELECT SUM(预算总额) FROM tabel_预算信息 WHERE 父项预算识别码=UDID),
+                        ifnull(SUM(本次付款额),0) FROM tabel_付款信息 WHERE 预算识别码 IN (SELECT 预算识别码 FROM tmp_UDID_table));
+                    INSERT INTO tmp_parent_pay_table (预算识别码, 已分配预算, 已付款)
+                        (SELECT UDID,
+                        (SELECT SUM(预算总额) FROM tabel_预算信息 WHERE 父项预算识别码=UDID),
+                        ifnull(SUM(本次付款额),0) FROM tabel_付款信息 WHERE 预算识别码 IN (SELECT 预算识别码 FROM tmp_UDID_table));
+                end if;
+            until done end repeat;
+            close idCur;
+        END;
+        '''
+    sql9 = '''
+        CALL proc_tmp();
+    '''
+    # 正式
     sql = '''SELECT {} FROM
-             (SELECT           A.预算识别码, A.父项预算识别码, B.预算名称 AS 父项预算名称, A.预算名称, A.预算周期, A.预算总额,
-                               已付款 AS 预算已付额, A.预算总额-已付款 AS 预算余额, 已付款/A.预算总额 AS 预算已付比,
+             (SELECT           A.预算识别码, A.预算名称, A.预算周期, A.预算总额,
+                               A.父项预算识别码, B.预算名称 AS 父项预算名称, B.预算周期 AS 父项预算周期, B.预算总额 AS 父项预算额,
+                               ifnull(B.预算总额, 0)-ifnull(TP.已分配预算, 0)+ifnull(A.预算总额, 0) AS 预算上限,
+                               T.已分配预算, A.预算总额-T.已分配预算 AS 未分配预算, T.已分配预算/A.预算总额 AS 预算分配比,
+                               T.已付款 AS 预算已付额, A.预算总额-T.已付款 AS 预算余额, T.已付款/A.预算总额 AS 预算已付比,
                                A.预算备注
               FROM             tabel_预算信息 AS A
-                   LEFT JOIN   tabel_预算信息 AS B ON A.父项预算识别码=B.预算识别码
-                   LEFT JOIN   (SELECT 预算识别码, SUM(本次付款额) AS 已付款 FROM tabel_付款信息 GROUP BY 预算识别码) AS P ON A.预算识别码=P.预算识别码) AS Origin
+                   LEFT JOIN   tabel_预算信息 AS B  ON A.父项预算识别码=B.预算识别码
+                   LEFT JOIN   tmp_pay_table AS T ON A.预算识别码=T.预算识别码
+                   LEFT JOIN   tmp_parent_pay_table AS TP ON A.父项预算识别码=TP.预算识别码
+                   ) AS Origin
           '''.format(', '.join(uc.BudgetColLabels)) + where_sql + ' ' + order_sql
     sql_list = where_list + order_list
+    with connection.cursor() as cursor:
+        cursor.execute(sql1)
+    with connection.cursor() as cursor:
+        cursor.execute(sql2)
+    with connection.cursor() as cursor:
+        cursor.execute(sql2_5)
+    with connection.cursor() as cursor:
+        cursor.execute(sql3)
+    with connection.cursor() as cursor:
+        cursor.execute(sql4)
+    with connection.cursor() as cursor:
+        cursor.execute(sql4_5)
+    with connection.cursor() as cursor:
+        cursor.execute(sql5)
+    with connection.cursor() as cursor:
+        cursor.execute(sql6)
+    with connection.cursor() as cursor:
+        cursor.execute(sql7)
+    with connection.cursor() as cursor:
+        cursor.execute(sql8)
+    with connection.cursor() as cursor:
+        cursor.execute(sql9)
     with connection.cursor() as cursor:
         cursor.execute(sql, sql_list)
         return dictfetchall(cursor)
@@ -573,7 +692,7 @@ def read_For_Payment_GridDialog(where_sql='', where_list=[], order_sql='', order
                                付款时合同值, 付款时预算余额, 付款时概算余额, 付款时合同可付余额, 付款时合同未付额,
                                付款时预算已付额, 付款时合同已付额, 付款时概算已付额,
                                付款时预算已付额/付款时预算总额 AS 付款时预算已付比,
-                               付款时合同已付额/付款时合同值 AS 付款时合同已付比, 
+                               付款时合同已付额/付款时合同值 AS 付款时合同已付比,
                                付款时概算已付额/付款时项目概算 AS 付款时概算已付比,
                                付款时形象进度, 本次付款额,
                                本次付款额/付款时预算总额 AS 预算本次付款比,
