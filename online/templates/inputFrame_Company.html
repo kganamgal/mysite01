@@ -17,6 +17,9 @@
     .style_percent{
       text-align: right;
     }
+    input{
+      height: 30px !important;
+    }
     .style_input{
       text-align: center;
     }
@@ -38,17 +41,19 @@
   </div>
 
   <!-- Jquery组件引用 -->
-  <script src="/statics/js/jquery.min.js"></script>
+  <!-- <script src="/statics/js/jquery.min.js"></script> -->
   <!-- bootstrap组件引用 -->
-  <link rel="stylesheet" href="/statics/css/bootstrap.min.css">
-  <script src="/statics/js/bootstrap.min.js"></script>
+  <!-- <link rel="stylesheet" href="/statics/css/bootstrap.min.css"> -->
+  <!-- <script src="/statics/js/bootstrap.min.js"></script> -->
   <!-- bootstrap-table组件引用 -->
-  <link rel="stylesheet" href="/statics/css/bootstrap-table.css">
-  <script src="/statics/js/bootstrap-table.min.js"></script>
-  <script src="/statics/js/bootstrap-table-zh-CN.js"></script>
+  <!-- <link rel="stylesheet" href="/statics/css/bootstrap-table.css"> -->
+  <!-- <script src="/statics/js/bootstrap-table.min.js"></script> -->
+  <!-- <script src="/statics/js/bootstrap-table-zh-CN.js"></script> -->
   <!-- layer -->
-  <script type="text/javascript" src="/statics/js/layer.js"></script>
+  <!-- <script type="text/javascript" src="/statics/js/layer.js"></script> -->
   <!-- edwin常用函数集合 -->
+  <link rel="stylesheet" href="/statics/css/online_20180105.css">
+  <script type="text/javascript" src="/statics/js/online_20180105.js"></script>
   <script type="text/javascript" src="/statics/js/often_by_Edwin_201712182301.js"></script>
 
   <script type="text/javascript">
@@ -86,7 +91,7 @@
       },
       {
         'section_word':   '财务资料',
-        'section_btn':    false,
+        'section_btn':    true,
         'key_word':       ['银行账号',     ],
         'short_key':      ['银行账号',     ],
         'input_type':     ['textarea',    ],
@@ -136,7 +141,7 @@
     var key_frame = parent.child_data['key_table'];
     var data_head = parent.child_data['data_head'];
     var data_type = parent.child_data['data_type'];
-    var data_value = parent.child_data['data_value'];
+    var data_value = parent.child_data['data_value'] || null;
     var data_head_type = twoListToOneDict(data_head, data_type);
     $(main);
 
@@ -198,26 +203,62 @@
         div_section.append($('<hr />'));
         $('#id_btns').before(div_section);
       };
-
-      // 数据呈现控件
-      for (var key in data_head_type) {
-        // 格式化数据
-        var input_value = data_value[key];
-        if ((!input_value && typeof(input_value) != "undefined" && input_value != 0)) {
-          input_value = '';
-        } else if (data_head_type[key] == '浮点型') {
-          input_value = toThousands(input_value);
-        } else if (data_head_type[key] == '百分比') {
-          input_value = toPercents(input_value);
-        }
-        // 填充数值
-        $('#id_' + key).val(input_value);
-      }
+      // 数据呈现
+      if (data_value) {
+        for (var key in data_head_type) {
+          // 格式化数据
+          var input_value = data_value[key];
+          if ((!input_value && typeof(input_value) != "undefined" && input_value != 0)) {
+            input_value = '';
+          } else if (data_head_type[key] == '浮点型') {
+            input_value = toThousands(input_value);
+          } else if (data_head_type[key] == '百分比') {
+            input_value = toPercents(input_value);
+          }
+          // 填充数值
+          $('#id_' + key).val(input_value);
+        };
+      };
       // 将修改按钮设为不可用
       $('.btn-edit,.btn-bottom').attr('disabled', 'disabled');
       // 将input和textarea设为不可用
       $('input,textarea').attr('readonly', 'readonly');
       // 为各按钮注册事件
+      // 修改基本资料
+      $('#id_button_基本资料').removeAttr('disabled');
+      $(document).on('click', '#id_button_基本资料', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        console.log('修改基本资料');
+      });
+      // 修改企业实力
+      $('#id_button_企业实力').removeAttr('disabled');
+      $(document).on('click', '#id_button_企业实力', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        console.log('修改企业实力');
+      });
+      // 修改财务资料
+      $('#id_button_财务资料').removeAttr('disabled');
+      $(document).on('click', '#id_button_财务资料', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        console.log('修改财务资料');
+      });
+      // 修改联系资料
+      $('#id_button_联系资料').removeAttr('disabled');
+      $(document).on('click', '#id_button_联系资料', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        console.log('修改联系资料');
+      });
+      // 修改其他资料
+      $('#id_button_其他资料').removeAttr('disabled');
+      $(document).on('click', '#id_button_其他资料', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        console.log('修改其他资料');
+      });
       // 查看附件
       $('#id_btn_Attach').removeAttr('disabled');
       $(document).on('click', '#id_btn_Attach', function() {

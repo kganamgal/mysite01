@@ -17,6 +17,9 @@
       height: 50px;
       margin: 5px 0px 0px 0px;
     }
+    input{
+      height: 30px !important;
+    }
   </style>
 </head>
 <body>
@@ -24,9 +27,8 @@
   <div id="id_tool_bar" class="bar">
     <input id="id_conditional_search" type="text" style="" placeholder="条件搜索">
     <div class="btn-group">
+        <button id="id_btn_New" type="button" class="btn btn-default">新建</button>
         <button id="id_btn_View" type="button" class="btn btn-default">查看</button>
-        <button type="button" class="btn btn-default" disabled="disabled">新建</button>
-        <button type="button" class="btn btn-default" disabled="disabled">修改</button>
         <button type="button" class="btn btn-default" disabled="disabled">删除</button>
         <button id="id_btn_Export" type="button" class="btn btn-default">导出</button>
     </div>
@@ -48,23 +50,25 @@
   </div>
 
   <!-- Jquery组件引用 -->
-  <script src="/statics/js/jquery.min.js"></script>
+  <!-- <script src="/statics/js/jquery.min.js"></script> -->
   <!-- bootstrap组件引用 -->
-  <link rel="stylesheet" href="/statics/css/bootstrap.min.css">
-  <script src="/statics/js/bootstrap.min.js"></script>
+  <!-- <link rel="stylesheet" href="/statics/css/bootstrap.min.css"> -->
+  <!-- <script src="/statics/js/bootstrap.min.js"></script> -->
   <!-- bootstrap-table组件引用 -->
-  <link rel="stylesheet" href="/statics/css/bootstrap-table.css">
-  <script src="/statics/js/bootstrap-table.min.js"></script>
-  <script src="/statics/js/bootstrap-table-zh-CN.js"></script>
+  <!-- <link rel="stylesheet" href="/statics/css/bootstrap-table.css"> -->
+  <!-- <script src="/statics/js/bootstrap-table.min.js"></script> -->
+  <!-- <script src="/statics/js/bootstrap-table-zh-CN.js"></script> -->
   <!-- 导出文件 -->
-  <script type="text/javascript" src="/statics/js/tableExport.min.js"></script>
+  <!-- <script type="text/javascript" src="/statics/js/tableExport.min.js"></script> -->
   <!-- layer -->
-  <script type="text/javascript" src="/statics/js/layer.js"></script>
+  <!-- <script type="text/javascript" src="/statics/js/layer.js"></script> -->
   <!-- zTree组件引用 -->
-  <link rel="stylesheet" href="/statics/css/demo.css" type="text/css">
-  <link rel="stylesheet" href="/statics/css/zTreeStyle/zTreeStyle.css" type="text/css">
-  <script type="text/javascript" src="/statics/js/jquery.ztree.core.js"></script>
+  <!-- <link rel="stylesheet" href="/statics/css/demo.css" type="text/css"> -->
+  <!-- <link rel="stylesheet" href="/statics/css/zTreeStyle/zTreeStyle.css" type="text/css"> -->
+  <!-- <script type="text/javascript" src="/statics/js/jquery.ztree.core.js"></script> -->
   <!-- edwin常用函数集合 -->
+  <link rel="stylesheet" href="/statics/css/online_20180105.css">
+  <script type="text/javascript" src="/statics/js/online_20180105.js"></script>
   <script type="text/javascript" src="/statics/js/often_by_Edwin_201712182301.js"></script>
 
   <script type="text/javascript">
@@ -152,6 +156,20 @@
         // 导出表格内容成Excel
         $('#id_bootstrap_table').tableExport({
           type: 'excel'
+        });
+      });
+      // 新建
+      $(document).on('click', '#id_btn_New', function() {
+        child_data['key_table'] = key_table;
+        var key_url = dict_Chn_Eng[child_data['key_table']];
+        var content_url = "{% url 'inputFrame' 'ewhuvlk' %}"
+        // 打开新Frame，查看相应信息
+        layer.open({
+          type: 2,
+          title: '新建<' + key_table + '信息>详情',
+          area: ['100%', '100%'],
+          maxmin: true,
+          content: content_url.replace('ewhuvlk', key_url),
         });
       });
       // 查看
