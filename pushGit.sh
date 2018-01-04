@@ -2,5 +2,5 @@
 
 git init
 git add .
-git commit
+git commit -m 'by Edwin'
 git push origin master
