@@ -165,6 +165,19 @@ def attachFrame(request, key_table):
     else:
         return render(request, 'attachFrame.html')
 
+def inputer(request, key_table):
+    '''
+        A page which yoy can correctly input datas.
+        This page contains some forms and 2 buttons(Confirm and Cancle).
+        You can get tips when you input a unvalid record.
+        To visit this, you must have "To be added..."-permission.
+    '''
+    # if not getUserPermission(request.session.get('username')).can_Get_Attachment_List(dict_Eng_Chn.get(key_table)):
+    #     Cnt = '您没有权限查看<%s>附件信息<br/>' % dict_Eng_Chn.get(key_table)
+    #     return HttpResponse(Cnt)
+    # else:
+    #     return render(request, 'attachFrame.html')
+    return render(request, 'inputer.html')
 
 # --------------------AJAX--------------------
 def ajax_treeTable(request):

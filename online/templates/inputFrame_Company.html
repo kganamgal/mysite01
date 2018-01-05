@@ -6,22 +6,22 @@
   <title>单位信息详情</title>
   <style type="text/css">
     .selected {
-      color: maroon;
+      color: maroon !important;
     }
     strong {
-      color: red;
+      color: red !important;
     }
     .style_float{
-      text-align: right;
+      text-align: right !important;
     }
     .style_percent{
-      text-align: right;
+      text-align: right !important;
     }
     input{
       height: 30px !important;
     }
     .style_input{
-      text-align: center;
+      text-align: center !important;
     }
     .col-sm-1{width: 12.5% !important;}
     .col-sm-2{width: 25% !important;}
@@ -38,7 +38,7 @@
 
     <!-- 按钮组 -->
     <div id="id_btns" class="row clearfix" style="margin-top: 4px;">
-      <div class="btn-toolbar" role="toolbar" style="float: left;">
+      <div class="btn-toolbar" role="toolbar" style="float: right;">
         <button class="btn btn-default btn-01 btn-bottom" id="id_btn_Attach">查看附件</button>
         <button class="btn btn-default btn-01 btn-bottom" id="id_btn_Table" >生成表格</button>
         <button class="btn btn-default btn-01 btn-bottom" id="id_btn_Save"  >保存</button>
@@ -146,10 +146,11 @@
       '预算': 'Budget',
       '付款': 'Payment',
     };
-    var key_frame = parent.child_data['key_table'];
-    var data_head = parent.child_data['data_head'];
-    var data_type = parent.child_data['data_type'];
-    var data_value = parent.child_data['data_value'] || null;
+    var behavior       = parent.child_data['behavior'];
+    var key_frame      = parent.child_data['key_table'];
+    var data_head      = parent.child_data['data_head'];
+    var data_type      = parent.child_data['data_type'];
+    var data_value     = parent.child_data['data_value'] || null;
     var data_head_type = twoListToOneDict(data_head, data_type);
     $(main);
 
@@ -168,8 +169,8 @@
       for (i = 0; i < composing.length; i++) {    // 遍历composing数组
         // 建立section头
         section_word = composing[i].section_word;
-        section_btn = composing[i].section_btn;
-        div_section = $('<div name="Section_'+section_word+'"></div>');
+        section_btn  = composing[i].section_btn;
+        div_section  = $('<div name="Section_'+section_word+'"></div>');
         if (section_btn) {
           html_sectionHead = $('<div class="row clearfix"><div class="col-sm-1" style="padding: 0px; margin: 0px;"><h5 style="text-align: center;">'+section_word+'</h5></div><div class="col-sm-1" style="padding: 0px; margin: 0px;"><button id="id_button_'+section_word+'" class="btn btn-default btn-edit" type="button">修改</button></div></div>');
         }else{
@@ -197,7 +198,7 @@
             // 将html添加进行
             html_row.append($(html_unit));
           }else if (input_type == 'textarea') {   // 对富文本表单
-            html_unit = $('<div class="col-sm-1" style="padding: 0px; margin: 0px;"><label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">'+short_key+'</label></div><div class="col-sm-'+input_width+'" style="padding: 0px; margin: 0px;"><textarea type="text" name="'+key_word+'" id="id_'+key_word+'" class="style_'+value_type+'" style="resize: none; width: 100%; height: '+input_height+'px; text-align: left; font-size: '+font_size+'px;" /></textarea></div>');
+            html_unit = $('<div class="col-sm-1" style="padding: 0px; margin: 0px;"><label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">'+short_key+'</label></div><div class="col-sm-'+input_width+'" style="padding: 0px; margin: 0px;"><textarea type="text" name="'+key_word+'" id="id_'+key_word+'" class="style_'+value_type+'" style="resize: none; width: 100%; height: '+input_height+'px; text-align: left; font-size: '+font_size+'px;"></textarea></div>');
             // 将html添加进行
             html_row.append(html_unit);
           }else if (input_type == 'nextLine'){    // 对换行符
@@ -237,35 +238,245 @@
       $(document).on('click', '#id_button_基本资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
-        console.log('修改基本资料');
+        child_data['inputer_data'] = {
+          'label':       ['单位名称', '法定代表人', '单位类别', '单位性质',],
+          'data':        [
+                          $('#id_单位名称').val(),
+                          $('#id_法定代表人').val(),
+                          $('#id_单位类别').val(),
+                          $('#id_单位性质').val(),
+                         ],
+          'result_key':  [null, null, null, null,],  // 如果与label一致，可以填null
+          'descriptoin': [
+                          '（请在此处修改<strong>单位名称</strong>）',
+                          '（请在此处修改<strong>法定代表人</strong>）',
+                          '（请在此处修改<strong>单位类别</strong>）',
+                          '（请在此处修改<strong>单位性质</strong>）',
+                         ],
+          'form_type':   [
+                          'input',
+                          'input',
+                          ['房地产开发', '前期咨询', '勘察', '设计', '造价', '施工', '材料设备', '监理', '招标代理', '其他',],
+                          ['国有企业', '行政单位', '非国有企业',],
+                         ],
+          'valid':       [
+                          null,
+                          null,
+                          null,
+                          null,
+                         ],
+        };
+        // 打开输入页面
+        layer.open({
+          type: 2,
+          btn: ['确定', '取消'],
+          title: '',
+          area: ['800px', '80%'],
+          closeBtn: 0,
+          content: "{% url 'inputer' '' %}",
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            if (body.find('[valid="false"]').length > 0) {
+              alert('请修改红色文本框内数据！');
+              return;
+            };
+            $('#id_单位名称').val(body.find('#id_单位名称')[0].value);
+            $('#id_法定代表人').val(body.find('#id_法定代表人')[0].value);
+            $('#id_单位类别').val(body.find('#id_单位类别')[0].value);
+            $('#id_单位性质').val(body.find('#id_单位性质')[0].value);
+            layer.close(index);
+          },
+        });
       });
       // 修改企业实力
       $('#id_button_企业实力').removeAttr('disabled');
       $(document).on('click', '#id_button_企业实力', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
-        console.log('修改企业实力');
+        child_data['inputer_data'] = {
+          'label':       ['注册资金', '单位资质',],
+          'data':        [
+                          $('#id_注册资金').val(),
+                          $('#id_单位资质').val(),
+                         ],
+          'result_key':  [null, null,],  // 如果与label一致，可以填null
+          'descriptoin': [
+                          '（请在此处修改<strong>注册资金</strong>），输入值<strong>不</strong>应为<strong>负数</strong>，有效值2位小数',
+                          '（请在此处修改<strong>单位资质</strong>）',
+                         ],
+          'form_type':   [
+                          'input',
+                          'text',
+                         ],
+          'valid':       [
+                          'value.replace(/\\,/g, "") > 0 || value === ""',
+                          null,
+                         ],
+        };
+        // 打开输入页面
+        layer.open({
+          type: 2,
+          btn: ['确定', '取消'],
+          title: '',
+          area: ['800px', '80%'],
+          closeBtn: 0,
+          content: "{% url 'inputer' '' %}",
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            if (body.find('[valid="false"]').length > 0) {
+              alert('请修改红色文本框内数据！');
+              return;
+            };
+            var money = body.find('#id_注册资金')[0].value;
+            $('#id_注册资金').val(toThousands(money.replace(/[\, ]/, '')));
+            $('#id_单位资质').val(body.find('#id_单位资质')[0].value);
+            layer.close(index);
+          },
+        });
       });
       // 修改财务资料
       $('#id_button_财务资料').removeAttr('disabled');
       $(document).on('click', '#id_button_财务资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
-        console.log('修改财务资料');
+        child_data['inputer_data'] = {
+          'label':       [
+                          '银行账号',
+                         ],
+          'data':        [
+                          $('#id_银行账号').val(),
+                         ],
+          'result_key':  [
+                          null,
+                         ],  // 如果与label一致，可以填null
+          'descriptoin': [
+                          '（请在此处修改<strong>银行账号</strong>）',
+                         ],
+          'form_type':   [
+                          'text',
+                         ],
+          'valid':       [
+                          null,
+                         ],
+        };
+        // 打开输入页面
+        layer.open({
+          type: 2,
+          btn: ['确定', '取消'],
+          title: '',
+          area: ['800px', '80%'],
+          closeBtn: 0,
+          content: "{% url 'inputer' '' %}",
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            if (body.find('[valid="false"]').length > 0) {
+              alert('请修改红色文本框内数据！');
+              return;
+            };
+            $('#id_银行账号').val(body.find('#id_银行账号')[0].value);
+            layer.close(index);
+          },
+        });
       });
       // 修改联系资料
       $('#id_button_联系资料').removeAttr('disabled');
       $(document).on('click', '#id_button_联系资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
-        console.log('修改联系资料');
+        child_data['inputer_data'] = {
+          'label':       [
+                          '联系人',
+                          '联系方式',
+                         ],
+          'data':        [
+                          $('#id_联系人').val(),
+                          $('#id_联系方式').val(),
+                         ],
+          'result_key':  [
+                          null,
+                          null,
+                         ],  // 如果与label一致，可以填null
+          'descriptoin': [
+                          '（请在此处修改<strong>联系人</strong>）',
+                          '（请在此处修改<strong>联系方式</strong>）',
+                         ],
+          'form_type':   [
+                          'input',
+                          'input',
+                         ],
+          'valid':       [
+                          null,
+                          null
+                         ],
+        };
+        // 打开输入页面
+        layer.open({
+          type: 2,
+          btn: ['确定', '取消'],
+          title: '',
+          area: ['800px', '80%'],
+          closeBtn: 0,
+          content: "{% url 'inputer' '' %}",
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            if (body.find('[valid="false"]').length > 0) {
+              alert('请修改红色文本框内数据！');
+              return;
+            };
+            $('#id_联系人').val(body.find('#id_联系人')[0].value);
+            $('#id_联系方式').val(body.find('#id_联系方式')[0].value);
+            layer.close(index);
+          },
+        });
       });
       // 修改其他资料
       $('#id_button_其他资料').removeAttr('disabled');
       $(document).on('click', '#id_button_其他资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
-        console.log('修改其他资料');
+        child_data['inputer_data'] = {
+          'label':       [
+                          '单位备注',
+                         ],
+          'data':        [
+                          $('#id_单位备注').val(),
+                         ],
+          'result_key':  [
+                          null,
+                         ],  // 如果与label一致，可以填null
+          'descriptoin': [
+                          '（请在此处修改<strong>单位备注</strong>）',
+                         ],
+          'form_type':   [
+                          'text',
+                         ],
+          'valid':       [
+                          null,
+                         ],
+        };
+        // 打开输入页面
+        layer.open({
+          type: 2,
+          btn: ['确定', '取消'],
+          title: '',
+          area: ['800px', '80%'],
+          closeBtn: 0,
+          content: "{% url 'inputer' '' %}",
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            if (body.find('[valid="false"]').length > 0) {
+              alert('请修改红色文本框内数据！');
+              return;
+            };
+            $('#id_单位备注').val(body.find('#id_单位备注')[0].value);
+            layer.close(index);
+          },
+        });
       });
       // 查看附件
       $('#id_btn_Attach').removeAttr('disabled');

@@ -31,6 +31,10 @@ urlpatterns = [
     url(r'^attachFrame/(\w*/*)$',
         offical.attachFrame,             name='attachFrame'),
 
+    # 输入表单界面
+    url(r'^inputer/(\w*/*)$',
+        offical.inputer,                 name='inputer'),
+
     # ajax
     url(r'ajax_table_data',               offical.ajax_table_data,
         name='ajax_table_data'),

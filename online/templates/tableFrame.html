@@ -166,14 +166,16 @@
       });
       // 新建
       $(document).on('click', '#id_btn_New', function() {
+        child_data['data_value'] = {};
         child_data['key_table'] = key_table;
+        child_data['behavior'] = 'New';
         var key_url = dict_Chn_Eng[child_data['key_table']];
         var content_url = "{% url 'inputFrame' 'ewhuvlk' %}"
         // 打开新Frame，查看相应信息
         layer.open({
           type: 2,
           title: '新建<' + key_table + '信息>详情',
-          area: ['100%', '100%'],
+          area: ['900px', '100%'],
           maxmin: true,
           content: content_url.replace('ewhuvlk', key_url),
         });
@@ -190,13 +192,14 @@
         var row_data = $('#id_bootstrap_table').bootstrapTable('getRowByUniqueId', selected_id);
         child_data['data_value'] = row_data;
         child_data['key_table'] = key_table;
+        child_data['behavior'] = 'View';
         var key_url = dict_Chn_Eng[child_data['key_table']];
         var content_url = "{% url 'inputFrame' 'ewhuvlk' %}"
         // 打开新Frame，查看相应信息
         layer.open({
           type: 2,
           title: '查看<' + key_table + '信息>详情',
-          area: ['100%', '100%'],
+          area: ['900px', '100%'],
           maxmin: true,
           content: content_url.replace('ewhuvlk', key_url),
         });
