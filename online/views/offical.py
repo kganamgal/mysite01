@@ -137,6 +137,17 @@ def tableFrame(request, key_table):
     else:
         return render(request, 'tableFrame.html')
 
+def inputer_table(request, key_table):
+    '''
+        A page which can choose data record.
+        This page contains 3 divs. A table, a tree and a condition search form.
+        To visit this, you must have "can_Visit_Table(key_table)"-permission.
+    '''
+    if not getUserPermission(request.session.get('username')).can_Visit_Table(dict_Eng_Chn.get(key_table)):
+        Cnt = '您没有权限查看<%s>信息<br/>' % dict_Eng_Chn.get(key_table)
+        return HttpResponse(Cnt)
+    else:
+        return render(request, 'inputer_table.html')
 
 def inputFrame(request, key_table):
     '''

@@ -510,6 +510,7 @@
               btn: ['确定', '取消'],
               title: child_data['key_table'] + '信息管理',
               area: ['100%', '100%'],
+              maxmin: true,
               content: content_url.replace('ewhuvlk', key_url),
             });
           },
@@ -572,7 +573,7 @@
           child_data['key_table'] = (event.currentTarget.id).replace('id_jump_target_', ''); // 立项 | 招标
           child_data['Init_UDID'] = UDID;
           var key_url = dict_Chn_Eng[child_data['key_table']];
-          var content_url = "{% url 'tableFrame' 'ewhuvlk' %}"
+          var content_url = "{% url 'tableFrame' 'ewhuvlk' %}";
           layer.open({
             type: 2,
             btn: ['确定', '取消'],

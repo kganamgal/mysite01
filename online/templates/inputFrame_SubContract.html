@@ -155,10 +155,11 @@
       '预算': 'Budget',
       '付款': 'Payment',
     };
-    var key_frame = parent.child_data['key_table'];
-    var data_head = parent.child_data['data_head'];
-    var data_type = parent.child_data['data_type'];
-    var data_value = parent.child_data['data_value'];
+    var behavior       = parent.child_data['behavior'];
+    var key_frame      = parent.child_data['key_table'];
+    var data_head      = parent.child_data['data_head'];
+    var data_type      = parent.child_data['data_type'];
+    var data_value     = parent.child_data['data_value'];
     var data_head_type = twoListToOneDict(data_head, data_type);
     $(main);
 
@@ -241,21 +242,24 @@
       $('input,textarea').attr('readonly', 'readonly');
       // 为各按钮注册事件
       // 查看附件
-      $('#id_btn_Attach').removeAttr('disabled');
-      $(document).on('click', '#id_btn_Attach', function() {
-        child_data['key_frame'] = key_frame;
-        var UDID = $('input')[0].value;
-        child_data['UDID'] = UDID;
-        var key_url = dict_Chn_Eng[child_data['key_frame']];
-        var content_url = "{% url 'attachFrame' 'ewhuvlk' %}"
-        // 打开查看附件框架
-        layer.open({
-          type: 2,
-          title: '查看' + key_frame + '附件详情',
-          area: ['100%', '100%'],
-          content: content_url.replace('ewhuvlk', key_url),
+      if (behavior == 'View') {     // 查看模式
+        // 激活附件模块
+        $('#id_btn_Attach').removeAttr('disabled');
+        $(document).on('click', '#id_btn_Attach', function() {
+          child_data['key_frame'] = key_frame;
+          var UDID = $('input')[0].value;
+          child_data['UDID'] = UDID;
+          var key_url = dict_Chn_Eng[child_data['key_frame']];
+          var content_url = "{% url 'attachFrame' 'ewhuvlk' %}"
+          // 打开查看附件框架
+          layer.open({
+            type: 2,
+            title: '查看' + key_frame + '附件详情',
+            area: ['100%', '100%'],
+            content: content_url.replace('ewhuvlk', key_url),
+          });
         });
-      });
+      };
     }
   </script>
 

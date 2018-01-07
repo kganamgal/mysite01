@@ -11,6 +11,9 @@
     strong {
       color: red !important;
     }
+    [valid=false]{
+      background-color: pink !important;
+    }
   </style>
 </head>
 <body>
@@ -56,6 +59,8 @@
         row_html = $('<div class="row clearfix" style="margin-bottom: 6px;"></div>');
         if (form_type == 'input') {
           row_html.append($('<input type="text" name="'+result_key+'" id="id_'+result_key+'" valid="true" class="style_input" style="width: 85%;font-size: 12px; margin-left: 8%;" />'));
+        }else if (form_type == 'date') {
+          row_html.append($('<input type="date" name="'+result_key+'" id="id_'+result_key+'" valid="true" class="style_input" style="width: 85%;font-size: 12px; margin-left: 8%;" />'));
         }else if (form_type == 'text') {
           row_html.append($('<textarea type="text" name="'+result_key+'" id="id_'+result_key+'" class="style_'+form_type+'" style="resize: none; width: 85%; height: 100px; font-size: 12px; margin-left: 8%;"></textarea>'));
         }else{
@@ -77,10 +82,8 @@
             var valid = ele.data.valid;
             var result = eval(valid);
             if (result) {
-              $(this).css('background-color', '');
               $(this).attr('valid', 'true');
             }else{
-              $(this).css('background-color', 'pink');
               $(this).attr('valid', 'false');
             };
           });

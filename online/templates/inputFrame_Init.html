@@ -75,11 +75,11 @@
         'section_btn':    true,
         'key_word':       ['立项识别码',    '项目名称',     '分项名称',    'nextLine',     '立项时间',    '立项文件名称',],
         'short_key':      [null,           null,          null,         null,           null,         null,],
-        'input_type':     ['text',         'text',       'text',       'nextLine',     'date',       'textarea'],
+        'input_type':     ['text',         'text',       'text',       'nextLine',     'text',       'textarea'],
         'value_type':     ['input',        'input',      'input',      'nextLine',     'input',      'text'],
         'input_width':    [1,              1,             2,           'nextLine',      1,            4,],
         'input_height':   [null,           null,          null,        'nextLine',      null,         50,],
-        'font_size':      [12,             12,            12,          'nextLine',      10,           12,],
+        'font_size':      [12,             12,            12,          'nextLine',      12,           12,],
         'edit_btn':       [false,          false,         false,       'nextLine',      false,        false,],
       },
       {
@@ -143,10 +143,11 @@
       '预算': 'Budget',
       '付款': 'Payment',
     };
-    var key_frame = parent.child_data['key_table'];
-    var data_head = parent.child_data['data_head'];
-    var data_type = parent.child_data['data_type'];
-    var data_value = parent.child_data['data_value'];
+    var behavior       = parent.child_data['behavior'];
+    var key_frame      = parent.child_data['key_table'];
+    var data_head      = parent.child_data['data_head'];
+    var data_type      = parent.child_data['data_type'];
+    var data_value     = parent.child_data['data_value'];
     var data_head_type = twoListToOneDict(data_head, data_type);
     $(main);
 
@@ -228,22 +229,257 @@
       // 将input和textarea设为不可用
       $('input,textarea').attr('readonly', 'readonly');
       // 为各按钮注册事件
-      // 查看附件
-      $('#id_btn_Attach').removeAttr('disabled');
-      $(document).on('click', '#id_btn_Attach', function() {
-        child_data['key_frame'] = key_frame;
-        var UDID = $('input')[0].value;
-        child_data['UDID'] = UDID;
-        var key_url = dict_Chn_Eng[child_data['key_frame']];
-        var content_url = "{% url 'attachFrame' 'ewhuvlk' %}"
-        // 打开查看附件框架
+      // 修改基本资料
+      $('#id_button_基本资料').removeAttr('disabled');
+      $(document).on('click', '#id_button_基本资料', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        var inputer_labels    = [     // 需要接受用户修改的项
+                                 '项目名称',
+                                 '分项名称',
+                                 '立项时间',
+                                 '立项文件名称',
+                                ];
+        var inputer_form_type = [     // 对应的输入类型
+                                  'input',
+                                  'input',
+                                  'date',
+                                  'text',
+                                ];
+        child_data['inputer_data'] = {'label': [], 'data': [], 'result_key': [], 'descriptoin': [], 'form_type': [], 'valid': [],};
+        for (var i in inputer_labels) {
+          child_data['inputer_data']['label'].push(inputer_labels[i]);
+          child_data['inputer_data']['data'].push($('#id_'+inputer_labels[i]).val());
+          child_data['inputer_data']['result_key'].push(null);
+          child_data['inputer_data']['descriptoin'].push('（请在此处填写<strong>'+inputer_labels[i]+'</strong>）');
+          child_data['inputer_data']['form_type'].push(inputer_form_type[i]);
+          child_data['inputer_data']['valid'].push(null);
+        };
+        // 打开输入页面
         layer.open({
           type: 2,
-          title: '查看' + key_frame + '附件详情',
-          area: ['100%', '100%'],
-          content: content_url.replace('ewhuvlk', key_url),
+          btn: ['确定', '取消'],
+          title: '',
+          area: ['800px', '80%'],
+          closeBtn: 0,
+          content: "{% url 'inputer' '' %}",
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            if (body.find('[valid="false"]').length > 0) {
+              layer.alert('请修改红色文本框内数据！');
+              return;
+            };
+            for (var i in inputer_labels) {
+              $('#id_'+inputer_labels[i]).val(body.find('#id_'+inputer_labels[i])[0].value);
+            };
+            layer.close(index);
+          },
         });
       });
+      // 修改父项资料
+      $('#id_button_父项基本资料').removeAttr('disabled');  // To be fixed: 避免出现循环引用
+      $(document).on('click', '#id_button_父项基本资料', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        // 打开立项管理页面
+        child_data['key_table'] = '立项'; // 立项 | 招标
+        var key_url = dict_Chn_Eng[child_data['key_table']];
+        var content_url = "{% url 'inputer_table' 'ewhuvlk' %}";
+        layer.open({
+          type: 2,
+          btn: ['确定', '取消'],
+          title: child_data['key_table'] + '信息管理',
+          area: ['100%', '100%'],
+          maxmin: true,
+          content: content_url.replace('ewhuvlk', key_url),
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            var data_uniqueid = $(body.find('.selected')[0]).attr('data-uniqueid') || null;
+            var data_index = $(body.find('.selected')[0]).attr('data-index') || null;
+            var datas = JSON.parse($(body.find('#id_JSON')[0]).html());
+            var data = {};
+            for (var i = 0; i < datas.length; i++) {
+              for (k in datas[i]) {
+                console.log(k, datas[i][k]);
+                if (datas[i][k] == data_uniqueid) {    // 如果主识别码==data_uniqueid
+                  data = datas[i];
+                };
+                break;
+              };
+            };
+            $('#id_父项立项识别码').val(data.立项识别码);
+            $('#id_父项项目名称').val(data.项目名称);
+            $('#id_父项分项名称').val(data.分项名称);
+            layer.close(index);
+          },
+        });
+      });
+      // 修改建设单位
+      $('#id_button_建设单位名称').removeAttr('disabled');
+      $(document).on('click', '#id_button_建设单位名称', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        // 打开立项管理页面
+        child_data['key_table'] = '单位'; // 立项 | 招标
+        var key_url = dict_Chn_Eng[child_data['key_table']];
+        var content_url = "{% url 'inputer_table' 'ewhuvlk' %}";
+        layer.open({
+          type: 2,
+          btn: ['确定', '取消'],
+          title: child_data['key_table'] + '信息管理',
+          area: ['100%', '100%'],
+          maxmin: true,
+          content: content_url.replace('ewhuvlk', key_url),
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            var data_uniqueid = $(body.find('.selected')[0]).attr('data-uniqueid') || null;
+            var data_index = $(body.find('.selected')[0]).attr('data-index') || null;
+            var datas = $(body.find('#id_JSON')[0]).html();
+            var data = JSON.parse(datas)[data_index];
+            $('#id_建设单位识别码').val(data.单位识别码);
+            $('#id_建设单位名称').val(data.单位名称);
+            layer.close(index);
+          },
+        });
+      });
+      // 修改代建单位
+      $('#id_button_代建单位名称').removeAttr('disabled');
+      $(document).on('click', '#id_button_代建单位名称', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        // 打开立项管理页面
+        child_data['key_table'] = '单位'; // 立项 | 招标
+        var key_url = dict_Chn_Eng[child_data['key_table']];
+        var content_url = "{% url 'inputer_table' 'ewhuvlk' %}";
+        layer.open({
+          type: 2,
+          btn: ['确定', '取消'],
+          title: child_data['key_table'] + '信息管理',
+          area: ['100%', '100%'],
+          maxmin: true,
+          content: content_url.replace('ewhuvlk', key_url),
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            var data_uniqueid = $(body.find('.selected')[0]).attr('data-uniqueid') || null;
+            var data_index = $(body.find('.selected')[0]).attr('data-index') || null;
+            var datas = $(body.find('#id_JSON')[0]).html();
+            var data = JSON.parse(datas)[data_index];
+            $('#id_代建单位识别码').val(data.单位识别码);
+            $('#id_代建单位名称').val(data.单位名称);
+            layer.close(index);
+          },
+        });
+      });
+      // 修改项目概算
+      $('#id_button_项目概算').removeAttr('disabled');
+      $(document).on('click', '#id_button_项目概算', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        var inputer_labels    = [     // 需要接受用户修改的项
+                                 '项目概算',
+                                ];
+        var inputer_form_type = [     // 对应的输入类型
+                                  'input',
+                                ];
+        child_data['inputer_data'] = {'label': [], 'data': [], 'result_key': [], 'descriptoin': [], 'form_type': [], 'valid': [],};
+        for (var i in inputer_labels) {
+          child_data['inputer_data']['label'].push(inputer_labels[i]);
+          child_data['inputer_data']['data'].push($('#id_'+inputer_labels[i]).val());
+          child_data['inputer_data']['result_key'].push(null);
+          child_data['inputer_data']['descriptoin'].push('（请在此处填写<strong>'+inputer_labels[i]+'</strong>）');
+          child_data['inputer_data']['form_type'].push(inputer_form_type[i]);
+          child_data['inputer_data']['valid'].push(null);
+        };
+        var estimate_limit = $('#id_项目概算上限').val();
+        var num_estimate_limit = estimate_limit.replace(/[\, ]/g, '');
+        child_data['inputer_data']['descriptoin'][0] = '（请在此处填写<strong>项目概算</strong>，输入值下限为<strong>0</strong>，上限为<strong>'+estimate_limit+'</strong>，有效值2位小数）';
+        child_data['inputer_data']['valid'][0] = 'value.replace(/[\\, ]/g, "") >= 0 && value.replace(/[\\, ]/g, "") <= '+num_estimate_limit+' || value === ""';
+        // 打开输入页面
+        layer.open({
+          type: 2,
+          btn: ['确定', '取消'],
+          title: '',
+          area: ['800px', '80%'],
+          closeBtn: 0,
+          content: "{% url 'inputer' '' %}",
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            if (body.find('[valid="false"]').length > 0) {
+              layer.alert('请修改红色文本框内数据！');
+              return;
+            };
+            var money = body.find('#id_项目概算')[0].value;
+            $('#id_项目概算').val(toThousands(money.replace(/[\, ]/g, '')));
+            layer.close(index);
+          },
+        });
+      });
+      // 修改其他资料
+      $('#id_button_其他资料').removeAttr('disabled');
+      $(document).on('click', '#id_button_其他资料', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        var inputer_labels    = [     // 需要接受用户修改的项
+                                 '立项备注',
+                                ];
+        var inputer_form_type = [     // 对应的输入类型
+                                  'text',
+                                ];
+        child_data['inputer_data'] = {'label': [], 'data': [], 'result_key': [], 'descriptoin': [], 'form_type': [], 'valid': [],};
+        for (var i in inputer_labels) {
+          child_data['inputer_data']['label'].push(inputer_labels[i]);
+          child_data['inputer_data']['data'].push($('#id_'+inputer_labels[i]).val());
+          child_data['inputer_data']['result_key'].push(null);
+          child_data['inputer_data']['descriptoin'].push('（请在此处填写<strong>'+inputer_labels[i]+'</strong>）');
+          child_data['inputer_data']['form_type'].push(inputer_form_type[i]);
+          child_data['inputer_data']['valid'].push(null);
+        };
+        // 打开输入页面
+        layer.open({
+          type: 2,
+          btn: ['确定', '取消'],
+          title: '',
+          area: ['800px', '80%'],
+          closeBtn: 0,
+          content: "{% url 'inputer' '' %}",
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            if (body.find('[valid="false"]').length > 0) {
+              layer.alert('请修改红色文本框内数据！');
+              return;
+            };
+            for (var i in inputer_labels) {
+              $('#id_'+inputer_labels[i]).val(body.find('#id_'+inputer_labels[i])[0].value);
+            };
+            layer.close(index);
+          },
+        });
+      });
+      // 查看附件
+      if (behavior == 'View') {     // 查看模式
+        // 激活附件模块
+        $('#id_btn_Attach').removeAttr('disabled');
+        $(document).on('click', '#id_btn_Attach', function() {
+          child_data['key_frame'] = key_frame;
+          var UDID = $('input')[0].value;
+          child_data['UDID'] = UDID;
+          var key_url = dict_Chn_Eng[child_data['key_frame']];
+          var content_url = "{% url 'attachFrame' 'ewhuvlk' %}"
+          // 打开查看附件框架
+          layer.open({
+            type: 2,
+            title: '查看' + key_frame + '附件详情',
+            area: ['100%', '100%'],
+            content: content_url.replace('ewhuvlk', key_url),
+          });
+        });
+      };
     }
   </script>
 

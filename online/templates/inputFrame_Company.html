@@ -248,10 +248,10 @@
                          ],
           'result_key':  [null, null, null, null,],  // 如果与label一致，可以填null
           'descriptoin': [
-                          '（请在此处修改<strong>单位名称</strong>）',
-                          '（请在此处修改<strong>法定代表人</strong>）',
-                          '（请在此处修改<strong>单位类别</strong>）',
-                          '（请在此处修改<strong>单位性质</strong>）',
+                          '（请在此处填写<strong>单位名称</strong>）',
+                          '（请在此处填写<strong>法定代表人</strong>）',
+                          '（请在此处填写<strong>单位类别</strong>）',
+                          '（请在此处填写<strong>单位性质</strong>）',
                          ],
           'form_type':   [
                           'input',
@@ -278,7 +278,7 @@
             // 将用户填写的值传回本体
             var body = layer.getChildFrame('body', index);
             if (body.find('[valid="false"]').length > 0) {
-              alert('请修改红色文本框内数据！');
+              layer.alert('请修改红色文本框内数据！');
               return;
             };
             $('#id_单位名称').val(body.find('#id_单位名称')[0].value);
@@ -302,15 +302,15 @@
                          ],
           'result_key':  [null, null,],  // 如果与label一致，可以填null
           'descriptoin': [
-                          '（请在此处修改<strong>注册资金</strong>），输入值<strong>不</strong>应为<strong>负数</strong>，有效值2位小数',
-                          '（请在此处修改<strong>单位资质</strong>）',
+                          '（请在此处填写<strong>注册资金</strong>），输入值<strong>不</strong>应为<strong>负数</strong>，有效值2位小数',
+                          '（请在此处填写<strong>单位资质</strong>）',
                          ],
           'form_type':   [
                           'input',
                           'text',
                          ],
           'valid':       [
-                          'value.replace(/\\,/g, "") > 0 || value === ""',
+                          'value.replace(/[\\, ]/g, "") > 0 || value === ""',
                           null,
                          ],
         };
@@ -326,11 +326,11 @@
             // 将用户填写的值传回本体
             var body = layer.getChildFrame('body', index);
             if (body.find('[valid="false"]').length > 0) {
-              alert('请修改红色文本框内数据！');
+              layer.alert('请修改红色文本框内数据！');
               return;
             };
             var money = body.find('#id_注册资金')[0].value;
-            $('#id_注册资金').val(toThousands(money.replace(/[\, ]/, '')));
+            $('#id_注册资金').val(toThousands(money.replace(/[\, ]/g, '')));
             $('#id_单位资质').val(body.find('#id_单位资质')[0].value);
             layer.close(index);
           },
@@ -352,7 +352,7 @@
                           null,
                          ],  // 如果与label一致，可以填null
           'descriptoin': [
-                          '（请在此处修改<strong>银行账号</strong>）',
+                          '（请在此处填写<strong>银行账号</strong>）',
                          ],
           'form_type':   [
                           'text',
@@ -373,7 +373,7 @@
             // 将用户填写的值传回本体
             var body = layer.getChildFrame('body', index);
             if (body.find('[valid="false"]').length > 0) {
-              alert('请修改红色文本框内数据！');
+              layer.alert('请修改红色文本框内数据！');
               return;
             };
             $('#id_银行账号').val(body.find('#id_银行账号')[0].value);
@@ -400,8 +400,8 @@
                           null,
                          ],  // 如果与label一致，可以填null
           'descriptoin': [
-                          '（请在此处修改<strong>联系人</strong>）',
-                          '（请在此处修改<strong>联系方式</strong>）',
+                          '（请在此处填写<strong>联系人</strong>）',
+                          '（请在此处填写<strong>联系方式</strong>）',
                          ],
           'form_type':   [
                           'input',
@@ -424,7 +424,7 @@
             // 将用户填写的值传回本体
             var body = layer.getChildFrame('body', index);
             if (body.find('[valid="false"]').length > 0) {
-              alert('请修改红色文本框内数据！');
+              layer.alert('请修改红色文本框内数据！');
               return;
             };
             $('#id_联系人').val(body.find('#id_联系人')[0].value);
@@ -449,7 +449,7 @@
                           null,
                          ],  // 如果与label一致，可以填null
           'descriptoin': [
-                          '（请在此处修改<strong>单位备注</strong>）',
+                          '（请在此处填写<strong>单位备注</strong>）',
                          ],
           'form_type':   [
                           'text',
@@ -470,7 +470,7 @@
             // 将用户填写的值传回本体
             var body = layer.getChildFrame('body', index);
             if (body.find('[valid="false"]').length > 0) {
-              alert('请修改红色文本框内数据！');
+              layer.alert('请修改红色文本框内数据！');
               return;
             };
             $('#id_单位备注').val(body.find('#id_单位备注')[0].value);
@@ -479,21 +479,24 @@
         });
       });
       // 查看附件
-      $('#id_btn_Attach').removeAttr('disabled');
-      $(document).on('click', '#id_btn_Attach', function() {
-        child_data['key_frame'] = key_frame;
-        var UDID = $('input')[0].value;
-        child_data['UDID'] = UDID;
-        var key_url = dict_Chn_Eng[child_data['key_frame']];
-        var content_url = "{% url 'attachFrame' 'ewhuvlk' %}"
-        // 打开查看附件框架
-        layer.open({
-          type: 2,
-          title: '查看' + key_frame + '附件详情',
-          area: ['100%', '100%'],
-          content: content_url.replace('ewhuvlk', key_url),
+      if (behavior == 'View') {     // 查看模式
+        // 激活附件模块
+        $('#id_btn_Attach').removeAttr('disabled');
+        $(document).on('click', '#id_btn_Attach', function() {
+          child_data['key_frame'] = key_frame;
+          var UDID = $('input')[0].value;
+          child_data['UDID'] = UDID;
+          var key_url = dict_Chn_Eng[child_data['key_frame']];
+          var content_url = "{% url 'attachFrame' 'ewhuvlk' %}"
+          // 打开查看附件框架
+          layer.open({
+            type: 2,
+            title: '查看' + key_frame + '附件详情',
+            area: ['100%', '100%'],
+            content: content_url.replace('ewhuvlk', key_url),
+          });
         });
-      });
+      };
     }
   </script>
 

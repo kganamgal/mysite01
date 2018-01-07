@@ -33,27 +33,29 @@
   <div id="id_tool_bar" class="bar">
     <input id="id_conditional_search" type="text" style="" placeholder="条件搜索">
     <div class="btn-group">
-        <button id="id_btn_New" type="button" class="btn btn-default">新建</button>
-        <button id="id_btn_View" type="button" class="btn btn-default">查看</button>
-        <button type="button" class="btn btn-default" disabled="disabled">删除</button>
-        <button id="id_btn_Export" type="button" class="btn btn-default">导出</button>
+        <button id="id_btn_New" type="button" class="btn btn-default" disabled="disabled">新建</button>
+        <button id="id_btn_View" type="button" class="btn btn-default" disabled="disabled">查看</button>
+        <button type="button" class="btn btn-default" disabled="disabled" disabled="disabled">删除</button>
+        <button id="id_btn_Export" type="button" class="btn btn-default" disabled="disabled">导出</button>
     </div>
   </div>
 
   <div class="container-fluid">
     <div class="row clearfix">
-      <div class="col-lg-10 column" style="padding: 0px;">
+      <div class="col-sm-10 column" style="padding: 0px;">
         <!-- 表格部分 -->
-      	<div class="table-responsive" style="cursor: default;">
+        <div class="table-responsive" style="cursor: default;">
           <table id="id_bootstrap_table" class="table table-condensed"></table>
         </div>
       </div>
-      <div class="col-lg-2 column" style="padding: 0px;">
+      <div class="col-sm-2 column" style="padding: 0px;">
         <!-- 树部分 -->
         <ul id="id_zTree" class="ztree" style="flex: 1; background: white;"></ul>
       </div>
     </div>
   </div>
+
+  <p id='id_JSON' hidden="hidden">{}</p>
 
   <!-- Jquery组件引用 -->
   <!-- <script src="/statics/js/jquery.min.js"></script> -->
@@ -140,7 +142,6 @@
         },
         success: table_postOnLoad,
       });
-      // $.post("{% url 'ajax_table_data' %}", {'key_table': key_table, 'Init_UDID': parent.child_data['Init_UDID'],}, table_postOnLoad);
       if (key_table == '单位') {
         $('#id_zTree').hide();
       } else {
@@ -175,7 +176,7 @@
         layer.open({
           type: 2,
           title: '新建<' + key_table + '信息>详情',
-          area: ['100%', '100%'],
+          area: ['900px', '100%'],
           maxmin: true,
           content: content_url.replace('ewhuvlk', key_url),
         });
@@ -199,7 +200,7 @@
         layer.open({
           type: 2,
           title: '查看<' + key_table + '信息>详情',
-          area: ['100%', '100%'],
+          area: ['900px', '100%'],
           maxmin: true,
           content: content_url.replace('ewhuvlk', key_url),
         });
@@ -309,6 +310,7 @@
 
       $('#id_bootstrap_table').bootstrapTable('destroy'); // 销毁
       table_data = datas;
+      $('#id_JSON').html(ret.t_rows);
       TableInit("#id_bootstrap_table", columns, table_data); // 初始化表格
 
       $(window).resize(function() {
@@ -743,17 +745,12 @@
               },
               success: function(ret) {
                 table_data = JSON.parse(ret.t_rows);        // 读取该项及该项子孙数据
+                $('#id_JSON').html(ret.t_rows);    // 将数据转成JSON后存进<p></p>
                 $('#id_bootstrap_table').bootstrapTable('load', table_data);      // 加载进表格
                 $(".selected").removeClass("selected");
                 $("[data-uniqueid='"+ret.t_UDID+"']").addClass("selected");      // 选中该行
               },
             });
-            // $.post("{% url 'ajax_table_data' %}", {'key_table': key_table, 'Init_UDID': Init_UDID,},
-            //        function (ret) {
-            //          table_data = JSON.parse(ret.t_rows);
-            //          $('#id_bootstrap_table').bootstrapTable('load', table_data);
-            //        }
-            // );
           }
         },
       }
@@ -811,8 +808,9 @@
               'key_table': key_table,
             },
             success: function(ret) {
-              // 重新获取表格数据并刷新表格
+              // 重新获取表格数据并刷新表格，同时将该数据存入<p></p>
               table_data = JSON.parse(ret.t_rows);
+              $('#id_JSON').html(ret.t_rows);
               $(id_table).bootstrapTable('load', table_data);
               // 将树表完全折叠并取消选择
               try {
@@ -824,17 +822,6 @@
               $('#id_conditional_search').val('');
             },
           });
-          // $.post("{% url 'ajax_table_data' %}", {'key_table': key_table,}, function (ret){
-          //   // 重新获取表格数据并刷新表格
-          //   table_data = JSON.parse(ret.t_rows);
-          //   $(id_table).bootstrapTable('load', table_data);
-          //   // 将树表完全折叠并取消选择
-          //   try {
-          //     var treeObj = $.fn.zTree.getZTreeObj('id_zTree');
-          //     treeObj.expandAll(false);
-          //     treeObj.cancelSelectedNode();
-          //   }catch(e){};
-          // });
         },
       })
     }

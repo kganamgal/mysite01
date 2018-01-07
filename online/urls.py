@@ -23,6 +23,10 @@ urlpatterns = [
     url(r'^tableFrame/(\w*/*)$',
         offical.tableFrame,              name='tableFrame'),
 
+    # 选择器界面
+    url(r'^inputer_table/(\w*/*)$',
+        offical.inputer_table,           name='inputer_table'),
+
     # 表单群界面
     url(r'^inputFrame/(\w*/*)$',
         offical.inputFrame,              name='inputFrame'),
