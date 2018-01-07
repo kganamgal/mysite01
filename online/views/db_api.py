@@ -420,7 +420,9 @@ def get_All_Grandchildren(UDID):
 
 def read_For_Bidding_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM
-                 (SELECT           招标识别码, A.立项识别码 AS 立项识别码, 项目名称, 分项名称, 招标方式, 招标单位识别码,
+                 (SELECT           招标识别码, A.立项识别码 AS 立项识别码, 项目名称, 分项名称,
+                                   建设单位识别码, U4.单位名称 AS 建设单位名称, 代建单位识别码, U5.单位名称 AS 代建单位名称,
+                                   招标方式, 招标单位识别码,
                                    U1.单位名称 AS 招标单位名称, 招标代理识别码, U2.单位名称 AS 招标代理单位名称, 项目概算,
                                    预算控制价, 招标文件定稿时间, 公告邀请函发出时间, 开标时间, 中标通知书发出时间,
                                    中标单位识别码, U3.单位名称 AS 中标单位名称, 中标价, 招标备注
@@ -428,7 +430,10 @@ def read_For_Bidding_GridDialog(where_sql='', where_list=[], order_sql='', order
                        LEFT JOIN   tabel_立项信息 AS I ON A.立项识别码=I.立项识别码
                        LEFT JOIN   tabel_单位信息 AS U1 ON A.招标单位识别码=U1.单位识别码
                        LEFT JOIN   tabel_单位信息 AS U2 ON A.招标代理识别码=U2.单位识别码
-                       LEFT JOIN   tabel_单位信息 AS U3 ON A.中标单位识别码=U3.单位识别码) AS Origin
+                       LEFT JOIN   tabel_单位信息 AS U3 ON A.中标单位识别码=U3.单位识别码
+                       LEFT JOIN   tabel_单位信息 AS U4 ON I.建设单位识别码=U4.单位识别码
+                       LEFT JOIN   tabel_单位信息 AS U5 ON I.代建单位识别码=U5.单位识别码
+                 ) AS Origin
           '''.format(', '.join(uc.BiddingColLabels)) + where_sql + ' ' + order_sql
     sql_list = where_list + order_list
     with connection.cursor() as cursor:

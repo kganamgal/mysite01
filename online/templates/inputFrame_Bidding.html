@@ -97,14 +97,14 @@
       {
         'section_word':   '单位资料',
         'section_btn':    false,
-        'key_word':       ['招标单位识别码', '招标单位名称', 'nextLine',   '招标代理识别码', '招标代理单位名称', 'nextLine',   '中标单位识别码', '中标单位名称', ],
-        'short_key':      [null,           null,          null,         null,           null,         null,    null,     null,],
-        'input_type':     ['text',         'text',       'nextLine',    'text',         'text',          'nextLine',    'text',         'text',          ],
-        'value_type':     ['input',        'input',      'nextLine',    'input',        'input',         'nextLine',    'input',        'input',         ],
-        'input_width':    [1,              4,            'nextLine',    1,              4,               'nextLine',    1,              4,               ],
-        'input_height':   [null,           null,         'nextLine',    null,           null,            'nextLine',    null,           null,            ],
-        'font_size':      [12,             12,           'nextLine',    12,             12,              'nextLine',    12,             12,              ],
-        'edit_btn':       [false,          true,         'nextLine',    false,          true,            'nextLine',    false,          true,            ],
+        'key_word':       ['建设单位识别码', '建设单位名称', 'nextLine', '代建单位识别码', '代建单位名称', 'nextLine', '招标单位识别码', '招标单位名称', 'nextLine',   '招标代理识别码', '招标代理单位名称', 'nextLine',   '中标单位识别码', '中标单位名称', ],
+        'short_key':      [null, null, null, null, null, null, null, null, null, null, null, null, null, null,],
+        'input_type':     ['text', 'text', 'nextLine', 'text', 'text', 'nextLine', 'text', 'text', 'nextLine', 'text', 'text', 'nextLine', 'text', 'text',],
+        'value_type':     ['input', 'input', 'nextLine', 'input', 'input', 'nextLine', 'input', 'input', 'nextLine', 'input', 'input', 'nextLine', 'input', 'input',],
+        'input_width':    [1, 4, 'nextLine', 1, 4, 'nextLine', 1, 4, 'nextLine', 1, 4, 'nextLine', 1, 4,],
+        'input_height':   [null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null,],
+        'font_size':      [12, 12, 'nextLine', 12, 12, 'nextLine', 12, 12, 'nextLine', 12, 12, 'nextLine', 12, 12,],
+        'edit_btn':       [false, false, 'nextLine', false, false, 'nextLine', false, true, 'nextLine', false, true, 'nextLine', false, true,],
       },
       {
         'section_word':   '财务资料',
@@ -354,11 +354,52 @@
           content: '',
           yes: function(index, layero){
             layer.close(index);
-            alert('需调用AJAX');
+            // 从建设单位或代建单位中选择
+            var inputer_labels    = [     // 需要接受用户修改的项
+                                     '招标单位名称',
+                                    ];
+            var inputer_form_type = [     // 对应的输入类型
+                                      [$('#id_建设单位名称').val(), $('#id_代建单位名称').val(),],
+                                    ];
+            child_data['inputer_data'] = {'label': [], 'data': [], 'result_key': [], 'descriptoin': [], 'form_type': [], 'valid': [],};
+            for (var i in inputer_labels) {
+              child_data['inputer_data']['label'].push(inputer_labels[i]);
+              child_data['inputer_data']['data'].push($('#id_'+inputer_labels[i]).val());
+              child_data['inputer_data']['result_key'].push(null);
+              child_data['inputer_data']['descriptoin'].push('（请在此处填写<strong>'+inputer_labels[i]+'</strong>）');
+              child_data['inputer_data']['form_type'].push(inputer_form_type[i]);
+              child_data['inputer_data']['valid'].push(null);
+            };
+            // 打开输入页面
+            layer.open({
+              type: 2,
+              btn: ['确定', '取消'],
+              title: '',
+              area: ['800px', '80%'],
+              closeBtn: 0,
+              content: "{% url 'inputer' '' %}",
+              yes: function(index, layero) {
+                // 将用户填写的值传回本体
+                var body = layer.getChildFrame('body', index);
+                if (body.find('[valid="false"]').length > 0) {
+                  layer.alert('请修改红色文本框内数据！');
+                  return;
+                };
+                $('#id_招标单位名称').val(body.find('#id_招标单位名称')[0].value);
+                if (body.find('#id_招标单位名称')[0].value == $('#id_建设单位名称').val()) {
+                  $('#id_招标单位识别码').val($('#id_建设单位识别码').val());
+                }else if (body.find('#id_招标单位名称')[0].value == $('#id_代建单位名称').val()) {
+                  $('#id_招标单位识别码').val($('#id_代建单位识别码').val());
+                }else{
+                  $('#id_招标单位识别码').val('');
+                };
+                layer.close(index);
+              },
+            });
           },
           btn2: function(index, layero){
             layer.close(index);
-            // 打开立项管理页面
+            // 打开单位管理页面
             var key = '单位';
             var dict_fill = {   // 待填写input的id：表格行中相应列名
               'id_招标单位识别码':     '单位识别码',
