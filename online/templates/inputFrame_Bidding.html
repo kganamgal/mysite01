@@ -97,14 +97,14 @@
       {
         'section_word':   '单位资料',
         'section_btn':    false,
-        'key_word':       ['建设单位识别码', '建设单位名称', 'nextLine', '代建单位识别码', '代建单位名称', 'nextLine', '招标单位识别码', '招标单位名称', 'nextLine',   '招标代理识别码', '招标代理单位名称', 'nextLine',   '中标单位识别码', '中标单位名称', ],
+        'key_word':       ['招标单位识别码', '招标单位名称', 'nextLine',   '招标代理识别码', '招标代理单位名称', 'nextLine',   '中标单位识别码', '中标单位名称', 'nextLine', '建设单位识别码', '建设单位名称', 'nextLine', '代建单位识别码', '代建单位名称',],
         'short_key':      [null, null, null, null, null, null, null, null, null, null, null, null, null, null,],
         'input_type':     ['text', 'text', 'nextLine', 'text', 'text', 'nextLine', 'text', 'text', 'nextLine', 'text', 'text', 'nextLine', 'text', 'text',],
         'value_type':     ['input', 'input', 'nextLine', 'input', 'input', 'nextLine', 'input', 'input', 'nextLine', 'input', 'input', 'nextLine', 'input', 'input',],
         'input_width':    [1, 4, 'nextLine', 1, 4, 'nextLine', 1, 4, 'nextLine', 1, 4, 'nextLine', 1, 4,],
         'input_height':   [null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null,],
         'font_size':      [12, 12, 'nextLine', 12, 12, 'nextLine', 12, 12, 'nextLine', 12, 12, 'nextLine', 12, 12,],
-        'edit_btn':       [false, false, 'nextLine', false, false, 'nextLine', false, true, 'nextLine', false, true, 'nextLine', false, true,],
+        'edit_btn':       [false, true, 'nextLine', false, true, 'nextLine', false, true, 'nextLine', false, false, 'nextLine', false, false,],
       },
       {
         'section_word':   '财务资料',
@@ -298,7 +298,6 @@
             var data = {};
             for (var i = 0; i < datas.length; i++) {
               for (k in datas[i]) {
-                console.log(k, datas[i][k]);
                 if (datas[i][k] == data_uniqueid) {    // 如果主识别码==data_uniqueid
                   data = datas[i];
                 };
@@ -306,7 +305,12 @@
               };
             };
             for (var id in dict_fill) {
-              $('#'+id).val(data[dict_fill[id]]);
+              var v = data[dict_fill[id]];
+              if (v > 0 && id.search('识别码') < 0) {  // 如果值是数字，就认为其应该可以格式化为千分位形式
+                $('#'+id).val(toThousands(v));
+              }else{
+                $('#'+id).val(v);
+              };
             };
             layer.close(index);
           },
@@ -321,7 +325,7 @@
                                  '招标方式',
                                 ];
         var inputer_form_type = [     // 对应的输入类型
-                                  ['公开招标', '邀请招标', '竞争性谈判', '直接发包', '询价', '其他'],
+                                  ['公开招标', '邀请招标', '竞争性谈判', '直接发包', '询价', '自行采购', '其他'],
                                 ];
         call_inputer(inputer_labels, inputer_form_type);
       });
@@ -333,9 +337,14 @@
         // 打开立项管理页面
         var key = '立项';
         var dict_fill = {   // 待填写input的id：表格行中相应列名
-          'id_立项识别码': '立项识别码',
-          'id_项目名称':   '项目名称',
-          'id_分项名称':   '分项名称',
+          'id_立项识别码':      '立项识别码',
+          'id_项目名称':        '项目名称',
+          'id_分项名称':        '分项名称',
+          'id_建设单位识别码':   '建设单位识别码',
+          'id_建设单位名称':     '建设单位名称',
+          'id_代建单位识别码':   '代建单位识别码',
+          'id_代建单位名称':     '代建单位名称',
+          'id_项目概算':        '项目概算',
         };
         call_table_inputer(key, dict_fill);
       });
@@ -349,7 +358,7 @@
           type: 1,
           title: '',
           btn: ['我要从<建设单位>或<代建单位>中选择', '我要从其他单位中选择'],
-          area: ['400px', '100px'],
+          area: ['500px', '50px'],
           offset: '200px',
           content: '',
           yes: function(index, layero){

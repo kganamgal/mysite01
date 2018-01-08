@@ -445,12 +445,16 @@ def read_For_Bidding_GridDialog(where_sql='', where_list=[], order_sql='', order
 
 def read_For_Contract_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM
-                 (SELECT           A.合同识别码, A.立项识别码, 项目名称, 分项名称, 项目概算, A.招标识别码, 招标方式, 合同编号, 合同名称,
-                                   合同主要内容, 合同类别, 甲方识别码, U1.单位名称 AS 甲方单位名称, 乙方识别码, U2.单位名称 AS 乙方单位名称, 
+                 (SELECT           A.合同识别码, A.立项识别码, 项目名称, 分项名称, 项目概算,
+                                   I.建设单位识别码, U7.单位名称 AS 建设单位名称, I.代建单位识别码, U8.单位名称 AS 代建单位名称,
+                                   A.招标识别码, 招标方式,
+                                   B.招标单位识别码, U5.单位名称 AS 招标单位名称, B.中标单位识别码, U6.单位名称 AS 中标单位名称,
+                                   合同编号, 合同名称, 合同主要内容, 合同类别,
+                                   甲方识别码, U1.单位名称 AS 甲方单位名称, 乙方识别码, U2.单位名称 AS 乙方单位名称,
                                    丙方识别码, U3.单位名称 AS 丙方单位名称, 丁方识别码, U4.单位名称 AS 丁方单位名称,
-                                   中标价, 合同值_签订时, 合同值_最新值, 合同值_最终值, 
-                                   已付款, 已付款/项目概算 AS 已付款占概算, 
-                                   已付款/合同值_最新值 AS 已付款占合同, 形象进度, 支付上限, 合同签订时间, 
+                                   中标价, 合同值_签订时, 合同值_最新值, 合同值_最终值,
+                                   已付款, 已付款/项目概算 AS 已付款占概算,
+                                   已付款/合同值_最新值 AS 已付款占合同, 形象进度, 支付上限, 合同签订时间,
                                    开工时间, 竣工合格时间, 保修结束时间, 审计完成时间, 合同备注
                   FROM             tabel_合同信息 AS A
                        LEFT JOIN   tabel_立项信息 AS I ON A.立项识别码=I.立项识别码
@@ -459,7 +463,12 @@ def read_For_Contract_GridDialog(where_sql='', where_list=[], order_sql='', orde
                        LEFT JOIN   tabel_单位信息 AS U3 ON A.丙方识别码=U3.单位识别码
                        LEFT JOIN   tabel_单位信息 AS U4 ON A.丁方识别码=U4.单位识别码
                        LEFT JOIN   tabel_招标信息 AS B ON A.招标识别码=B.招标识别码
-                       LEFT JOIN   (SELECT 合同识别码, SUM(本次付款额) AS 已付款 FROM tabel_付款信息 GROUP BY 合同识别码) AS P ON A.合同识别码=P.合同识别码) AS Origin
+                       LEFT JOIN   tabel_单位信息 AS U5 ON B.招标单位识别码=U5.单位识别码
+                       LEFT JOIN   tabel_单位信息 AS U6 ON B.中标单位识别码=U6.单位识别码
+                       LEFT JOIN   tabel_单位信息 AS U7 ON I.建设单位识别码=U7.单位识别码
+                       LEFT JOIN   tabel_单位信息 AS U8 ON I.代建单位识别码=U8.单位识别码
+                       LEFT JOIN   (SELECT 合同识别码, SUM(本次付款额) AS 已付款 FROM tabel_付款信息 GROUP BY 合同识别码) AS P ON A.合同识别码=P.合同识别码
+                  ) AS Origin
           '''.format(', '.join(uc.ContractColLabels)) + where_sql + ' ' + order_sql
     sql_list = where_list + order_list
     with connection.cursor() as cursor:
