@@ -308,6 +308,8 @@
               var v = data[dict_fill[id]];
               if (v > 0 && id.search('识别码') < 0) {  // 如果值是数字，就认为其应该可以格式化为千分位形式
                 $('#'+id).val(toThousands(v));
+              }else if (v === 0) {
+                $('#'+id).val(toThousands(v));
               }else{
                 $('#'+id).val(v);
               };

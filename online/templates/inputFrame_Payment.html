@@ -73,14 +73,14 @@
       {
         'section_word':   '基本资料',
         'section_btn':    true,
-        'key_word':       ['付款识别码', '本次付款额', 'nextLine', '付款事由',],
-        'short_key':      [null, null, 'nextLine', null,],
-        'input_type':     ['text', 'text', 'nextLine', 'textarea',],
-        'value_type':     ['input', 'float', 'nextLine', 'text',],
-        'input_width':    [1, 1, 'nextLine', 6,],
-        'input_height':   [null, null, 'nextLine', 50,],
-        'font_size':      [12, 12, 'nextLine', 12,],
-        'edit_btn':       [false, false, 'nextLine', false,],
+        'key_word':       ['付款识别码', 'nextLine', '付款事由',],
+        'short_key':      [null, 'nextLine', null,],
+        'input_type':     ['text', 'nextLine', 'textarea',],
+        'value_type':     ['input', 'nextLine', 'text',],
+        'input_width':    [1, 'nextLine', 6,],
+        'input_height':   [null, 'nextLine', 50,],
+        'font_size':      [12, 'nextLine', 12,],
+        'edit_btn':       [false, 'nextLine', false,],
       },
       {
         'section_word':   '日期资料',
@@ -95,7 +95,7 @@
         'edit_btn':       [true, true,],
       },
       {
-        'section_word':   '立项/合同资料',
+        'section_word':   '立项、合同资料',
         'section_btn':    true,
         'key_word':       ['立项识别码', '项目名称', '分项名称', 'nextLine', '合同识别码', '合同类别', 'nextLine', '合同编号', '合同名称', 'nextLine', '合同主要内容', 'nextLine', '付款时形象进度',],
         'short_key':      [null, null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, 'nextLine', null,],
@@ -121,26 +121,26 @@
       {
         'section_word':   '单位资料',
         'section_btn':    false,
-        'key_word':       ['付款单位识别码', '付款单位名称', 'nextLine', '付款单位账号', 'nextLine', '收款单位识别码', '收款单位名称', 'nextLine', '收款单位账号',],
-        'short_key':      [null, null, 'nextLine', null, 'nextLine', null, null, 'nextLine', null,],
-        'input_type':     ['text', 'text', 'nextLine', 'textarea', 'nextLine', 'text', 'text', 'nextLine', 'textarea',],
-        'value_type':     ['input', 'input', 'nextLine', 'text', 'nextLine', 'input', 'input', 'nextLine', 'text',],
-        'input_width':    [1, 4, 'nextLine', 6, 'nextLine', 1, 4, 'nextLine', 6,],
-        'input_height':   [null, null, 'nextLine', 50, 'nextLine', null, null, 'nextLine', 50,],
-        'font_size':      [12, 12, 'nextLine', 12, 'nextLine', 12, 12, 'nextLine', 12,],
-        'edit_btn':       [false, true, 'nextLine', false, 'nextLine', false, true, 'nextLine', false,],
+        'key_word':       ['付款单位识别码', '付款单位名称', 'nextLine', '付款单位账号', 'nextLine', '收款单位识别码', '收款单位名称', 'nextLine', '收款单位账号', 'nextLine', '建设单位识别码', '建设单位名称', 'nextLine', '代建单位识别码', '代建单位名称', 'nextLine', '招标单位识别码', '招标单位名称', 'nextLine', '中标单位识别码', '中标单位名称', 'nextLine', '甲方识别码', '甲方单位名称', 'nextLine', '乙方识别码', '乙方单位名称', 'nextLine', '丙方识别码', '丙方单位名称', 'nextLine', '丁方识别码', '丁方单位名称'],
+        'short_key':      [null, null, 'nextLine', null, 'nextLine', null, null, 'nextLine', null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null],
+        'input_type':     ['text', 'text', 'nextLine', 'textarea', 'nextLine', 'text', 'text', 'nextLine', 'textarea', 'nextLine', 'text', 'text', 'nextLine', 'text', 'text', 'nextLine', 'text', 'text', 'nextLine', 'text', 'text', 'nextLine', 'text', 'text', 'nextLine', 'text', 'text', 'nextLine', 'text', 'text', 'nextLine', 'text', 'text'],
+        'value_type':     ['input', 'input', 'nextLine', 'text', 'nextLine', 'input', 'input', 'nextLine', 'text', 'nextLine', 'input', 'input', 'nextLine', 'input', 'input', 'nextLine', 'input', 'input', 'nextLine', 'input', 'input', 'nextLine', 'input', 'input', 'nextLine', 'input', 'input', 'nextLine', 'input', 'input', 'nextLine', 'input', 'input'],
+        'input_width':    [1, 4, 'nextLine', 6, 'nextLine', 1, 4, 'nextLine', 6, 'nextLine', 1, 4, 'nextLine', 1, 4, 'nextLine', 1, 4, 'nextLine', 1, 4, 'nextLine', 1, 4, 'nextLine', 1, 4, 'nextLine', 1, 4, 'nextLine', 1, 4],
+        'input_height':   [null, null, 'nextLine', 50, 'nextLine', null, null, 'nextLine', 50, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null, 'nextLine', null, null],
+        'font_size':      [12, 12, 'nextLine', 12, 'nextLine', 12, 12, 'nextLine', 12, 'nextLine', 12, 12, 'nextLine', 12, 12, 'nextLine', 12, 12, 'nextLine', 12, 12, 'nextLine', 12, 12, 'nextLine', 12, 12, 'nextLine', 12, 12, 'nextLine', 12, 12],
+        'edit_btn':       [false, true, 'nextLine', false, 'nextLine', false, true, 'nextLine', false, 'nextLine', false, false, 'nextLine', false, false, 'nextLine', false, false, 'nextLine', false, false, 'nextLine', false, false, 'nextLine', false, false, 'nextLine', false, false, 'nextLine', false, false],
       },
       {
         'section_word':   '财务资料',
         'section_btn':    false,
-        'key_word':       ['付款时预算总额', '付款时预算已付额', '付款时预算余额', 'nextLine', '付款时项目概算', '付款时概算已付额', '付款时概算余额', 'nextLine', '付款时合同值', 'nextLine', '付款时合同付款上限', '付款时合同已付额', '付款时合同可付余额', 'nextLine', '付款时预算已付比', '预算本次付款比', '预算累付比', 'nextLine', '付款时概算已付比', '概算本次付款比', '概算累付比', 'nextLine', '付款时合同已付比', '合同本次付款比', '合同累付比',],
-        'short_key':      [null, null, null, 'nextLine', null, null, null, 'nextLine', null, 'nextLine', null, null, null, 'nextLine', null, null, null, 'nextLine', null, null, null, 'nextLine', null, null, null],
-        'input_type':     ['text', 'text', 'text', 'nextLine', 'text', 'text', 'text', 'nextLine', 'text', 'nextLine', 'text', 'text', 'text', 'nextLine', 'text', 'text', 'text', 'nextLine', 'text', 'text', 'text', 'nextLine', 'text', 'text', 'text'],
-        'value_type':     ['float', 'float', 'float', 'nextLine', 'float', 'float', 'float', 'nextLine', 'float', 'nextLine', 'float', 'float', 'float', 'nextLine', 'percent', 'percent', 'percent', 'nextLine', 'percent', 'percent', 'percent', 'nextLine', 'percent', 'percent', 'percent'],
-        'input_width':    [1, 1, 1, 'nextLine', 1, 1, 1, 'nextLine', 1, 'nextLine', 1, 1, 1, 'nextLine', 1, 1, 1, 'nextLine', 1, 1, 1, 'nextLine', 1, 1, 1],
-        'input_height':   [null, null, null, 'nextLine', null, null, null, 'nextLine', null, 'nextLine', null, null, null, 'nextLine', null, null, null, 'nextLine', null, null, null, 'nextLine', null, null, null],
-        'font_size':      [12, 12, 12, 'nextLine', 12, 12, 12, 'nextLine', 12, 'nextLine', 12, 12, 12, 'nextLine', 12, 12, 12, 'nextLine', 12, 12, 12, 'nextLine', 12, 12, 12],
-        'edit_btn':       [false, false, false, 'nextLine', false, false, false, 'nextLine', false, 'nextLine', false, false, false, 'nextLine', false, false, false, 'nextLine', false, false, false, 'nextLine', false, false, false],
+        'key_word':       ['本次付款额', 'nextLine', '付款时预算总额', '付款时预算已付额', '付款时预算余额', 'nextLine', '付款时项目概算', '付款时概算已付额', '付款时概算余额', 'nextLine', '付款时合同值', 'nextLine', '付款时合同付款上限', '付款时合同已付额', '付款时合同可付余额', 'nextLine', '付款时预算已付比', '预算本次付款比', '预算累付比', 'nextLine', '付款时概算已付比', '概算本次付款比', '概算累付比', 'nextLine', '付款时合同已付比', '合同本次付款比', '合同累付比',],
+        'short_key':      [null, 'nextLine', null, null, null, 'nextLine', null, null, null, 'nextLine', null, 'nextLine', null, null, null, 'nextLine', null, null, null, 'nextLine', null, null, null, 'nextLine', null, null, null,],
+        'input_type':     ['text', 'nextLine', 'text', 'text', 'text', 'nextLine', 'text', 'text', 'text', 'nextLine', 'text', 'nextLine', 'text', 'text', 'text', 'nextLine', 'text', 'text', 'text', 'nextLine', 'text', 'text', 'text', 'nextLine', 'text', 'text', 'text',],
+        'value_type':     ['float', 'nextLine', 'float', 'float', 'float', 'nextLine', 'float', 'float', 'float', 'nextLine', 'float', 'nextLine', 'float', 'float', 'float', 'nextLine', 'percent', 'percent', 'percent', 'nextLine', 'percent', 'percent', 'percent', 'nextLine', 'percent', 'percent', 'percent',],
+        'input_width':    [2, 'nextLine', 1, 1, 1, 'nextLine', 1, 1, 1, 'nextLine', 1, 'nextLine', 1, 1, 1, 'nextLine', 1, 1, 1, 'nextLine', 1, 1, 1, 'nextLine', 1, 1, 1,],
+        'input_height':   [null, 'nextLine', null, null, null, 'nextLine', null, null, null, 'nextLine', null, 'nextLine', null, null, null, 'nextLine', null, null, null, 'nextLine', null, null, null, 'nextLine', null, null, null,],
+        'font_size':      [12, 'nextLine', 12, 12, 12, 'nextLine', 12, 12, 12, 'nextLine', 12, 'nextLine', 12, 12, 12, 'nextLine', 12, 12, 12, 'nextLine', 12, 12, 12, 'nextLine', 12, 12, 12,],
+        'edit_btn':       [true, 'nextLine', false, false, false, 'nextLine', false, false, false, 'nextLine', false, 'nextLine', false, false, false, 'nextLine', false, false, false, 'nextLine', false, false, false, 'nextLine', false, false, false,],
       },
       {
         'section_word':   '其他资料',
@@ -253,6 +253,259 @@
       // 将input和textarea设为不可用
       $('input,textarea').attr('readonly', 'readonly');
       // 为各按钮注册事件
+      function call_inputer(inputer_labels, inputer_form_type, func_arg=function(){}, func_fill=function(){}) {
+        // 构造标准化inputer参数及回调
+        // arg1：需要用户输入的项；arg2：这几项的类型；arg3：自定义arg1、2；arg4：自定义回调填写方式
+        child_data['inputer_data'] = {'label': [], 'data': [], 'result_key': [], 'descriptoin': [], 'form_type': [], 'valid': [],};
+        for (var i in inputer_labels) {
+          child_data['inputer_data']['label'].push(inputer_labels[i]);
+          child_data['inputer_data']['data'].push($('#id_'+inputer_labels[i]).val());
+          child_data['inputer_data']['result_key'].push(null);
+          child_data['inputer_data']['descriptoin'].push('（请在此处填写<strong>'+inputer_labels[i]+'</strong>）');
+          child_data['inputer_data']['form_type'].push(inputer_form_type[i]);
+          child_data['inputer_data']['valid'].push(null);
+        };
+        func_arg();
+        // 打开输入页面
+        layer.open({
+          type: 2,
+          btn: ['确定', '取消'],
+          title: '',
+          area: ['800px', '80%'],
+          closeBtn: 0,
+          content: "{% url 'inputer' '' %}",
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            if (body.find('[valid="false"]').length > 0) {
+              layer.alert('请修改红色文本框内数据！');
+              return;
+            };
+            for (var i in inputer_labels) {
+              $('#id_'+inputer_labels[i]).val(body.find('#id_'+inputer_labels[i])[0].value);
+            };
+            func_fill(body);
+            layer.close(index);
+          },
+        });
+      };
+      function call_table_inputer(key, dict_fill, func_fill=function(){}) {
+        // 打开立项管理页面
+        child_data['key_table'] = key; // 立项 | 招标
+        var key_url = dict_Chn_Eng[child_data['key_table']];
+        var content_url = "{% url 'inputer_table' 'ewhuvlk' %}";
+        layer.open({
+          type: 2,
+          btn: ['确定', '取消'],
+          title: child_data['key_table'] + '信息管理',
+          area: ['100%', '100%'],
+          maxmin: true,
+          content: content_url.replace('ewhuvlk', key_url),
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            var data_uniqueid = $(body.find('.selected')[0]).attr('data-uniqueid') || null;
+            var data_index = $(body.find('.selected')[0]).attr('data-index') || null;
+            var datas = JSON.parse($(body.find('#id_JSON')[0]).html());
+            var data = {};
+            for (var i = 0; i < datas.length; i++) {
+              for (k in datas[i]) {
+                if (datas[i][k] == data_uniqueid) {    // 如果主识别码==data_uniqueid
+                  data = datas[i];
+                };
+                break;
+              };
+            };
+            for (var id in dict_fill) {
+              var v = data[dict_fill[id]];
+              if (v > 0 && id.search('识别码') < 0) {  // 如果值是数字，就认为其应该可以格式化为千分位形式
+                $('#'+id).val(toThousands(v));
+              }else if (v === 0) {
+                $('#'+id).val(toThousands(v));
+              }else{
+                $('#'+id).val(v);
+              };
+            };
+            func_fill(data);
+            layer.close(index);
+          },
+        });
+      };
+      // 修改基本资料
+      $('#id_button_基本资料').removeAttr('disabled');
+      $(document).on('click', '#id_button_基本资料', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        var inputer_labels    = [     // 需要接受用户修改的项
+                                 '付款事由',
+                                ];
+        var inputer_form_type = [     // 对应的输入类型
+                                  'text',
+                                ];
+        call_inputer(inputer_labels, inputer_form_type);
+      });
+      // 修改付款登记时间
+      $('#id_button_付款登记时间').removeAttr('disabled');
+      $(document).on('click', '#id_button_付款登记时间', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        var inputer_labels    = [     // 需要接受用户修改的项
+                                 '付款登记时间',
+                                ];
+        var inputer_form_type = [     // 对应的输入类型
+                                  'date',
+                                ];
+        call_inputer(
+          inputer_labels,
+          inputer_form_type,
+          );
+      });
+      // 修改付款支付时间
+      $('#id_button_付款支付时间').removeAttr('disabled');
+      $(document).on('click', '#id_button_付款支付时间', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        var inputer_labels    = [     // 需要接受用户修改的项
+                                 '付款支付时间',
+                                ];
+        var inputer_form_type = [     // 对应的输入类型
+                                  'date',
+                                ];
+        call_inputer(
+          inputer_labels,
+          inputer_form_type,
+          );
+      });
+      // 立项、合同资料
+      $('#id_button_立项、合同资料').removeAttr('disabled');
+      $(document).on('click', '#id_button_立项、合同资料', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        // 询问立项还是合同
+        layer.open({
+          type: 1,
+          title: '',
+          btn: ['该笔付款需要为合同付款', '该笔付款为非合同付款'],
+          area: ['420px', '50px'],
+          offset: '200px',
+          content: '',
+          yes: function(index, layero){
+            layer.close(index);
+            // 从合同管理中选择
+            var key = '合同';
+            var dict_fill = {   // 待填写input的id：表格行中相应列名
+              'id_立项识别码':        '立项识别码',
+              'id_项目名称':          '项目名称',
+              'id_分项名称':          '分项名称',
+              'id_建设单位识别码':     '建设单位识别码',
+              'id_建设单位名称':       '建设单位名称',
+              'id_代建单位识别码':     '代建单位识别码',
+              'id_代建单位名称':       '代建单位名称',
+              'id_合同识别码':        '合同识别码',
+              'id_合同类别':          '合同类别',
+              'id_合同编号':          '合同编号',
+              'id_合同名称':          '合同名称',
+              'id_合同主要内容':       '合同主要内容',
+              'id_付款时形象进度':     '形象进度',
+              'id_招标单位识别码':     '招标单位识别码',
+              'id_招标单位名称':       '招标单位名称',
+              'id_中标单位识别码':     '中标单位识别码',
+              'id_中标单位名称':       '中标单位名称',
+              'id_合同识别码':        '合同识别码',
+              'id_甲方识别码':         '甲方识别码',
+              'id_甲方单位名称':       '甲方单位名称',
+              'id_乙方识别码':         '乙方识别码',
+              'id_乙方单位名称':       '乙方单位名称',
+              'id_丙方识别码':         '丙方识别码',
+              'id_丙方单位名称':       '丙方单位名称',
+              'id_丁方识别码':         '丁方识别码',
+              'id_丁方单位名称':       '丁方单位名称',
+              'id_付款时项目概算':      '项目概算',
+              'id_付款时概算已付额':    '已付款',
+              'id_付款时合同值':       '合同值_最新值',
+              'id_付款时合同付款上限':  '支付上限',
+              'id_付款时合同已付额':    '已付款',
+            };
+            call_table_inputer(
+              key,
+              dict_fill,
+              function(data) {
+                var this_pay = $('#id_本次付款额').val().replace(/[\, ]/g, '');
+                var estimate = data['项目概算'];
+                var payed_estimate = data['已付款'];
+                console.log(this_pay, estimate, payed_estimate);
+                $('#id_付款时概算余额').val(toThousands(accMinus(estimate, payed_estimate)));
+                $('#id_付款时概算已付比').val(toPercents(accDiv(payed_estimate, estimate)));
+                $('#id_概算本次付款比').val(toPercents(accDiv(this_pay, estimate)));
+                $('#id_概算累付比').val(toPercents(accDiv(accAdd(this_pay, payed_estimate), estimate)));
+                var contract_new = data['合同值_最新值'];
+                var pay_limit = data['支付上限'];
+                var payed = data['已付款'];
+                $('#id_付款时合同可付余额').val(toThousands(accMinus(pay_limit, payed)));
+                $('#id_付款时合同已付比').val(toPercents(accDiv(payed, contract_new)));
+                $('#id_合同本次付款比').val(toPercents(accDiv(this_pay, contract_new)));
+                $('#id_合同累付比').val(toPercents(accDiv(accAdd(this_pay, payed), contract_new)));
+              },
+            );
+          },
+          btn2: function(index, layero){
+            layer.close(index);
+            // 从立项管理中选择
+            var key = '立项';
+            var dict_fill = {   // 待填写input的id：表格行中相应列名
+              'id_立项识别码':        '立项识别码',
+              'id_项目名称':          '项目名称',
+              'id_分项名称':          '分项名称',
+              'id_建设单位识别码':     '建设单位识别码',
+              'id_建设单位名称':       '建设单位名称',
+              'id_代建单位识别码':     '代建单位识别码',
+              'id_代建单位名称':       '代建单位名称',
+              'id_付款时项目概算':      '项目概算',
+              'id_付款时概算已付额':    '概算已付款额',
+            };
+            // 注意检查选择的项是否为叶端
+            call_table_inputer(
+              key,
+              dict_fill,
+              function(data) {
+                var this_pay = $('#id_本次付款额').val().replace(/[\, ]/g, '');
+                var estimate = data['项目概算'];
+                var payed_estimate = data['概算已付款额'];
+                $('#id_付款时概算余额').val(toThousands(accMinus(estimate, payed_estimate)));
+                $('#id_付款时概算已付比').val(toPercents(accDiv(payed_estimate, estimate)));
+                $('#id_概算本次付款比').val(toPercents(accDiv(this_pay, estimate)));
+                $('#id_概算累付比').val(toPercents(accDiv(accAdd(this_pay, payed_estimate), estimate)));
+                // 清空合同选项
+                $('#id_合同识别码').val('');
+                $('#id_合同类别').val('');
+                $('#id_合同编号').val('');
+                $('#id_合同名称').val('');
+                $('#id_合同主要内容').val('');
+                $('#id_付款时形象进度').val('');
+                $('#id_招标单位识别码').val('');
+                $('#id_招标单位名称').val('');
+                $('#id_中标单位识别码').val('');
+                $('#id_中标单位名称').val('');
+                $('#id_合同识别码').val('');
+                $('#id_甲方识别码').val('');
+                $('#id_甲方单位名称').val('');
+                $('#id_乙方识别码').val('');
+                $('#id_乙方单位名称').val('');
+                $('#id_丙方识别码').val('');
+                $('#id_丙方单位名称').val('');
+                $('#id_丁方识别码').val('');
+                $('#id_丁方单位名称').val('');
+                $('#id_付款时合同值').val('');
+                $('#id_付款时合同付款上限').val('');
+                $('#id_付款时合同已付额').val('');
+                $('#id_付款时合同已付比').val('');
+                $('#id_合同本次付款比').val('');
+                $('#id_合同累付比').val('');
+                $('#id_付款时合同可付余额').val('');
+              },);
+          },
+        });
+      });
       // 查看附件
       if (behavior == 'View') {     // 查看模式
         // 激活附件模块

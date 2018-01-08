@@ -702,6 +702,10 @@ def read_For_Payment_GridDialog(where_sql='', where_list=[], order_sql='', order
                                A.合同识别码, 合同名称, 合同类别, 合同编号, 付款批次, 付款事由,
                                A.付款单位识别码, U1.单位名称 AS 付款单位名称, U1.银行账号 AS 付款单位账号,
                                A.收款单位识别码, U2.单位名称 AS 收款单位名称, U2.银行账号 AS 收款单位账号,
+                               I.建设单位识别码, U3.单位名称 AS 建设单位名称, I.代建单位识别码, U4.单位名称 AS 代建单位名称,
+                               BI.招标单位识别码, U5.单位名称 AS 招标单位名称, BI.中标单位识别码, U6.单位名称 AS 中标单位名称,
+                               C.甲方识别码, U7.单位名称 AS 甲方单位名称, C.乙方识别码, U8.单位名称 AS 乙方单位名称,
+                               C.丙方识别码, U9.单位名称 AS 丙方单位名称, C.丁方识别码, U10.单位名称 AS 丁方单位名称,
                                A.预算识别码, 预算名称, 预算周期, 付款时预算总额, 付款时项目概算, 付款时合同付款上限,
                                付款时合同值, 付款时预算余额, 付款时概算余额, 付款时合同可付余额, 付款时合同未付额,
                                付款时预算已付额, 付款时合同已付额, 付款时概算已付额,
@@ -718,6 +722,7 @@ def read_For_Payment_GridDialog(where_sql='', where_list=[], order_sql='', order
                                付款备注
               FROM             tabel_付款信息 AS A
                     LEFT JOIN  tabel_立项信息 AS I ON A.立项识别码=I.立项识别码
+                    LEFT JOIN  tabel_招标信息 AS BI ON A.立项识别码=BI.立项识别码
                     LEFT JOIN  tabel_合同信息 AS C ON A.合同识别码=C.合同识别码
                     LEFT JOIN  (SELECT 立项识别码, 付款识别码, convert(rank , SIGNED) AS 付款批次
                                 FROM (SELECT ff.立项识别码, ff.付款识别码, IF(@pa = ff.立项识别码, @rank:=@rank + 1, @rank:=1) AS rank, @pa:=ff.立项识别码
@@ -727,6 +732,14 @@ def read_For_Payment_GridDialog(where_sql='', where_list=[], order_sql='', order
                                               ORDER BY 立项识别码 , 付款识别码) ff, (SELECT @rank:=0, @pa := NULL) tt) result) AS BP ON A.付款识别码=BP.付款识别码
                     LEFT JOIN  tabel_单位信息 AS U1 ON A.付款单位识别码=U1.单位识别码
                     LEFT JOIN  tabel_单位信息 AS U2 ON A.收款单位识别码=U2.单位识别码
+                    LEFT JOIN  tabel_单位信息 AS U3 ON I.建设单位识别码=U3.单位识别码
+                    LEFT JOIN  tabel_单位信息 AS U4 ON I.代建单位识别码=U4.单位识别码
+                    LEFT JOIN  tabel_单位信息 AS U5 ON BI.招标单位识别码=U5.单位识别码
+                    LEFT JOIN  tabel_单位信息 AS U6 ON BI.中标单位识别码=U6.单位识别码
+                    LEFT JOIN  tabel_单位信息 AS U7 ON C.甲方识别码=U7.单位识别码
+                    LEFT JOIN  tabel_单位信息 AS U8 ON C.乙方识别码=U8.单位识别码
+                    LEFT JOIN  tabel_单位信息 AS U9 ON C.丙方识别码=U9.单位识别码
+                    LEFT JOIN  tabel_单位信息 AS U10 ON C.丁方识别码=U10.单位识别码
                     LEFT JOIN  tabel_预算信息 AS B ON A.预算识别码=B.预算识别码) AS Origin
           '''.format(', '.join(uc.PaymentColLabels)) + where_sql + ' ' + order_sql
     sql_list = where_list + order_list
