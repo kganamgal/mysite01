@@ -338,9 +338,12 @@ def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='ORDER
         CALL proc_tmp();
     '''
     # 正式
+    # 编辑/etc/my.cnf文件，加入如下参数，重启mysql
+    # sql_mode = "STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER"
     sql = '''SELECT {} FROM
              (SELECT           A.立项识别码, A.项目名称, A.分项名称, A.父项立项识别码, B.项目名称 AS 父项项目名称,
-                               B.分项名称 AS 父项分项名称, B.项目概算 AS 父项项目概算,
+                               B.分项名称 AS 父项分项名称, 子项数量,
+                               B.项目概算 AS 父项项目概算,
                                ifnull(B.项目概算, 0)-ifnull(TP.已分配概算, 0)+ifnull(A.项目概算, 0) AS 项目概算上限,
                                A.建设单位识别码, U1.单位名称 AS 建设单位名称, A.代建单位识别码, U2.单位名称 AS 代建单位名称,
                                A.立项文件名称, A.立项时间, A.项目概算, T.已分配概算, A.项目概算-T.已分配概算 AS 未分配概算,
@@ -348,11 +351,12 @@ def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='ORDER
                                T.已付款/A.项目概算 AS 概算付款比, A.立项备注
               FROM             tabel_立项信息 AS A
                    LEFT JOIN   tabel_立项信息 AS B  ON A.父项立项识别码=B.立项识别码
+                   LEFT JOIN   (SELECT 父项立项识别码, COUNT(*) AS 子项数量 FROM tabel_立项信息 GROUP BY 父项立项识别码) AS C ON A.立项识别码=C.父项立项识别码
                    LEFT JOIN   tabel_单位信息 AS U1 ON A.建设单位识别码=U1.单位识别码
                    LEFT JOIN   tabel_单位信息 AS U2 ON A.代建单位识别码=U2.单位识别码
                    LEFT JOIN   tmp_pay_table AS T ON A.立项识别码=T.立项识别码
                    LEFT JOIN   tmp_parent_pay_table AS TP ON A.父项立项识别码=TP.立项识别码
-                   ) AS Origin
+             ) AS Origin
           '''.format(', '.join(uc.InitiationColLabels)) + where_sql + ' ' + order_sql
     sql_list = where_list + order_list
     with connection.cursor() as cursor:
