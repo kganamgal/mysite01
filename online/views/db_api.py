@@ -946,6 +946,8 @@ class getUserPermission():
             return True
         else:
             return False
+
+
     # 以下为打开网页或窗口的权限
 
     def can_Visit_Overview(self):
@@ -974,6 +976,8 @@ class getUserPermission():
         if not self.user_Is_Exist():
             return False
         return (self.__filterDict.get('查看%s信息' % classify) or 0) >= 2
+
+
     # 读取数据权限
 
     def can_Read_Overview(self):
@@ -1011,6 +1015,8 @@ class getUserPermission():
         if not self.user_Is_Exist():
             return False
         return (self.__filterDict.get('查看%s信息' % classify) or 0) >= 3
+
+
     # 写入数据权限
 
     def can_Upload_Attachment(self, classify=''):

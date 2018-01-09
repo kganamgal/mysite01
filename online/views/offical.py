@@ -162,7 +162,6 @@ def inputFrame(request, key_table):
     else:
         return render(request, 'inputFrame_' + key_table + '.html')
 
-
 def attachFrame(request, key_table):
     '''
         A page which can display attachments-list of an item.
