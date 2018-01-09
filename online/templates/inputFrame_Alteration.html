@@ -115,7 +115,7 @@
         'value_type':     ['input', 'input',],
         'input_width':    [1, 1,],
         'input_height':   [null, null,],
-        'font_size':      [10, 10,],
+        'font_size':      [12, 12,],
         'edit_btn':       [false, false,],
       },
       {
@@ -223,12 +223,221 @@
         }
         // 填充数值
         $('#id_' + key).val(input_value);
-      }
+      };
       // 将修改按钮设为不可用
       $('.btn-edit,.btn-bottom').attr('disabled', 'disabled');
       // 将input和textarea设为不可用
       $('input,textarea').attr('readonly', 'readonly');
       // 为各按钮注册事件
+      function call_inputer(inputer_labels, inputer_form_type, func_arg=function(){}, func_fill=function(){}) {
+        // 构造标准化inputer参数及回调
+        // arg1：需要用户输入的项；arg2：这几项的类型；arg3：自定义arg1、2；arg4：自定义回调填写方式
+        child_data['inputer_data'] = {'label': [], 'data': [], 'result_key': [], 'descriptoin': [], 'form_type': [], 'valid': [],};
+        for (var i in inputer_labels) {
+          child_data['inputer_data']['label'].push(inputer_labels[i]);
+          child_data['inputer_data']['data'].push($('#id_'+inputer_labels[i]).val());
+          child_data['inputer_data']['result_key'].push(null);
+          child_data['inputer_data']['descriptoin'].push('（请在此处填写<strong>'+inputer_labels[i]+'</strong>）');
+          child_data['inputer_data']['form_type'].push(inputer_form_type[i]);
+          child_data['inputer_data']['valid'].push(null);
+        };
+        func_arg();
+        // 打开输入页面
+        layer.open({
+          type: 2,
+          btn: ['确定', '取消'],
+          title: '',
+          area: ['800px', '80%'],
+          closeBtn: 0,
+          content: "{% url 'inputer' '' %}",
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            if (body.find('[valid="false"]').length > 0) {
+              layer.alert('请修改红色文本框内数据！');
+              return;
+            };
+            for (var i in inputer_labels) {
+              $('#id_'+inputer_labels[i]).val(body.find('#id_'+inputer_labels[i])[0].value);
+            };
+            func_fill(body);
+            layer.close(index);
+          },
+        });
+      };
+      function call_table_inputer(key, dict_fill, func_fill=function(){}) {
+        // 打开立项管理页面
+        child_data['key_table'] = key; // 立项 | 招标
+        var key_url = dict_Chn_Eng[child_data['key_table']];
+        var content_url = "{% url 'inputer_table' 'ewhuvlk' %}";
+        layer.open({
+          type: 2,
+          btn: ['确定', '取消'],
+          title: child_data['key_table'] + '信息管理',
+          area: ['100%', '100%'],
+          maxmin: true,
+          content: content_url.replace('ewhuvlk', key_url),
+          yes: function(index, layero) {
+            // 将用户填写的值传回本体
+            var body = layer.getChildFrame('body', index);
+            var data_uniqueid = $(body.find('.selected')[0]).attr('data-uniqueid') || null;
+            var data_index = $(body.find('.selected')[0]).attr('data-index') || null;
+            var datas = JSON.parse($(body.find('#id_JSON')[0]).html());
+            var data = {};
+            for (var i = 0; i < datas.length; i++) {
+              for (k in datas[i]) {
+                if (datas[i][k] == data_uniqueid) {    // 如果主识别码==data_uniqueid
+                  data = datas[i];
+                };
+                break;
+              };
+            };
+            if (key == '立项' && data['子项数量'] > 0) {
+              layer.alert('该立项项下仍有子项，请选择没有子项的项目');
+              return;
+            }else if (key == '预算' && data['子项数量'] > 0) {
+              layer.alert('该预算项下仍有子项，请选择没有子项的预算');
+              return;
+            };
+            for (var id in dict_fill) {
+              var v = data[dict_fill[id]];
+              if (v > 0 && id.search('识别码') < 0) {  // 如果值是数字，就认为其应该可以格式化为千分位形式
+                $('#'+id).val(toThousands(v));
+              }else if (v === 0) {
+                $('#'+id).val(toThousands(v));
+              }else{
+                $('#'+id).val(v);
+              };
+            };
+            func_fill(data);
+            layer.close(index);
+          },
+        });
+      };
+      // 修改基本资料
+      $('#id_button_基本资料').removeAttr('disabled');
+      $(document).on('click', '#id_button_基本资料', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        var inputer_labels    = [     // 需要接受用户修改的项
+                                 '变更类型',
+                                 '变更编号',
+                                 '变更主题',
+                                 '变更原因',
+                                ];
+        var inputer_form_type = [     // 对应的输入类型
+                                  ['批价', '工程签证', '设计变更',],
+                                  'input',
+                                  'input',
+                                  'text',
+                                ];
+        call_inputer(inputer_labels, inputer_form_type);
+      });
+      // 修改合同资料
+      $('#id_button_合同资料').removeAttr('disabled');  // To be fixed: 避免出现循环引用
+      $(document).on('click', '#id_button_合同资料', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        // 打开合同管理页面
+        var key = '合同';
+        var dict_fill = {   // 待填写input的id：表格行中相应列名
+          'id_立项识别码':        '立项识别码',
+          'id_项目名称':          '项目名称',
+          'id_分项名称':          '分项名称',
+          'id_合同识别码':        '合同识别码',
+          'id_合同类别':          '合同类别',
+          'id_合同编号':          '合同名称',
+          'id_甲方单位名称':       '甲方单位名称',
+          'id_乙方单位名称':       '乙方单位名称',
+          'id_丙方单位名称':       '丙方单位名称',
+          'id_丁方单位名称':       '丁方单位名称',
+          'id_合同值_签订时':      '合同值_签订时',
+        };
+        call_table_inputer(
+          key,
+          dict_fill,
+        );
+      });
+      // 修改预估变更额度
+      $('#id_button_预估变更额度').removeAttr('disabled');
+      $(document).on('click', '#id_button_预估变更额度', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        var inputer_labels    = [     // 需要接受用户修改的项
+                                 '预估变更额度',
+                                ];
+        var inputer_form_type = [     // 对应的输入类型
+                                  'input',
+                                ];
+        call_inputer(
+          inputer_labels,
+          inputer_form_type,
+          function () {},
+          function (body) {
+            // 收集数据
+            var money = body.find('#id_预估变更额度')[0].value;
+            money = Number(money.replace(/[\, ]/g, ''));
+            $('#id_预估变更额度').val(toThousands(money));
+          },
+        );
+      });
+      // 修改变更额度
+      $('#id_button_变更额度').removeAttr('disabled');
+      $(document).on('click', '#id_button_变更额度', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        var inputer_labels    = [     // 需要接受用户修改的项
+                                 '变更额度',
+                                ];
+        var inputer_form_type = [     // 对应的输入类型
+                                  'input',
+                                ];
+        call_inputer(
+          inputer_labels,
+          inputer_form_type,
+          function () {},
+          function (body) {
+            // 收集数据
+            var money = body.find('#id_变更额度')[0].value;
+            money = Number(money.replace(/[\, ]/g, ''));
+            $('#id_变更额度').val(toThousands(money));
+          },
+        );
+      });
+      // 修改日期资料
+      $('#id_button_日期资料').removeAttr('disabled');
+      $(document).on('click', '#id_button_日期资料', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        var inputer_labels    = [     // 需要接受用户修改的项
+                                 '变更登记日期',
+                                 '变更生效日期',
+                                ];
+        var inputer_form_type = [     // 对应的输入类型
+                                  'date',
+                                  'date',
+                                ];
+        call_inputer(
+          inputer_labels,
+          inputer_form_type,
+          );
+      });
+      // 修改其他资料
+      $('#id_button_其他资料').removeAttr('disabled');
+      $(document).on('click', '#id_button_其他资料', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        var inputer_labels    = [     // 需要接受用户修改的项
+                                 '变更备注',
+                                ];
+        var inputer_form_type = [     // 对应的输入类型
+                                  'text',
+                                ];
+        call_inputer(
+          inputer_labels,
+          inputer_form_type,
+          );
+      });
       // 查看附件
       if (behavior == 'View') {     // 查看模式
         // 激活附件模块

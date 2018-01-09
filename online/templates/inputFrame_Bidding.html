@@ -304,6 +304,13 @@
                 break;
               };
             };
+            if (key == '立项' && data['子项数量'] > 0) {
+              layer.alert('该立项项下仍有子项，请选择没有子项的项目');
+              return;
+            }else if (key == '预算' && data['子项数量'] > 0) {
+              layer.alert('该预算项下仍有子项，请选择没有子项的预算');
+              return;
+            };
             for (var id in dict_fill) {
               var v = data[dict_fill[id]];
               if (v > 0 && id.search('识别码') < 0) {  // 如果值是数字，就认为其应该可以格式化为千分位形式
@@ -349,49 +356,7 @@
           'id_代建单位名称':     '代建单位名称',
           'id_项目概算':        '项目概算',
         };
-        // 打开立项管理页面
-        child_data['key_table'] = key; // 立项 | 招标
-        var key_url = dict_Chn_Eng[child_data['key_table']];
-        var content_url = "{% url 'inputer_table' 'ewhuvlk' %}";
-        layer.open({
-          type: 2,
-          btn: ['确定', '取消'],
-          title: child_data['key_table'] + '信息管理',
-          area: ['100%', '100%'],
-          maxmin: true,
-          content: content_url.replace('ewhuvlk', key_url),
-          yes: function(index, layero) {
-            // 将用户填写的值传回本体
-            var body = layer.getChildFrame('body', index);
-            var data_uniqueid = $(body.find('.selected')[0]).attr('data-uniqueid') || null;
-            var data_index = $(body.find('.selected')[0]).attr('data-index') || null;
-            var datas = JSON.parse($(body.find('#id_JSON')[0]).html());
-            var data = {};
-            for (var i = 0; i < datas.length; i++) {
-              for (k in datas[i]) {
-                if (datas[i][k] == data_uniqueid) {    // 如果主识别码==data_uniqueid
-                  data = datas[i];
-                };
-                break;
-              };
-            };
-            if (data['子项数量']) {
-              layer.alert('该项目仍有子项，无法建立招标信息，请选择无子项项目建立招标信息。');
-            }else{
-              for (var id in dict_fill) {
-                var v = data[dict_fill[id]];
-                if (v > 0 && id.search('识别码') < 0) {  // 如果值是数字，就认为其应该可以格式化为千分位形式
-                  $('#'+id).val(toThousands(v));
-                }else if (v === 0) {
-                  $('#'+id).val(toThousands(v));
-                }else{
-                  $('#'+id).val(v);
-                };
-              };
-              layer.close(index);
-            };
-          },
-        });
+        call_table_inputer(key, dict_fill);
       });
       // 修改招标单位名称
       $('#id_button_招标单位名称').removeAttr('disabled');

@@ -284,7 +284,7 @@
         }
         return '共有'+count+'条记录';
       }
-      // 求和
+      // 千分位求和
       var footer_list = [];
       if (key_table === '合同') {
         footer_list = ['中标价', '合同值_签订时', '合同值_最新值', '合同值_最终值'];
@@ -305,7 +305,25 @@
             return toThousands(sumer);
           }
         }
-      }
+      };
+      //.百分比求和
+      var footer_list = [];
+      if (key_table === '付款') {
+        footer_list = ['合同本次付款比',];
+      };
+      for (var k in footer_list) {
+        var i = heads.indexOf(footer_list[k]);
+        if (i >= 0) {
+          var footer_key = footer_list[k];
+          columns[i].footerFormatter = function(rows) {
+            var sumer = 0;
+            for (var j in rows) {
+              sumer += rows[j][this.field];
+            }
+            return toPercents(sumer);
+          }
+        }
+      };
 
       $('#id_bootstrap_table').bootstrapTable('destroy'); // 销毁
       table_data = datas;

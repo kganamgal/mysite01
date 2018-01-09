@@ -277,7 +277,7 @@
           },
         });
       };
-      function call_table_inputer(key, dict_fill) {
+      function call_table_inputer(key, dict_fill, func_fill=function(){}) {
         // 打开立项管理页面
         child_data['key_table'] = key; // 立项 | 招标
         var key_url = dict_Chn_Eng[child_data['key_table']];
@@ -304,6 +304,13 @@
                 break;
               };
             };
+            if (key == '立项' && data['子项数量'] > 0) {
+              layer.alert('该立项项下仍有子项，请选择没有子项的项目');
+              return;
+            }else if (key == '预算' && data['子项数量'] > 0) {
+              layer.alert('该预算项下仍有子项，请选择没有子项的预算');
+              return;
+            };
             for (var id in dict_fill) {
               var v = data[dict_fill[id]];
               if (v > 0 && id.search('识别码') < 0) {  // 如果值是数字，就认为其应该可以格式化为千分位形式
@@ -314,6 +321,7 @@
                 $('#'+id).val(v);
               };
             };
+            func_fill(data);
             layer.close(index);
           },
         });
@@ -389,49 +397,19 @@
               'id_代建单位名称':    '代建单位名称',
               'id_项目概算':       '项目概算',
             };
-            // 打开立项管理页面
-            child_data['key_table'] = key; // 立项 | 招标
-            var key_url = dict_Chn_Eng[child_data['key_table']];
-            var content_url = "{% url 'inputer_table' 'ewhuvlk' %}";
-            layer.open({
-              type: 2,
-              btn: ['确定', '取消'],
-              title: child_data['key_table'] + '信息管理',
-              area: ['100%', '100%'],
-              maxmin: true,
-              content: content_url.replace('ewhuvlk', key_url),
-              yes: function(index, layero) {
-                // 将用户填写的值传回本体
-                var body = layer.getChildFrame('body', index);
-                var data_uniqueid = $(body.find('.selected')[0]).attr('data-uniqueid') || null;
-                var data_index = $(body.find('.selected')[0]).attr('data-index') || null;
-                var datas = JSON.parse($(body.find('#id_JSON')[0]).html());
-                var data = {};
-                for (var i = 0; i < datas.length; i++) {
-                  for (k in datas[i]) {
-                    if (datas[i][k] == data_uniqueid) {    // 如果主识别码==data_uniqueid
-                      data = datas[i];
-                    };
-                    break;
-                  };
-                };
-                if (data['子项数量']) {
-                  layer.alert('该项目仍有子项，无法建立合同信息，请选择无子项项目建立合同信息。');
-                }else{
-                  for (var id in dict_fill) {
-                    var v = data[dict_fill[id]];
-                    if (v > 0 && id.search('识别码') < 0) {  // 如果值是数字，就认为其应该可以格式化为千分位形式
-                      $('#'+id).val(toThousands(v));
-                    }else if (v === 0) {
-                      $('#'+id).val(toThousands(v));
-                    }else{
-                      $('#'+id).val(v);
-                    };
-                  };
-                  layer.close(index);
-                };
+            call_table_inputer(
+              key,
+              dict_fill,
+              function (data) {
+                $('#id_招标识别码').val('');
+                $('#id_招标方式').val('');
+                $('#id_中标价').val('');
+                $('#id_招标单位识别码').val('');
+                $('#id_招标单位名称').val('');
+                $('#id_中标单位识别码').val('');
+                $('#id_中标单位名称').val('');
               },
-            });
+            );
           },
         });
       });
@@ -831,8 +809,8 @@
           function () {
             var money1 = $('#id_项目概算').val();
             var num_money1 = Number(money1.replace(/[\, ]/g, ''));
-            child_data['inputer_data']['descriptoin'] = ['（请待合同<strong>审计</strong>定稿后再在此处填写<strong>合同值_最终值</strong>，输入值应为介于[0，项目概算<strong>'+money1+'</strong>]之间的数字，有效值2位小数）'];
-            child_data['inputer_data']['valid'] = ['value.replace(/[\\, ]/g, "") >= 0 && value.replace(/[\\, ]/g, "") <='+num_money1+' || value === ""'];
+            child_data['inputer_data']['descriptoin'] = ['（请待合同<strong>审计</strong>定稿后再在此处填写<strong>合同值_最终值</strong>，输入值应≥0，有效值2位小数）'];
+            child_data['inputer_data']['valid'] = ['value.replace(/[\\, ]/g, "") >= 0'];
           },
           function (body) {
             var money = body.find('#id_合同值_最终值')[0].value;
@@ -846,6 +824,8 @@
             }else{
               $('#id_已付款占合同').val('');
             };
+            $('#id_button_合同值_签订时').attr('disabled', 'disabled');
+            $('#id_button_合同值_最新值').attr('disabled', 'disabled');
             // if (money.length > 0) {
             //   $('#id_合同值_最新值').val(toThousands(money.replace(/[\, ]/g, '')));
             //   $('#id_合同值_最终值').val(toThousands(money.replace(/[\, ]/g, '')));
@@ -871,7 +851,7 @@
           inputer_labels,
           inputer_form_type,
           function () {
-            var money1 = $('#id_合同值_签订时').val();
+            var money1 = $('#id_合同值_最新值').val();
             var num_money1 = Number(money1.replace(/[\, ]/g, ''));
             var money2 = $('#id_已付款').val();
             var num_money2 = Number(money2.replace(/[\, ]/g, ''));

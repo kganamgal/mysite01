@@ -489,14 +489,20 @@ def read_For_SubContract_GridDialog(where_sql='', where_list=[], order_sql='', o
                                合同值_最新值 AS 总包合同值, 分包合同编号, 分包合同名称, 分包合同主要内容, 分包合同类别,
                                A.甲方识别码, U1.单位名称 AS 甲方单位名称, A.乙方识别码, U2.单位名称 AS 乙方单位名称,
                                A.丙方识别码, U3.单位名称 AS 丙方单位名称, A.丁方识别码, U4.单位名称 AS 丁方单位名称,
+                               B.甲方识别码 AS 总包甲方识别码, U5.单位名称 AS 总包甲方单位名称, B.乙方识别码 AS 总包乙方识别码, U6.单位名称 AS 总包乙方单位名称,
+                               B.丙方识别码 AS 总包丙方识别码, U7.单位名称 AS 总包丙方单位名称, B.丁方识别码 AS 总包丁方识别码, U8.单位名称 AS 总包丁方单位名称,
                                分包合同签订时间, 分包合同值_签订时, 分包合同值_最新值, 分包合同值_最终值, 分包合同备注
               FROM             tabel_分包合同信息 AS A
                    LEFT JOIN   tabel_立项信息 AS I ON A.立项识别码=I.立项识别码
+                   LEFT JOIN   tabel_合同信息 AS B ON A.合同识别码=B.合同识别码
                    LEFT JOIN   tabel_单位信息 AS U1 ON A.甲方识别码=U1.单位识别码
                    LEFT JOIN   tabel_单位信息 AS U2 ON A.乙方识别码=U2.单位识别码
                    LEFT JOIN   tabel_单位信息 AS U3 ON A.丙方识别码=U3.单位识别码
                    LEFT JOIN   tabel_单位信息 AS U4 ON A.丁方识别码=U4.单位识别码
-                   LEFT JOIN   tabel_合同信息 AS B ON A.合同识别码=B.合同识别码) AS Origin
+                   LEFT JOIN   tabel_单位信息 AS U5 ON B.甲方识别码=U5.单位识别码
+                   LEFT JOIN   tabel_单位信息 AS U6 ON B.乙方识别码=U6.单位识别码
+                   LEFT JOIN   tabel_单位信息 AS U7 ON B.丙方识别码=U7.单位识别码
+                   LEFT JOIN   tabel_单位信息 AS U8 ON B.丁方识别码=U8.单位识别码) AS Origin
           '''.format(', '.join(uc.SubContractColLabels)) + where_sql + ' ' + order_sql
     sql_list = where_list + order_list
     with connection.cursor() as cursor:
@@ -604,13 +610,15 @@ def read_For_Budget_GridDialog(where_sql='', where_list=[], order_sql='ORDER BY 
     # 正式
     sql = '''SELECT {} FROM
              (SELECT           A.预算识别码, A.预算名称, A.预算周期, A.预算总额,
-                               A.父项预算识别码, B.预算名称 AS 父项预算名称, B.预算周期 AS 父项预算周期, B.预算总额 AS 父项预算额,
+                               A.父项预算识别码, B.预算名称 AS 父项预算名称, B.预算周期 AS 父项预算周期, 预算子项数量,
+                               B.预算总额 AS 父项预算额,
                                ifnull(B.预算总额, 0)-ifnull(TP.已分配预算, 0)+ifnull(A.预算总额, 0) AS 预算上限,
                                T.已分配预算, A.预算总额-T.已分配预算 AS 未分配预算, T.已分配预算/A.预算总额 AS 预算分配比,
                                T.已付款 AS 预算已付额, A.预算总额-T.已付款 AS 预算余额, T.已付款/A.预算总额 AS 预算已付比,
                                A.预算备注
               FROM             tabel_预算信息 AS A
                    LEFT JOIN   tabel_预算信息 AS B  ON A.父项预算识别码=B.预算识别码
+                   LEFT JOIN   (SELECT 父项预算识别码, COUNT(*) AS 预算子项数量 FROM tabel_预算信息 GROUP BY 父项预算识别码) AS C ON A.预算识别码=C.父项预算识别码
                    LEFT JOIN   tmp_pay_table AS T ON A.预算识别码=T.预算识别码
                    LEFT JOIN   tmp_parent_pay_table AS TP ON A.父项预算识别码=TP.预算识别码
                    ) AS Origin
@@ -711,7 +719,8 @@ def read_For_Payment_GridDialog(where_sql='', where_list=[], order_sql='', order
                                C.甲方识别码, U7.单位名称 AS 甲方单位名称, C.乙方识别码, U8.单位名称 AS 乙方单位名称,
                                C.丙方识别码, U9.单位名称 AS 丙方单位名称, C.丁方识别码, U10.单位名称 AS 丁方单位名称,
                                A.预算识别码, 预算名称, 预算周期, 付款时预算总额, 付款时项目概算, 付款时合同付款上限,
-                               付款时合同值, 付款时预算余额, 付款时概算余额, 付款时合同可付余额, 付款时合同未付额,
+                               付款时合同值, 合同值_最终值 AS 合同最终值,
+                               付款时预算余额, 付款时概算余额, 付款时合同可付余额, 付款时合同未付额,
                                付款时预算已付额, 付款时合同已付额, 付款时概算已付额,
                                付款时预算已付额/付款时预算总额 AS 付款时预算已付比,
                                付款时合同已付额/付款时合同值 AS 付款时合同已付比,
