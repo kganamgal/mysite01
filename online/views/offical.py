@@ -525,3 +525,13 @@ def get_Write_Permission(request):
                      'classify={}, project={}'.format(classify, project))
     result = getUserPermission(username).can_Write_Table(classify, project)
     return HttpResponse(json.dumps(result, ensure_ascii=False, cls=CJsonEncoder), content_type='application/json')
+
+def get_WritePermissionObj(request):
+    '''
+        There is no argument and a hidden argument(username) to input.
+        Return a JSON like {'单位': 1, '立项': '天水路派出所|北王安置房|南王安置房|北王其他费用|1609工程|1609工程其他', '招标': '天水路派出所|北王安置房|南王安置房|北王其他费用|1609工程|1609工程其他', '合同': '天水路派出所|北王安置房|南王安置房|北王其他费用|1609工程|1609工程其他', '预算': 1, '付款': '天水路派出所|北王安置房|南王安置房|北王其他费用|1609工程|1609工程其他', '变更': '天水路派出所|北王安置房|南王安置房|北王其他费用|1609工程|1609工程其他', '分包合同': '天水路派出所|北王安置房|南王安置房|北王其他费用|1609工程|1609工程其他', '概算': '天水路派出所|北王安置房|南王安置房|北王其他费用|1609工程|1609工程其他', '合同额': '天水路派出所|北王安置房|南王安置房|北王其他费用|1609工程|1609工程其他'}.
+    '''
+    username = request.session.get('username')
+    logUserOperation(request, 'read', sys._getframe().f_code.co_name, '')
+    result = getUserPermission(username).get_Permission_Write_Table()
+    return HttpResponse(json.dumps(result, ensure_ascii=False, cls=CJsonEncoder), content_type='application/json')

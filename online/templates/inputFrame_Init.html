@@ -149,6 +149,7 @@
     var data_type      = parent.child_data['data_type'];
     var data_value     = parent.child_data['data_value'];
     var data_head_type = twoListToOneDict(data_head, data_type);
+    var permission     = {};
     $(main);
 
     function main() {
@@ -237,15 +238,17 @@
         parent.layer.close(index); //再执行关闭
       });
       // 获取权限数据
-      $.ajax({    // 立项权限
-        url: "{% url 'get_Write_Permission' %}",
+      $.ajax({    // 权限
+        url: "{% url 'get_WritePermissionObj' %}",
         type: 'POST',
-        data: {
-          'classify': key_frame,
-          'project': $('#id_项目名称').val(),
-        },
+        data: {},
         success: function(ret){
-          if (ret) {    // 有权限则激活相应按钮
+          permission = ret;
+          var project = $('#id_项目名称').val();
+          console.log(permission, project);
+          flag = $.inArray(project, permission.立项.split('|')) >= 0    // 数组包含判断，包含>=0，不含<0
+          flag =true;
+          if (flag) {    // 有权限则激活相应按钮
             $('#id_button_基本资料').removeAttr('disabled');
             $('#id_button_父项基本资料').removeAttr('disabled');
             $('#id_button_建设单位名称').removeAttr('disabled');
@@ -253,17 +256,8 @@
             $('#id_button_其他资料').removeAttr('disabled');
             $('#id_btn_Save').removeAttr('disabled');
           };
-        },
-      });
-      $.ajax({    // 调整概算权限
-        url: "{% url 'get_Write_Permission' %}",
-        type: 'POST',
-        data: {
-          'classify': '概算',
-          'project': $('id_项目名称').val(),
-        },
-        success: function(ret){
-          if (ret) {    // 有权限则激活相应按钮
+          flag = $.inArray(project, permission.概算.split('|')) >= 0    // 数组包含判断，包含>=0，不含<0
+          if (flag) {    // 有权限则激活相应按钮
             $('#id_button_项目概算').removeAttr('disabled');
             $('#id_btn_Save').removeAttr('disabled');
           };
@@ -303,8 +297,12 @@
             for (var i in inputer_labels) {
               $('#id_'+inputer_labels[i]).val(body.find('#id_'+inputer_labels[i])[0].value);
             };
-            func_fill(body);
-            layer.close(index);
+            var fl = func_fill(body); // 如果函数没有返回值就认为正常，否则就将返回值警告出来
+            if (fl) {
+              layer.alert(fl);
+            }else{
+              layer.close(index);
+            };
           },
         });
       };
@@ -335,14 +333,14 @@
                 break;
               };
             };
-            // 选父项目标时允许用户选则有子节点的节点，该如何设置呢？
-            if (key == '立项' && data['子项数量'] > 0) {
-              layer.alert('该立项项下仍有子项，请选择没有子项的项目');
-              return;
-            }else if (key == '预算' && data['子项数量'] > 0) {
-              layer.alert('该预算项下仍有子项，请选择没有子项的预算');
-              return;
-            };
+            // 选父项目标时允许用户选则有子节点的节点，该如何设置呢？将这一段放进func_fill()中实现
+            // if (key == '立项' && data['子项数量'] > 0) {
+            //   layer.alert('该立项项下仍有子项，请选择没有子项的项目');
+            //   return;
+            // }else if (key == '预算' && data['子项数量'] > 0) {
+            //   layer.alert('该预算项下仍有子项，请选择没有子项的预算');
+            //   return;
+            // };
             for (var id in dict_fill) {
               var v = data[dict_fill[id]];
               if (v > 0 && id.search('识别码') < 0) {  // 如果值是数字，就认为其应该可以格式化为千分位形式
@@ -426,24 +424,15 @@
           key,
           dict_fill,
           function(data) {
-            var project = data['项目名称'];
-            $.ajax({    // 检查用户有无权限选这个项目的节点做父节点
-              url: "{% url 'get_Write_Permission' %}",
-              type: 'POST',
-              data: {
-                'classify': '立项',
-                'project': project,
-              },
-              success: function(ret){
-                if (ret) {    // 有权限则正常进行
-                  var estimate = data['项目概算'] || 0;
-                  var estimate_out = data['已分配概算'] || 0;
-                  $('#id_项目概算上限').val(toThousands(accMinus(estimate, estimate_out)));
-                }else{        // 无权限则报错
-                  return '您没有权限这样做';
-                };
-              },
-            });
+            var project = $('#id_项目名称').val();
+            flag = $.inArray(project, permission.立项.split('|')) >= 0    // 数组包含判断，包含>=0，不含<0
+            if (flag) {   // 如果有权限操作该项目
+              var estimate = data['项目概算'] || 0;
+              var estimate_out = data['已分配概算'] || 0;
+              $('#id_项目概算上限').val(toThousands(accMinus(estimate, estimate_out)));
+            }else{
+              return '你没有权限操作<'+project+'>的立项信息';
+            };
           },
         );
       });

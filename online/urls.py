@@ -56,6 +56,8 @@ urlpatterns = [
         name='get_file_url'),
     url(r'get_Write_Permission',          offical.get_Write_Permission,
         name='get_Write_Permission'),
+    url(r'get_WritePermissionObj',        offical.get_WritePermissionObj,
+        name='get_WritePermissionObj'),
 
 
 

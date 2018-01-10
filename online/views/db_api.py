@@ -1044,6 +1044,32 @@ class getUserPermission():
             project_list = (self.__filterDict.get(field_name) or '').split('|')
             return bool(project and project in project_list)
 
+    def get_Permission_Write_Table(self):
+        '''
+            If a user is exist, and his field(操作XX信息) is True,
+            or his field(允许操作XX的项目) contains the project,
+            then return True.
+            Otherwise return False.
+        '''
+        if not self.user_Is_Exist():
+            return False
+        classfity_dict = {
+            '单位':     '操作单位信息',
+            '立项':     '允许操作立项的项目',
+            '招标':     '允许操作招标的项目',
+            '合同':     '允许操作合同的项目',
+            '预算':     '操作预算信息',
+            '付款':     '允许操作付款的项目',
+            '变更':     '允许操作变更的项目',
+            '分包合同': '允许操作分包合同的项目',
+            '概算':     '允许调整概算的项目',
+            '合同额':   '允许调整合同额的项目',
+        }
+        result = {}
+        for k, v in classfity_dict.items():
+            result[k] = self.__filterDict.get(v)
+        return result
+
 # 操作OSS文件类
 
 class operateOSS():
