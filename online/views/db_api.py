@@ -28,14 +28,12 @@ import oss2
 
 # 格式化字符串
 
-
 def thousands(n): return '{:>,.2f}'.format(n)
 
 
 def percents(n): return '{:>.2f}'.format((n or 0) * 100) + '%'
 
 # HASH加密函数
-
 
 def hash_sha256(string):
     '''
@@ -46,7 +44,6 @@ def hash_sha256(string):
     return m.hexdigest()
 
 # 将对象转化为字典
-
 
 def classToDict(obj):
     '''
@@ -67,7 +64,6 @@ def classToDict(obj):
         return dict
 
 # Json的参数，用来转化date和decimal
-
 
 class CJsonEncoder(json.JSONEncoder):
 
@@ -97,7 +93,6 @@ def dictfetchall(cursor):
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 # 树型数据
-
 
 def format_Details_By_Tree():
     # 预自建过程
@@ -252,7 +247,6 @@ def old_read_For_TreeList():
 
 # 单位管理
 
-
 def read_For_Company_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = 'SELECT {} FROM tabel_单位信息 '.format(
         ', '.join(uc.CompanyColLabels)) + where_sql + ' ' + order_sql
@@ -263,7 +257,6 @@ def read_For_Company_GridDialog(where_sql='', where_list=[], order_sql='', order
         # return [list(x) for x in cursor.fetchall()]
 
 # 立项管理
-
 
 def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='ORDER BY 立项识别码', order_list=[]):
     # 预自建过程
@@ -421,7 +414,6 @@ def get_All_Grandchildren(UDID):
 
 # 招标管理
 
-
 def read_For_Bidding_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM
                  (SELECT           招标识别码, A.立项识别码 AS 立项识别码, 项目名称, 分项名称,
@@ -445,7 +437,6 @@ def read_For_Bidding_GridDialog(where_sql='', where_list=[], order_sql='', order
         return dictfetchall(cursor)
 
 # 合同管理
-
 
 def read_For_Contract_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM
@@ -481,7 +472,6 @@ def read_For_Contract_GridDialog(where_sql='', where_list=[], order_sql='', orde
 
 # 分包合同管理
 
-
 def read_For_SubContract_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM
              (SELECT           分包合同识别码, A.立项识别码, 项目名称, 分项名称, A.合同识别码, 合同编号 AS 总包合同编号,
@@ -511,7 +501,6 @@ def read_For_SubContract_GridDialog(where_sql='', where_list=[], order_sql='', o
 
 # 变更管理
 
-
 def read_For_Alteration_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM
              (SELECT           变更识别码, A.立项识别码, 项目名称, 分项名称, A.合同识别码, 合同编号,
@@ -533,7 +522,6 @@ def read_For_Alteration_GridDialog(where_sql='', where_list=[], order_sql='', or
         return dictfetchall(cursor)
 
 # 预算管理
-
 
 def read_For_Budget_GridDialog(where_sql='', where_list=[], order_sql='ORDER BY 预算识别码', order_list=[]):
     # 预自建过程
@@ -707,7 +695,6 @@ def format_Budget_Details_By_Tree():
 
 # 付款管理
 
-
 def read_For_Payment_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM
              (SELECT           A.付款识别码, 付款登记时间, 付款支付时间, A.立项识别码, I.项目名称, I.分项名称,
@@ -762,7 +749,6 @@ def read_For_Payment_GridDialog(where_sql='', where_list=[], order_sql='', order
 
 # 其余查询API
 
-
 def get_Children_Count(UDID):
     '''
         make sure UDID is int.
@@ -774,7 +760,6 @@ def get_Children_Count(UDID):
         return len(table_Initiation.objects.filter(父项立项识别码=UDID))
     except:
         return
-
 
 def new_get_All_Grandchildren_UDID(UDID):
     '''
@@ -834,7 +819,6 @@ def get_All_Grandchildren_UDID(UDID):
             return list(map(lambda x: int(x), fetchall))
     except:
         return []
-
 
 def get_All_Budget_Grandchildren_UDID(UDID):
     '''
@@ -897,7 +881,6 @@ def get_All_Budget_Grandchildren_UDID(UDID):
     except:
         return []
 
-
 def get_Count_Payment(list_UDID):
     '''
         make sure UDID is list with int.
@@ -909,7 +892,6 @@ def get_Count_Payment(list_UDID):
         return len(table_Payment.objects.filter(立项识别码__in=list_UDID))
     except:
         return
-
 
 def get_Sum_Money_Payment(list_UDID):
     '''
@@ -923,6 +905,8 @@ def get_Sum_Money_Payment(list_UDID):
     except:
         return
 
+
+# 权限相关类
 
 class getUserPermission():
     '''
@@ -939,7 +923,7 @@ class getUserPermission():
 
     def user_Is_Exist(self):
         '''
-            Judge a use whether exist.
+            Judge a user whether exist.
         '''
         if self.__filterObj:
             self.__filterDict = self.__filterObj.values()[0]
@@ -1028,6 +1012,39 @@ class getUserPermission():
             return False
         return (self.__filterDict.get('查看%s信息' % classify) or 0) >= 2
 
+    def can_Write_Table(self, classify='', project=''):
+        '''
+            If a user is exist, and his field(操作XX信息) is True,
+            or his field(允许操作XX的项目) contains the project,
+            then return True.
+            Otherwise return False.
+        '''
+        if not self.user_Is_Exist():
+            return False
+        classfity_dict = {
+            # [x, y]
+            # x代表classfity对应的表名
+            # y==0代表检验权限不需用到project，y==1则反之
+            '':         [0,                    0,],
+            '单位':     ['操作单位信息',         1,],
+            '立项':     ['允许操作立项的项目',    2,],
+            '招标':     ['允许操作招标的项目',    2,],
+            '合同':     ['允许操作合同的项目',    2,],
+            '预算':     ['操作预算信息',         1,],
+            '付款':     ['允许操作付款的项目',    2,],
+            '变更':     ['允许操作变更的项目',    2,],
+            '分包合同': ['允许操作分包合同的项目', 2,],
+            '概算':     ['允许调整概算的项目',    2,],
+            '合同额':   ['允许调整合同额的项目',   2,],
+        }
+        field_name, flag = classfity_dict[classify]      # 看看要查的表是哪一种，需不需要project
+        if flag == 1:
+            return bool(self.__filterDict.get(field_name))
+        elif flag == 2:
+            project_list = (self.__filterDict.get(field_name) or '').split('|')
+            return bool(project and project in project_list)
+
+# 操作OSS文件类
 
 class operateOSS():
     '''

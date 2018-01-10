@@ -54,6 +54,8 @@ urlpatterns = [
         name='list_file'),
     url(r'get_file_url',                  offical.get_file_url,
         name='get_file_url'),
+    url(r'get_Write_Permission',          offical.get_Write_Permission,
+        name='get_Write_Permission'),
 
 
 

@@ -229,6 +229,49 @@
       // 将input和textarea设为不可用
       $('input,textarea').attr('readonly', 'readonly');
       // 为各按钮注册事件
+      $('#id_btn_Cancel').removeAttr('disabled');
+      $(document).on('click', '#id_btn_Cancel', function() {
+        // 检查有无改动
+        // 关闭页面
+        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+        parent.layer.close(index); //再执行关闭
+      });
+      // 获取权限数据
+      $.ajax({    // 立项权限
+        url: "{% url 'get_Write_Permission' %}",
+        type: 'POST',
+        data: {
+          'classify': key_frame,
+          'project': $('#id_项目名称').val(),
+        },
+        success: function(ret){
+          if (ret) {    // 有权限则激活相应按钮
+            $('#id_button_基本资料').removeAttr('disabled');
+            $('#id_button_父项基本资料').removeAttr('disabled');
+            $('#id_button_建设单位名称').removeAttr('disabled');
+            $('#id_button_代建单位名称').removeAttr('disabled');
+            $('#id_button_其他资料').removeAttr('disabled');
+            $('#id_btn_Save').removeAttr('disabled');
+          };
+        },
+      });
+      $.ajax({    // 调整概算权限
+        url: "{% url 'get_Write_Permission' %}",
+        type: 'POST',
+        data: {
+          'classify': '概算',
+          'project': $('id_项目名称').val(),
+        },
+        success: function(ret){
+          if (ret) {    // 有权限则激活相应按钮
+            $('#id_button_项目概算').removeAttr('disabled');
+            $('#id_btn_Save').removeAttr('disabled');
+          };
+        },
+      });
+      if (behavior == 'New') {  // 新建时，因为不知道要填什么项目名称，因此无脑打开权限
+        $('#id_button_基本资料').removeAttr('disabled');
+      };
       function call_inputer(inputer_labels, inputer_form_type, func_arg=function(){}, func_fill=function(){}) {
         // 构造标准化inputer参数及回调
         // arg1：需要用户输入的项；arg2：这几项的类型；arg3：自定义arg1、2；arg4：自定义回调填写方式
@@ -292,6 +335,7 @@
                 break;
               };
             };
+            // 选父项目标时允许用户选则有子节点的节点，该如何设置呢？
             if (key == '立项' && data['子项数量'] > 0) {
               layer.alert('该立项项下仍有子项，请选择没有子项的项目');
               return;
@@ -309,13 +353,16 @@
                 $('#'+id).val(v);
               };
             };
-            func_fill(data);
-            layer.close(index);
+            var fl = func_fill(data); // 如果函数没有返回值就认为正常，否则就将返回值警告出来
+            if (fl) {
+              layer.alert(fl);
+            }else{
+              layer.close(index);
+            };
           },
         });
       };
       // 修改基本资料
-      $('#id_button_基本资料').removeAttr('disabled');
       $(document).on('click', '#id_button_基本资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -362,8 +409,7 @@
           },
         });
       });
-      // 修改父项资料
-      $('#id_button_父项基本资料').removeAttr('disabled');  // To be fixed: 避免出现循环引用
+      // 修改父项资料  // To be fixed: 避免出现循环引用
       $(document).on('click', '#id_button_父项基本资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -380,14 +426,28 @@
           key,
           dict_fill,
           function(data) {
-            var estimate = data['项目概算'] || 0;
-            var estimate_out = data['已分配概算'] || 0;
-            $('#id_项目概算上限').val(toThousands(accMinus(estimate, estimate_out)));
+            var project = data['项目名称'];
+            $.ajax({    // 检查用户有无权限选这个项目的节点做父节点
+              url: "{% url 'get_Write_Permission' %}",
+              type: 'POST',
+              data: {
+                'classify': '立项',
+                'project': project,
+              },
+              success: function(ret){
+                if (ret) {    // 有权限则正常进行
+                  var estimate = data['项目概算'] || 0;
+                  var estimate_out = data['已分配概算'] || 0;
+                  $('#id_项目概算上限').val(toThousands(accMinus(estimate, estimate_out)));
+                }else{        // 无权限则报错
+                  return '您没有权限这样做';
+                };
+              },
+            });
           },
         );
       });
       // 修改建设单位
-      $('#id_button_建设单位名称').removeAttr('disabled');
       $(document).on('click', '#id_button_建设单位名称', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -416,7 +476,6 @@
         });
       });
       // 修改代建单位
-      $('#id_button_代建单位名称').removeAttr('disabled');
       $(document).on('click', '#id_button_代建单位名称', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -445,7 +504,6 @@
         });
       });
       // 修改项目概算
-      $('#id_button_项目概算').removeAttr('disabled');
       $(document).on('click', '#id_button_项目概算', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -496,7 +554,6 @@
         });
       });
       // 修改其他资料
-      $('#id_button_其他资料').removeAttr('disabled');
       $(document).on('click', '#id_button_其他资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑

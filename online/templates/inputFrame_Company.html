@@ -233,8 +233,31 @@
       // 将input和textarea设为不可用
       $('input,textarea').attr('readonly', 'readonly');
       // 为各按钮注册事件
+      $('#id_btn_Cancel').removeAttr('disabled');
+      $(document).on('click', '#id_btn_Cancel', function() {
+        // 检查有无改动
+        // 关闭页面
+        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+        parent.layer.close(index); //再执行关闭
+      });
+      // 获取权限数据
+      $.ajax({
+        url: "{% url 'get_Write_Permission' %}",
+        type: 'POST',
+        data: {
+          'classify': key_frame,
+        },
+        success: function(ret){
+          if (ret) {    // 有权限则激活相应按钮
+            $('#id_button_基本资料').removeAttr('disabled');
+            $('#id_button_企业实力').removeAttr('disabled');
+            $('#id_button_财务资料').removeAttr('disabled');
+            $('#id_button_联系资料').removeAttr('disabled');
+            $('#id_button_其他资料').removeAttr('disabled');
+          };
+        },
+      });
       // 修改基本资料
-      $('#id_button_基本资料').removeAttr('disabled');
       $(document).on('click', '#id_button_基本资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -290,7 +313,6 @@
         });
       });
       // 修改企业实力
-      $('#id_button_企业实力').removeAttr('disabled');
       $(document).on('click', '#id_button_企业实力', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -337,7 +359,6 @@
         });
       });
       // 修改财务资料
-      $('#id_button_财务资料').removeAttr('disabled');
       $(document).on('click', '#id_button_财务资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -382,7 +403,6 @@
         });
       });
       // 修改联系资料
-      $('#id_button_联系资料').removeAttr('disabled');
       $(document).on('click', '#id_button_联系资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -434,7 +454,6 @@
         });
       });
       // 修改其他资料
-      $('#id_button_其他资料').removeAttr('disabled');
       $(document).on('click', '#id_button_其他资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑

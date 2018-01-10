@@ -137,6 +137,7 @@ def tableFrame(request, key_table):
     else:
         return render(request, 'tableFrame.html')
 
+
 def inputer_table(request, key_table):
     '''
         A page which can choose data record.
@@ -148,6 +149,7 @@ def inputer_table(request, key_table):
         return HttpResponse(Cnt)
     else:
         return render(request, 'inputer_table.html')
+
 
 def inputFrame(request, key_table):
     '''
@@ -162,6 +164,7 @@ def inputFrame(request, key_table):
     else:
         return render(request, 'inputFrame_' + key_table + '.html')
 
+
 def attachFrame(request, key_table):
     '''
         A page which can display attachments-list of an item.
@@ -174,6 +177,7 @@ def attachFrame(request, key_table):
         return HttpResponse(Cnt)
     else:
         return render(request, 'attachFrame.html')
+
 
 def inputer(request, key_table):
     '''
@@ -190,6 +194,8 @@ def inputer(request, key_table):
     return render(request, 'inputer.html')
 
 # --------------------AJAX--------------------
+
+
 def ajax_treeTable(request):
     '''
         There is no argument to input.
@@ -456,7 +462,8 @@ def ajax_table_data(request):
             t_rows = dict_API[key_table](
                 'where 预算识别码 in %s', [grandchildern_ids + [Init_UDID]])
             try:
-                t_UDID = dict_API[key_table]('where 预算识别码 = %s', [Init_UDID])[0].get(key_table+'识别码')
+                t_UDID = dict_API[key_table]('where 预算识别码 = %s', [Init_UDID])[
+                    0].get(key_table + '识别码')
             except:
                 t_UDID = None
         else:
@@ -464,7 +471,8 @@ def ajax_table_data(request):
             t_rows = dict_API[key_table](
                 'where 立项识别码 in %s', [grandchildern_ids + [Init_UDID]])
             try:
-                t_UDID = dict_API[key_table]('where 立项识别码 = %s', [Init_UDID])[0].get(key_table+'识别码')
+                t_UDID = dict_API[key_table]('where 立项识别码 = %s', [Init_UDID])[
+                    0].get(key_table + '识别码')
             except:
                 t_UDID = None
     except:
@@ -503,3 +511,17 @@ def ajax_tree_data(request):
     logUserOperation(request, 'read', sys._getframe().f_code.co_name,
                      'key_tree={}'.format(key_tree))
     return HttpResponse(json.dumps(return_json, ensure_ascii=False, cls=CJsonEncoder), content_type='application/json')
+
+
+def get_Write_Permission(request):
+    '''
+        There is 2 argument(classify, project) and a hidden argument(username) to input.
+        Return True/False.
+    '''
+    username = request.session.get('username')
+    classify = request.POST.get('classify')
+    project  = request.POST.get('project')
+    logUserOperation(request, 'read', sys._getframe().f_code.co_name,
+                     'classify={}, project={}'.format(classify, project))
+    result = getUserPermission(username).can_Write_Table(classify, project)
+    return HttpResponse(json.dumps(result, ensure_ascii=False, cls=CJsonEncoder), content_type='application/json')
