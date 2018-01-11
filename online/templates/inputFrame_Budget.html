@@ -137,6 +137,7 @@
     var data_type      = parent.child_data['data_type'];
     var data_value     = parent.child_data['data_value'];
     var data_head_type = twoListToOneDict(data_head, data_type);
+    var permission     = {};
     $(main);
 
     function main() {
@@ -217,6 +218,13 @@
       // 将input和textarea设为不可用
       $('input,textarea').attr('readonly', 'readonly');
       // 为各按钮注册事件
+      $('#id_btn_Cancel').removeAttr('disabled');
+      $(document).on('click', '#id_btn_Cancel', function() {
+        // 检查有无改动
+        // 关闭页面
+        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+        parent.layer.close(index); //再执行关闭
+      });
       function call_inputer(inputer_labels, inputer_form_type, func_arg=function(){}, func_fill=function(){}) {
         // 构造标准化inputer参数及回调
         // arg1：需要用户输入的项；arg2：这几项的类型；arg3：自定义arg1、2；arg4：自定义回调填写方式
@@ -248,12 +256,16 @@
             for (var i in inputer_labels) {
               $('#id_'+inputer_labels[i]).val(body.find('#id_'+inputer_labels[i])[0].value);
             };
-            func_fill(body);
-            layer.close(index);
+            var fl = func_fill(body); // 如果函数没有返回值就认为正常，否则就将返回值警告出来
+            if (fl) {
+              layer.alert(fl);
+            }else{
+              layer.close(index);
+            };
           },
         });
       };
-      function call_table_inputer(key, dict_fill, func_fill=function(){}) {
+      function call_table_inputer(key, dict_fill, func_fill=function(){}, func_valid=function(){}) {
         // 打开立项管理页面
         child_data['key_table'] = key; // 立项 | 招标
         var key_url = dict_Chn_Eng[child_data['key_table']];
@@ -280,11 +292,9 @@
                 break;
               };
             };
-            if (key == '立项' && data['子项数量'] > 0) {
-              layer.alert('该立项项下仍有子项，请选择没有子项的项目');
-              return;
-            }else if (key == '预算' && data['子项数量'] > 0) {
-              layer.alert('该预算项下仍有子项，请选择没有子项的预算');
+            var fv = func_valid(data); // 如果函数没有返回值就认为正常，否则就将返回值警告出来
+            if (fv) {
+              layer.alert(fv);
               return;
             };
             for (var id in dict_fill) {
@@ -302,8 +312,24 @@
           },
         });
       };
+      // 获取权限数据
+      $.ajax({    // 权限
+        url: "{% url 'get_WritePermissionObj' %}",
+        type: 'POST',
+        data: {},
+        success: function(ret){
+          permission = ret;
+          var flag = permission.预算    // 数组包含判断，包含>=0，不含<0
+          if (flag) {    // 有权限则激活相应按钮
+            $('#id_button_基本资料').removeAttr('disabled');
+            $('#id_button_父项基本资料').removeAttr('disabled');
+            $('#id_button_预算总额').removeAttr('disabled');
+            $('#id_button_其他资料').removeAttr('disabled');
+            $('#id_btn_Save').removeAttr('disabled');
+          };
+        },
+      });
       // 修改基本资料
-      $('#id_button_基本资料').removeAttr('disabled');
       $(document).on('click', '#id_button_基本资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -317,8 +343,7 @@
                                 ];
         call_inputer(inputer_labels, inputer_form_type);
       });
-      // 修改父项资料
-      $('#id_button_父项基本资料').removeAttr('disabled');  // To be fixed: 避免出现循环引用
+      // 修改父项资料  // To be fixed: 避免出现循环引用
       $(document).on('click', '#id_button_父项基本资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -338,10 +363,15 @@
             var budget_out = data['已分配预算'] || 0;
             $('#id_预算上限').val(toThousands(accMinus(budget, budget_out)));
           },
+          function(data){
+            var flag = data.预算子项数量 > 0    // 如果该项目下仍有子项
+            if (flag) {
+              return '该预算项下仍有子项，请选择没有子项的项目';
+            };
+          },
         );
       });
       // 修改预算总额
-      $('#id_button_预算总额').removeAttr('disabled');
       $(document).on('click', '#id_button_预算总额', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -392,7 +422,6 @@
         });
       });
       // 修改其他资料
-      $('#id_button_其他资料').removeAttr('disabled');
       $(document).on('click', '#id_button_其他资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑

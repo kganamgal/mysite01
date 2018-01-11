@@ -256,6 +256,28 @@ def read_For_Company_GridDialog(where_sql='', where_list=[], order_sql='', order
         return dictfetchall(cursor)
         # return [list(x) for x in cursor.fetchall()]
 
+def save_For_Company_GridDialog(data):
+    '''
+        This function can insert/update data for table_Company.
+        input data([1, 青岛X公司, ...]) which is a list.
+        return 'Done' if success;
+        return Error Message if failed.
+    '''
+    # 参数合法性校验
+    if type(data) != type([]):
+        return '参数类型错误，应提供数组形式的参数'
+    try:
+        UDID = int(data[0] or 0)
+    except Exception as e:
+        return str(e)
+    if len(data) != len(uc.CompanyFields):
+        return '参数数量错误，需要%d个参数，您却提供了%d个参数' % (len(data), len(uc.CompanyFields))
+    for value, field, _type in zip(data, uc.CompanyFields, uc.CompanyFields_Type):
+        if _type == '整数型' and (type(value) != type(1) or type(value) != type(None)):
+            return '<%s>类型应为<%s>不正确，请检查' % (_type, field)
+        elif _type == '浮点型' and (type(value) != type(1.0) or type(value) != type(None)):
+            return '<%s>类型应为<%s>不正确，请检查' % (_type, field)
+
 # 立项管理
 
 def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='ORDER BY 立项识别码', order_list=[]):

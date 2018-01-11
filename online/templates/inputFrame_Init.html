@@ -245,9 +245,7 @@
         success: function(ret){
           permission = ret;
           var project = $('#id_项目名称').val();
-          console.log(permission, project);
-          flag = $.inArray(project, permission.立项.split('|')) >= 0    // 数组包含判断，包含>=0，不含<0
-          flag =true;
+          var flag = $.inArray(project, permission.立项.split('|')) >= 0 || (behavior == 'New' && permission.立项)    // 数组包含判断，包含>=0，不含<0
           if (flag) {    // 有权限则激活相应按钮
             $('#id_button_基本资料').removeAttr('disabled');
             $('#id_button_父项基本资料').removeAttr('disabled');
@@ -256,16 +254,13 @@
             $('#id_button_其他资料').removeAttr('disabled');
             $('#id_btn_Save').removeAttr('disabled');
           };
-          flag = $.inArray(project, permission.概算.split('|')) >= 0    // 数组包含判断，包含>=0，不含<0
+          var flag = $.inArray(project, permission.概算.split('|')) >= 0 || (behavior == 'New' && permission.立项)    // 数组包含判断，包含>=0，不含<0
           if (flag) {    // 有权限则激活相应按钮
             $('#id_button_项目概算').removeAttr('disabled');
             $('#id_btn_Save').removeAttr('disabled');
           };
         },
       });
-      if (behavior == 'New') {  // 新建时，因为不知道要填什么项目名称，因此无脑打开权限
-        $('#id_button_基本资料').removeAttr('disabled');
-      };
       function call_inputer(inputer_labels, inputer_form_type, func_arg=function(){}, func_fill=function(){}) {
         // 构造标准化inputer参数及回调
         // arg1：需要用户输入的项；arg2：这几项的类型；arg3：自定义arg1、2；arg4：自定义回调填写方式
@@ -306,7 +301,7 @@
           },
         });
       };
-      function call_table_inputer(key, dict_fill, func_fill=function(){}) {
+      function call_table_inputer(key, dict_fill, func_fill=function(){}, func_valid=function(){}) {
         // 打开立项管理页面
         child_data['key_table'] = key; // 立项 | 招标
         var key_url = dict_Chn_Eng[child_data['key_table']];
@@ -333,14 +328,11 @@
                 break;
               };
             };
-            // 选父项目标时允许用户选则有子节点的节点，该如何设置呢？将这一段放进func_fill()中实现
-            // if (key == '立项' && data['子项数量'] > 0) {
-            //   layer.alert('该立项项下仍有子项，请选择没有子项的项目');
-            //   return;
-            // }else if (key == '预算' && data['子项数量'] > 0) {
-            //   layer.alert('该预算项下仍有子项，请选择没有子项的预算');
-            //   return;
-            // };
+            var fv = func_valid(data); // 如果函数没有返回值就认为正常，否则就将返回值警告出来
+            if (fv) {
+              layer.alert(fv);
+              return;
+            };
             for (var id in dict_fill) {
               var v = data[dict_fill[id]];
               if (v > 0 && id.search('识别码') < 0) {  // 如果值是数字，就认为其应该可以格式化为千分位形式
@@ -351,12 +343,8 @@
                 $('#'+id).val(v);
               };
             };
-            var fl = func_fill(data); // 如果函数没有返回值就认为正常，否则就将返回值警告出来
-            if (fl) {
-              layer.alert(fl);
-            }else{
-              layer.close(index);
-            };
+            func_fill(data);
+            layer.close(index);
           },
         });
       };
@@ -424,13 +412,14 @@
           key,
           dict_fill,
           function(data) {
+            var estimate = data['项目概算'] || 0;
+            var estimate_out = data['已分配概算'] || 0;
+            $('#id_项目概算上限').val(toThousands(accMinus(estimate, estimate_out)));
+          },
+          function(data) {
             var project = $('#id_项目名称').val();
-            flag = $.inArray(project, permission.立项.split('|')) >= 0    // 数组包含判断，包含>=0，不含<0
-            if (flag) {   // 如果有权限操作该项目
-              var estimate = data['项目概算'] || 0;
-              var estimate_out = data['已分配概算'] || 0;
-              $('#id_项目概算上限').val(toThousands(accMinus(estimate, estimate_out)));
-            }else{
+            var flag = $.inArray(project, permission.立项.split('|')) < 0    // 数组包含判断，包含>=0，不含<0
+            if (flag) {   // 如果没有权限操作该项目
               return '你没有权限操作<'+project+'>的立项信息';
             };
           },

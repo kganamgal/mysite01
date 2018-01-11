@@ -161,6 +161,7 @@
     var data_type      = parent.child_data['data_type'];
     var data_value     = parent.child_data['data_value'];
     var data_head_type = twoListToOneDict(data_head, data_type);
+    var permission     = {};
     $(main);
 
     function main() {
@@ -241,6 +242,13 @@
       // 将input和textarea设为不可用
       $('input,textarea').attr('readonly', 'readonly');
       // 为各按钮注册事件
+      $('#id_btn_Cancel').removeAttr('disabled');
+      $(document).on('click', '#id_btn_Cancel', function() {
+        // 检查有无改动
+        // 关闭页面
+        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+        parent.layer.close(index); //再执行关闭
+      });
       function call_inputer(inputer_labels, inputer_form_type, func_arg=function(){}, func_fill=function(){}) {
         // 构造标准化inputer参数及回调
         // arg1：需要用户输入的项；arg2：这几项的类型；arg3：自定义arg1、2；arg4：自定义回调填写方式
@@ -272,12 +280,16 @@
             for (var i in inputer_labels) {
               $('#id_'+inputer_labels[i]).val(body.find('#id_'+inputer_labels[i])[0].value);
             };
-            func_fill(body);
-            layer.close(index);
+            var fl = func_fill(body); // 如果函数没有返回值就认为正常，否则就将返回值警告出来
+            if (fl) {
+              layer.alert(fl);
+            }else{
+              layer.close(index);
+            };
           },
         });
       };
-      function call_table_inputer(key, dict_fill, func_fill=function(){}) {
+      function call_table_inputer(key, dict_fill, func_fill=function(){}, func_valid=function(){}) {
         // 打开立项管理页面
         child_data['key_table'] = key; // 立项 | 招标
         var key_url = dict_Chn_Eng[child_data['key_table']];
@@ -304,11 +316,9 @@
                 break;
               };
             };
-            if (key == '立项' && data['子项数量'] > 0) {
-              layer.alert('该立项项下仍有子项，请选择没有子项的项目');
-              return;
-            }else if (key == '预算' && data['子项数量'] > 0) {
-              layer.alert('该预算项下仍有子项，请选择没有子项的预算');
+            var fv = func_valid(data); // 如果函数没有返回值就认为正常，否则就将返回值警告出来
+            if (fv) {
+              layer.alert(fv);
               return;
             };
             for (var id in dict_fill) {
@@ -326,8 +336,30 @@
           },
         });
       };
+      // 获取权限数据
+      $.ajax({    // 权限
+        url: "{% url 'get_WritePermissionObj' %}",
+        type: 'POST',
+        data: {},
+        success: function(ret){
+          permission = ret;
+          var project = $('#id_项目名称').val();
+          var flag = $.inArray(project, permission.招标.split('|')) >= 0 || (behavior == 'New' && permission.招标)    // 数组包含判断，包含>=0，不含<0
+          if (flag) {    // 有权限则激活相应按钮
+            $('#id_button_基本资料').removeAttr('disabled');
+            $('#id_button_立项资料').removeAttr('disabled');
+            $('#id_button_招标单位名称').removeAttr('disabled');
+            $('#id_button_招标代理单位名称').removeAttr('disabled');
+            $('#id_button_中标单位名称').removeAttr('disabled');
+            $('#id_button_预算控制价').removeAttr('disabled');
+            $('#id_button_中标价').removeAttr('disabled');
+            $('#id_button_日期资料').removeAttr('disabled');
+            $('#id_button_其他资料').removeAttr('disabled');
+            $('#id_btn_Save').removeAttr('disabled');
+          };
+        },
+      });
       // 修改基本资料
-      $('#id_button_基本资料').removeAttr('disabled');
       $(document).on('click', '#id_button_基本资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -340,7 +372,6 @@
         call_inputer(inputer_labels, inputer_form_type);
       });
       // 修改立项资料
-      $('#id_button_立项资料').removeAttr('disabled');
       $(document).on('click', '#id_button_立项资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -356,10 +387,23 @@
           'id_代建单位名称':     '代建单位名称',
           'id_项目概算':        '项目概算',
         };
-        call_table_inputer(key, dict_fill);
+        call_table_inputer(
+          key,
+          dict_fill,
+          function(data){},
+          function(data){
+            var flag = data.子项数量 > 0    // 如果该项目下仍有子项
+            if (flag) {
+              return '该立项项下仍有子项，请选择没有子项的项目';
+            };
+            var flag = $.inArray(data.项目名称, permission.招标.split('|')) < 0    // 如果没有调整该项目的权限
+            if (flag) {
+              return '您没有权限操作<'+data.项目名称+'>的招标信息';
+            };
+          },
+        );
       });
       // 修改招标单位名称
-      $('#id_button_招标单位名称').removeAttr('disabled');
       $(document).on('click', '#id_button_招标单位名称', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -429,7 +473,6 @@
         });
       });
       // 修改招标代理单位名称
-      $('#id_button_招标代理单位名称').removeAttr('disabled');
       $(document).on('click', '#id_button_招标代理单位名称', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -442,7 +485,6 @@
         call_table_inputer(key, dict_fill);
       });
       // 修改中标单位名称
-      $('#id_button_中标单位名称').removeAttr('disabled');
       $(document).on('click', '#id_button_中标单位名称', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -455,7 +497,6 @@
         call_table_inputer(key, dict_fill);
       });
       // 修改预算控制价
-      $('#id_button_预算控制价').removeAttr('disabled');
       $(document).on('click', '#id_button_预算控制价', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -481,7 +522,6 @@
           );
       });
       // 修改中标价
-      $('#id_button_中标价').removeAttr('disabled');
       $(document).on('click', '#id_button_中标价', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -507,7 +547,6 @@
           );
       });
       // 修改日期资料
-      $('#id_button_日期资料').removeAttr('disabled');
       $(document).on('click', '#id_button_日期资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -529,7 +568,6 @@
           );
       });
       // 修改其他资料
-      $('#id_button_其他资料').removeAttr('disabled');
       $(document).on('click', '#id_button_其他资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑

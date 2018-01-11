@@ -535,3 +535,94 @@ def get_WritePermissionObj(request):
     logUserOperation(request, 'read', sys._getframe().f_code.co_name, '')
     result = getUserPermission(username).get_Permission_Write_Table()
     return HttpResponse(json.dumps(result, ensure_ascii=False, cls=CJsonEncoder), content_type='application/json')
+
+def ajax_save_data(request):
+    '''
+        There is 3 argument(classify, project, data) to input.
+        classify is classify(单位/立项/合同...) of an item.
+        project is project(北王安置房/1609工程...) of an item.
+        data is a list which contains whole information of very item.
+        If data[0](mainUDID) is None, this function will insert some information to DB;
+        otherwise, this function will update DB.
+        To use this funciton, you must have "can_Write_Table(classify, project)"-permission.
+        If you have permission, commit sql,
+        Otherwise, return a string 'No Permission'.
+        If sql is correct and done, return a string 'Done',
+        otherwise, return a string which is errer.
+    '''
+    classify = request.POST.get('classify') or ''
+    project  = request.POST.get('project') or ''
+    data     = request.POST.get('data') or []
+    username = request.session.get('username')
+    if not getUserPermission(username).can_Write_Table(classify):
+        Cnt = 'No Permission'
+        return HttpResponse(Cnt)
+    dict_Head = {
+        '单位':     uc.CompanyColFields,
+        '立项':     uc.InitiationColFields,
+        '招标':     uc.BiddingColFields,
+        '合同':     uc.ContractColFields,
+        '分包合同': uc.SubContractColFields,
+        '变更':     uc.AlterationColFields,
+        '预算':     uc.BudgetColFields,
+        '付款':     uc.PaymentColFields,
+    }
+    dict_Type = {
+        '单位':     uc.CompanyColFields_Type,
+        '立项':     uc.InitiationColFields_Type,
+        '招标':     uc.BiddingColFields_Type,
+        '合同':     uc.ContractColFields_Type,
+        '分包合同': uc.SubContractColFields_Type,
+        '变更':     uc.AlterationColFields_Type,
+        '预算':     uc.BudgetColFields_Type,
+        '付款':     uc.PaymentColFields_Type,
+    }
+    dict_API = {
+        '单位':     read_For_Company_GridDialog,
+        '立项':     read_For_Initiation_GridDialog,
+        '招标':     read_For_Bidding_GridDialog,
+        '合同':     read_For_Contract_GridDialog,
+        '分包合同': read_For_SubContract_GridDialog,
+        '变更':     read_For_Alteration_GridDialog,
+        '预算':     read_For_Budget_GridDialog,
+        '付款':     read_For_Payment_GridDialog,
+    }
+    try:
+        # 取得被点击的tree-item的id，即立项识别码
+        Init_UDID = int(request.POST.get('Init_UDID'))
+        assert Init_UDID > 0
+        logUserOperation(request, 'read', sys._getframe().f_code.co_name,
+                         'key_table={}, Init_UDID={}'.format(key_table, Init_UDID))
+        # 取得该立项下全部后代节点
+        if key_table == '预算':
+            grandchildern_ids = get_All_Budget_Grandchildren_UDID(Init_UDID)
+            t_rows = dict_API[key_table](
+                'where 预算识别码 in %s', [grandchildern_ids + [Init_UDID]])
+            try:
+                t_UDID = dict_API[key_table]('where 预算识别码 = %s', [Init_UDID])[
+                    0].get(key_table + '识别码')
+            except:
+                t_UDID = None
+        else:
+            grandchildern_ids = get_All_Grandchildren_UDID(Init_UDID)
+            t_rows = dict_API[key_table](
+                'where 立项识别码 in %s', [grandchildern_ids + [Init_UDID]])
+            try:
+                t_UDID = dict_API[key_table]('where 立项识别码 = %s', [Init_UDID])[
+                    0].get(key_table + '识别码')
+            except:
+                t_UDID = None
+    except:
+        logUserOperation(request, 'read', sys._getframe().f_code.co_name,
+                         'key_table={}'.format(key_table))
+        t_rows = dict_API[key_table]()
+        t_UDID = None
+    t_head = dict_Head[key_table]
+    t_type = dict_Type[key_table]
+    return_json = {'t_head': json.dumps(t_head, ensure_ascii=False, cls=CJsonEncoder),
+                   't_type': json.dumps(t_type, ensure_ascii=False, cls=CJsonEncoder),
+                   't_rows': json.dumps(t_rows, ensure_ascii=False, cls=CJsonEncoder),
+                   't_UDID': t_UDID,
+                   }
+
+    return HttpResponse(json.dumps(return_json, ensure_ascii=False, cls=CJsonEncoder), content_type='application/json')

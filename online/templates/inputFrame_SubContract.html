@@ -161,6 +161,7 @@
     var data_type      = parent.child_data['data_type'];
     var data_value     = parent.child_data['data_value'];
     var data_head_type = twoListToOneDict(data_head, data_type);
+    var permission     = {};
     $(main);
 
     function main() {
@@ -241,6 +242,13 @@
       // 将input和textarea设为不可用
       $('input,textarea').attr('readonly', 'readonly');
       // 为各按钮注册事件
+      $('#id_btn_Cancel').removeAttr('disabled');
+      $(document).on('click', '#id_btn_Cancel', function() {
+        // 检查有无改动
+        // 关闭页面
+        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+        parent.layer.close(index); //再执行关闭
+      });
       function call_inputer(inputer_labels, inputer_form_type, func_arg=function(){}, func_fill=function(){}) {
         // 构造标准化inputer参数及回调
         // arg1：需要用户输入的项；arg2：这几项的类型；arg3：自定义arg1、2；arg4：自定义回调填写方式
@@ -272,12 +280,16 @@
             for (var i in inputer_labels) {
               $('#id_'+inputer_labels[i]).val(body.find('#id_'+inputer_labels[i])[0].value);
             };
-            func_fill(body);
-            layer.close(index);
+            var fl = func_fill(body); // 如果函数没有返回值就认为正常，否则就将返回值警告出来
+            if (fl) {
+              layer.alert(fl);
+            }else{
+              layer.close(index);
+            };
           },
         });
       };
-      function call_table_inputer(key, dict_fill, func_fill=function(){}) {
+      function call_table_inputer(key, dict_fill, func_fill=function(){}, func_valid=function(){}) {
         // 打开立项管理页面
         child_data['key_table'] = key; // 立项 | 招标
         var key_url = dict_Chn_Eng[child_data['key_table']];
@@ -304,11 +316,9 @@
                 break;
               };
             };
-            if (key == '立项' && data['子项数量'] > 0) {
-              layer.alert('该立项项下仍有子项，请选择没有子项的项目');
-              return;
-            }else if (key == '预算' && data['子项数量'] > 0) {
-              layer.alert('该预算项下仍有子项，请选择没有子项的预算');
+            var fv = func_valid(data); // 如果函数没有返回值就认为正常，否则就将返回值警告出来
+            if (fv) {
+              layer.alert(fv);
               return;
             };
             for (var id in dict_fill) {
@@ -326,8 +336,35 @@
           },
         });
       };
+      // 获取权限数据
+      $.ajax({    // 权限
+        url: "{% url 'get_WritePermissionObj' %}",
+        type: 'POST',
+        data: {},
+        success: function(ret){
+          permission = ret;
+          var project = $('#id_项目名称').val();
+          var flag = $.inArray(project, permission.分包合同.split('|')) >= 0 || (behavior == 'New' && permission.分包合同)    // 数组包含判断，包含>=0，不含<0
+          if (flag) {    // 有权限则激活相应按钮
+            $('#id_button_基本资料').removeAttr('disabled');
+            $('#id_button_总包合同资料').removeAttr('disabled');
+            $('#id_button_甲方单位名称').removeAttr('disabled');
+            $('#id_button_乙方单位名称').removeAttr('disabled');
+            $('#id_button_丙方单位名称').removeAttr('disabled');
+            $('#id_button_丁方单位名称').removeAttr('disabled');
+            var contract_final = $('#id_分包合同值_最终值').val();
+            if (contract_final.length == 0 || contract_final == 0) {
+              $('#id_button_分包合同值_签订时').removeAttr('disabled');
+              $('#id_button_分包合同值_最新值').removeAttr('disabled');
+            };
+            $('#id_button_分包合同值_最终值').removeAttr('disabled');
+            $('#id_button_日期资料').removeAttr('disabled');
+            $('#id_button_其他资料').removeAttr('disabled');
+            $('#id_btn_Save').removeAttr('disabled');
+          };
+        },
+      });
       // 修改基本资料
-      $('#id_button_基本资料').removeAttr('disabled');
       $(document).on('click', '#id_button_基本资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -345,8 +382,7 @@
                                 ];
         call_inputer(inputer_labels, inputer_form_type);
       });
-      // 修改总包合同资料
-      $('#id_button_总包合同资料').removeAttr('disabled');  // To be fixed: 避免出现循环引用
+      // 修改总包合同资料  // To be fixed: 避免出现循环引用
       $(document).on('click', '#id_button_总包合同资料', function() {
         // 1.检查有无权限总包合同资料
         // 2.进行业务逻辑
@@ -376,7 +412,6 @@
         );
       });
       // 甲方单位名称
-      $('#id_button_甲方单位名称').removeAttr('disabled');
       $(document).on('click', '#id_button_甲方单位名称', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -450,7 +485,6 @@
         });
       });
       // 乙方单位名称
-      $('#id_button_乙方单位名称').removeAttr('disabled');
       $(document).on('click', '#id_button_乙方单位名称', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -524,7 +558,6 @@
         });
       });
       // 丁方单位名称
-      $('#id_button_丙方单位名称').removeAttr('disabled');
       $(document).on('click', '#id_button_丙方单位名称', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -598,7 +631,6 @@
         });
       });
       // 丁方单位名称
-      $('#id_button_丁方单位名称').removeAttr('disabled');
       $(document).on('click', '#id_button_丁方单位名称', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -671,68 +703,62 @@
           },
         });
       });
-      var contract_final = $('#id_分包合同值_最终值').val();
-      if (contract_final.length == 0 || contract_final == 0) {
-        // 修改分包合同值_签订时
-        $('#id_button_分包合同值_签订时').removeAttr('disabled');
-        $(document).on('click', '#id_button_分包合同值_签订时', function() {
-          // 1.检查有无权限
-          // 2.进行业务逻辑
-          var inputer_labels    = [     // 需要接受用户修改的项
-                                   '分包合同值_签订时',
-                                  ];
-          var inputer_form_type = [     // 对应的输入类型
-                                    'input',
-                                  ];
-          call_inputer(
-            inputer_labels,
-            inputer_form_type,
-            function () {
-              var money = $('#id_总包合同值').val();
-              var num_money = Number(money.replace(/[\, ]/g, ''));
-              child_data['inputer_data']['descriptoin'] = ['（请在此处填写<strong>分包合同值_签订时</strong>，输入值应为介于[0，总包合同值<strong>'+money+'</strong>]的数字，有效值2位小数）'];
-              child_data['inputer_data']['valid'] = ['value.replace(/[\\, ]/g, "") >= 0 && value.replace(/[\\, ]/g, "") <='+num_money+' || value === ""'];
-            },
-            function (body) {
-              var money = body.find('#id_分包合同值_签订时')[0].value;
-              money = money.replace(/[\, ]/g, '');
-              $('#id_分包合同值_签订时').val(toThousands(money));
-              if (!$('#id_分包合同值_最新值').val() || $('#id_分包合同值_最新值').val()=='0.00') {    // 如果合同最新值是空的
-                $('#id_分包合同值_最新值').val(toThousands(money));
-              };
-            },
-          );
-        });
-        // 修改分包合同值_最新值
-        $('#id_button_分包合同值_最新值').removeAttr('disabled');
-        $(document).on('click', '#id_button_分包合同值_最新值', function() {
-          // 1.检查有无权限
-          // 2.进行业务逻辑
-          var inputer_labels    = [     // 需要接受用户修改的项
-                                   '分包合同值_最新值',
-                                  ];
-          var inputer_form_type = [     // 对应的输入类型
-                                    'input',
-                                  ];
-          call_inputer(
-            inputer_labels,
-            inputer_form_type,
-            function () {
-              var money = $('#id_总包合同值').val();
-              var num_money = Number(money.replace(/[\, ]/g, ''));
-              child_data['inputer_data']['descriptoin'] = ['（请在此处填写<strong>分包合同值_最新值</strong>，输入值应为介于[0，总包合同值<strong>'+money+'</strong>]的数字，有效值2位小数）'];
-              child_data['inputer_data']['valid'] = ['value.replace(/[\\, ]/g, "") >= 0 && value.replace(/[\\, ]/g, "") <='+num_money+' || value === ""'];
-            },
-            function (body) {
-              var money = body.find('#id_分包合同值_最新值')[0].value;
-              money = money.replace(/[\, ]/g, '');
+      // 修改分包合同值_签订时
+      $(document).on('click', '#id_button_分包合同值_签订时', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        var inputer_labels    = [     // 需要接受用户修改的项
+                                 '分包合同值_签订时',
+                                ];
+        var inputer_form_type = [     // 对应的输入类型
+                                  'input',
+                                ];
+        call_inputer(
+          inputer_labels,
+          inputer_form_type,
+          function () {
+            var money = $('#id_总包合同值').val();
+            var num_money = Number(money.replace(/[\, ]/g, ''));
+            child_data['inputer_data']['descriptoin'] = ['（请在此处填写<strong>分包合同值_签订时</strong>，输入值应为介于[0，总包合同值<strong>'+money+'</strong>]的数字，有效值2位小数）'];
+            child_data['inputer_data']['valid'] = ['value.replace(/[\\, ]/g, "") >= 0 && value.replace(/[\\, ]/g, "") <='+num_money+' || value === ""'];
+          },
+          function (body) {
+            var money = body.find('#id_分包合同值_签订时')[0].value;
+            money = money.replace(/[\, ]/g, '');
+            $('#id_分包合同值_签订时').val(toThousands(money));
+            if (!$('#id_分包合同值_最新值').val() || $('#id_分包合同值_最新值').val()=='0.00') {    // 如果合同最新值是空的
               $('#id_分包合同值_最新值').val(toThousands(money));
-            },
-          );
-        });
-      };
+            };
+          },
+        );
+      });
+      // 修改分包合同值_最新值
+      $(document).on('click', '#id_button_分包合同值_最新值', function() {
+        // 1.检查有无权限
+        // 2.进行业务逻辑
+        var inputer_labels    = [     // 需要接受用户修改的项
+                                 '分包合同值_最新值',
+                                ];
+        var inputer_form_type = [     // 对应的输入类型
+                                  'input',
+                                ];
+        call_inputer(
+          inputer_labels,
+          inputer_form_type,
+          function () {
+            var money = $('#id_总包合同值').val();
+            var num_money = Number(money.replace(/[\, ]/g, ''));
+            child_data['inputer_data']['descriptoin'] = ['（请在此处填写<strong>分包合同值_最新值</strong>，输入值应为介于[0，总包合同值<strong>'+money+'</strong>]的数字，有效值2位小数）'];
+            child_data['inputer_data']['valid'] = ['value.replace(/[\\, ]/g, "") >= 0 && value.replace(/[\\, ]/g, "") <='+num_money+' || value === ""'];
+          },
+          function (body) {
+            var money = body.find('#id_分包合同值_最新值')[0].value;
+            money = money.replace(/[\, ]/g, '');
+            $('#id_分包合同值_最新值').val(toThousands(money));
+          },
+        );
+      });
       // 修改分包合同值_最终值
-      $('#id_button_分包合同值_最终值').removeAttr('disabled');
       $(document).on('click', '#id_button_分包合同值_最终值', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -762,7 +788,6 @@
         );
       });
       // 修改日期资料
-      $('#id_button_日期资料').removeAttr('disabled');
       $(document).on('click', '#id_button_日期资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
@@ -778,7 +803,6 @@
           );
       });
       // 修改其他资料
-      $('#id_button_其他资料').removeAttr('disabled');
       $(document).on('click', '#id_button_其他资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
