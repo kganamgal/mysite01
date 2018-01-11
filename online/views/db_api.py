@@ -5,7 +5,8 @@
 # @Last Modified by:   Administrator
 # @Last Modified time: 2017-12-21 09:06:48
 
-# thePD = pd.DataFrame(list(table_Initiation.objects.values('立项识别码', '父项立项识别码')))
+# thePD = pd.DataFrame(list(table_Initiation.objects.values('立项识别码',
+# '父项立项识别码')))
 
 # from collections import Iterable
 # isinstance('abc',Iterable) # 判断目标是否可迭代
@@ -24,9 +25,11 @@ import sys
 import json
 import decimal
 import datetime
+import time
 import oss2
 
 # 格式化字符串
+
 
 def thousands(n): return '{:>,.2f}'.format(n)
 
@@ -34,6 +37,7 @@ def thousands(n): return '{:>,.2f}'.format(n)
 def percents(n): return '{:>.2f}'.format((n or 0) * 100) + '%'
 
 # HASH加密函数
+
 
 def hash_sha256(string):
     '''
@@ -44,6 +48,7 @@ def hash_sha256(string):
     return m.hexdigest()
 
 # 将对象转化为字典
+
 
 def classToDict(obj):
     '''
@@ -64,6 +69,7 @@ def classToDict(obj):
         return dict
 
 # Json的参数，用来转化date和decimal
+
 
 class CJsonEncoder(json.JSONEncoder):
 
@@ -93,6 +99,7 @@ def dictfetchall(cursor):
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 # 树型数据
+
 
 def format_Details_By_Tree():
     # 预自建过程
@@ -224,6 +231,7 @@ def format_Details_By_Tree():
         return roots_info
     return fix_treeTable_datas(roots_info)
 
+
 def read_For_TreeList():
     # 正式
     sql = '''SELECT 立项识别码 AS Id, ifnull(分项名称, 项目名称) AS name, 父项立项识别码 AS PId
@@ -247,6 +255,7 @@ def old_read_For_TreeList():
 
 # 单位管理
 
+
 def read_For_Company_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = 'SELECT {} FROM tabel_单位信息 '.format(
         ', '.join(uc.CompanyColLabels)) + where_sql + ' ' + order_sql
@@ -256,6 +265,7 @@ def read_For_Company_GridDialog(where_sql='', where_list=[], order_sql='', order
         return dictfetchall(cursor)
         # return [list(x) for x in cursor.fetchall()]
 
+
 def save_For_Company_GridDialog(data):
     '''
         This function can insert/update data for table_Company.
@@ -264,19 +274,46 @@ def save_For_Company_GridDialog(data):
         return Error Message if failed.
     '''
     # 参数合法性校验
+    # 确保data是数组
     if type(data) != type([]):
         return '参数类型错误，应提供数组形式的参数'
+    # 确保UDID是整数
     try:
         UDID = int(data[0] or 0)
     except Exception as e:
         return str(e)
+    # 确保传入的参数数量正确
     if len(data) != len(uc.CompanyFields):
         return '参数数量错误，需要%d个参数，您却提供了%d个参数' % (len(data), len(uc.CompanyFields))
+    # 确保传入的参数类型正确
     for value, field, _type in zip(data, uc.CompanyFields, uc.CompanyFields_Type):
-        if _type == '整数型' and (type(value) != type(1) or type(value) != type(None)):
+        if (_type == '整数型' and (type(value) != type(1) or type(value) != type(None))) or (_type == '浮点型' and (type(value) != type(1.0) or type(value) != type(None))) or (_type == '字符串型' and (type(value) != type('abc') or type(value) != type(None))) or (_type == '文本型' and (type(value) != type('abc') or type(value) != type(None))):
             return '<%s>类型应为<%s>不正确，请检查' % (_type, field)
-        elif _type == '浮点型' and (type(value) != type(1.0) or type(value) != type(None)):
-            return '<%s>类型应为<%s>不正确，请检查' % (_type, field)
+        if _type == '日期型':
+            try:
+                value = datetime.date(*list(time.strptime(value, "%Y-%m-%d"))[:3])
+            except Exception as e:
+                return str(e)
+    # 判断应该用insert还是update
+    # =====================To be continue...========================
+    dic = {
+        '单位名称': '青岛世园新城镇开发投资有限公司',
+        '单位类别': '',
+    }
+    # 正戏
+    try:
+        if UDID > 0:    # UDID存在，说明应该update
+            table_Company.objects.filter(单位识别码__exact=UDID).update(**dic)
+        else:           # UDID不存在，说明应该insert
+            # 数据合法性校验（是否存在重码）
+            flag = table_Company.objects.filter(单位名称__exact=dic.get('单位名称'))
+            if flag:
+                return '<%s>已存在，请检查'
+            table_Company.objects.create(**dic)
+    except Exception as e:
+        return str(e)
+
+
 
 # 立项管理
 
