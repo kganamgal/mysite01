@@ -265,51 +265,52 @@ def read_For_Company_GridDialog(where_sql='', where_list=[], order_sql='', order
         return dictfetchall(cursor)
         # return [list(x) for x in cursor.fetchall()]
 
-
-def save_For_Company_GridDialog(data):
+# save_For_Company_GridDialog({'单位识别码': 1, '单位名称': '新城镇公司'})
+def save_For_Company_GridDialog(data={}):
     '''
         This function can insert/update data for table_Company.
-        input data([1, 青岛X公司, ...]) which is a list.
+        input data({'单位识别码': 1, '单位名称': '青岛X公司', ...}) which is a dictionary.
         return 'Done' if success;
         return Error Message if failed.
     '''
     # 参数合法性校验
+    if not data:
+        return '您未输入任何数据'
     # 确保data是数组
-    if type(data) != type([]):
-        return '参数类型错误，应提供数组形式的参数'
+    if type(data) != type({}):
+        return '参数类型错误，应提供字典形式的参数'
     # 确保UDID是整数
     try:
-        UDID = int(data[0] or 0)
+        UDID = int(data.get('单位识别码') or 0)
     except Exception as e:
         return str(e)
-    # 确保传入的参数数量正确
-    if len(data) != len(uc.CompanyFields):
-        return '参数数量错误，需要%d个参数，您却提供了%d个参数' % (len(data), len(uc.CompanyFields))
     # 确保传入的参数类型正确
-    for value, field, _type in zip(data, uc.CompanyFields, uc.CompanyFields_Type):
-        if (_type == '整数型' and (type(value) != type(1) or type(value) != type(None))) or (_type == '浮点型' and (type(value) != type(1.0) or type(value) != type(None))) or (_type == '字符串型' and (type(value) != type('abc') or type(value) != type(None))) or (_type == '文本型' and (type(value) != type('abc') or type(value) != type(None))):
-            return '<%s>类型应为<%s>不正确，请检查' % (_type, field)
+    for field, _type in zip(uc.CompanyFields, uc.CompanyFields_Type):
+        if (_type == '整数型' and (type(data.get(field)) != type(1) or type(data.get(field)) != type(None))) or (_type == '浮点型' and (type(data.get(field)) != type(1.0) or type(data.get(field)) != type(None))) or (_type == '字符串型' and (type(data.get(field)) != type('abc') or type(data.get(field)) != type(None))) or (_type == '文本型' and (type(data.get(field)) != type('abc') or type(data.get(field)) != type(None))):
+            return '<%s>类型错误，应为<%s>，请检查' % (field, _type)
         if _type == '日期型':
             try:
-                value = datetime.date(*list(time.strptime(value, "%Y-%m-%d"))[:3])
+                data[field] = datetime.date(*list(time.strptime(data.get(field), "%Y-%m-%d"))[:3])
             except Exception as e:
                 return str(e)
+    return 'OK'
     # 判断应该用insert还是update
     # =====================To be continue...========================
-    dic = {
-        '单位名称': '青岛世园新城镇开发投资有限公司',
-        '单位类别': '',
-    }
+    dic = dict(zip(uc.CompanyFields, data))
     # 正戏
     try:
         if UDID > 0:    # UDID存在，说明应该update
-            table_Company.objects.filter(单位识别码__exact=UDID).update(**dic)
+            flag = table_Company.objects.filter(单位识别码__exact=UDID).update(**dic)
+            if flag:
+                return 'Done'
         else:           # UDID不存在，说明应该insert
             # 数据合法性校验（是否存在重码）
             flag = table_Company.objects.filter(单位名称__exact=dic.get('单位名称'))
             if flag:
                 return '<%s>已存在，请检查'
-            table_Company.objects.create(**dic)
+            flag = table_Company.objects.create(**dic)
+            if flag:
+                return 'Done'
     except Exception as e:
         return str(e)
 
