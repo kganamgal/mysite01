@@ -109,8 +109,8 @@
       {
         'section_word':   '财务资料',
         'section_btn':    false,
-        'key_word':       ['项目概算', '中标价', '合同值_签订时', 'nextLine', '合同值_最新值', '合同值_最终值', 'nextLine', '付款上限', '已付款', '已付款占合同'],
-        'short_key':      ['项目概算', '中标价', '合同签订值', 'nextLine', '合同最新值', '合同最终值', 'nextLine', '最高付款上限', '本合同已付款', '本合同已付比例'],
+        'key_word':       ['项目概算', '中标价', '合同值_签订时', 'nextLine', '合同值_最新值', '合同值_最终值', 'nextLine', '支付上限', '已付款', '已付款占合同'],
+        'short_key':      ['项目概算', '中标价', '合同签订值', 'nextLine', '合同最新值', '合同最终值', 'nextLine', '最高付款限额', '本合同已付款', '本合同已付比例'],
         'input_type':     ['text', 'text', 'text', 'nextLine', 'text', 'text', 'nextLine', 'text', 'text', 'text',],
         'value_type':     ['float', 'float', 'float', 'nextLine', 'float', 'float', 'nextLine', 'float', 'float', 'percent',],
         'input_width':    [1, 1, 2, 'nextLine', 2, 2, 'nextLine', 2, 1, 1,],
@@ -368,7 +368,7 @@
               $('#id_button_合同值_最新值').removeAttr('disabled');
             };
             $('#id_button_合同值_最终值').removeAttr('disabled');
-            $('#id_button_付款上限').removeAttr('disabled');
+            $('#id_button_支付上限').removeAttr('disabled');
             $('#id_btn_Save').removeAttr('disabled');
           };
         },
@@ -891,12 +891,12 @@
           },
           );
       });
-      // 修改付款上限
-      $(document).on('click', '#id_button_付款上限', function() {
+      // 修改支付上限
+      $(document).on('click', '#id_button_支付上限', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
         var inputer_labels    = [     // 需要接受用户修改的项
-                                 '付款上限',
+                                 '支付上限',
                                 ];
         var inputer_form_type = [     // 对应的输入类型
                                   'input',
@@ -909,12 +909,12 @@
             var num_money1 = Number(money1.replace(/[\, ]/g, ''));
             var money2 = $('#id_已付款').val();
             var num_money2 = Number(money2.replace(/[\, ]/g, ''));
-            child_data['inputer_data']['descriptoin'] = ['（请在此处填写<strong>付款上限</strong>，输入值应为介于[本合同已付款<strong>'+money2+'</strong>，合同最新值<strong>'+money1+'</strong>]的数字，有效值2位小数）'];
+            child_data['inputer_data']['descriptoin'] = ['（请在此处填写<strong>支付上限</strong>，输入值应为介于[本合同已付款<strong>'+money2+'</strong>，合同最新值<strong>'+money1+'</strong>]的数字，有效值2位小数）'];
             child_data['inputer_data']['valid'] = ['value.replace(/[\\, ]/g, "") >= '+num_money2+' && value.replace(/[\\, ]/g, "") <='+num_money1+' || value === ""'];
           },
           function (body) {
-            var money = body.find('#id_付款上限')[0].value;
-            $('#id_付款上限').val(toThousands(money.replace(/[\, ]/g, '')));
+            var money = body.find('#id_支付上限')[0].value;
+            $('#id_支付上限').val(toThousands(money.replace(/[\, ]/g, '')));
           },
           );
       });
