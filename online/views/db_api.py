@@ -265,8 +265,8 @@ def read_For_Company_GridDialog(where_sql='', where_list=[], order_sql='', order
         return dictfetchall(cursor)
         # return [list(x) for x in cursor.fetchall()]
 
-# save_For_Company_GridDialog({'单位识别码': 1, '单位名称': '新城镇公司'})
-def save_For_Company_GridDialog(data={}):
+
+def save_For_Company_GridDialog(**data):
     '''
         This function can insert/update data for table_Company.
         input data({'单位识别码': 1, '单位名称': '青岛X公司', ...}) which is a dictionary.
@@ -276,47 +276,64 @@ def save_For_Company_GridDialog(data={}):
     # 参数合法性校验
     if not data:
         return '您未输入任何数据'
-    # 确保data是数组
-    if type(data) != type({}):
-        return '参数类型错误，应提供字典形式的参数'
+    # 参数数量校验
+    if len(data) != len(uc.CompanyFields):
+        return '参数数量(%d)错误，应为(%d)个' % (len(data), len(uc.CompanyFields))
     # 确保UDID是整数
     try:
         UDID = int(data.get('单位识别码') or 0)
     except Exception as e:
         return str(e)
     # 确保传入的参数类型正确
-    for field, _type in zip(uc.CompanyFields, uc.CompanyFields_Type):
-        if (_type == '整数型' and (type(data.get(field)) != type(1) or type(data.get(field)) != type(None))) or (_type == '浮点型' and (type(data.get(field)) != type(1.0) or type(data.get(field)) != type(None))) or (_type == '字符串型' and (type(data.get(field)) != type('abc') or type(data.get(field)) != type(None))) or (_type == '文本型' and (type(data.get(field)) != type('abc') or type(data.get(field)) != type(None))):
-            return '<%s>类型错误，应为<%s>，请检查' % (field, _type)
+    dict_type = dict(zip(uc.CompanyFields, uc.CompanyFields_Type))
+    for field, value in data.items():
+        if field not in uc.CompanyFields:
+            return '无法存储<%s>，请重新输入' % field
+        _type = dict_type.get(field)
+        if (_type == '整数型' and not (type(value) == type(1) or value is None))\
+                or (_type == '浮点型' and not (type(value) == type(1.0) or type(value) == type(decimal.Decimal(1.0)) or type(value) == type(1) or value is None))\
+                or (_type == '字符串型' and not (type(value) == type('abc') or value is None))\
+                or (_type == '文本型' and not (type(value) == type('abc') or value is None)):
+            return '<%s:%s>类型(%s)错误，应为<%s>，请检查' % (field, str(value), str(type(value)), _type)
         if _type == '日期型':
             try:
-                data[field] = datetime.date(*list(time.strptime(data.get(field), "%Y-%m-%d"))[:3])
+                data[field] = datetime.date(
+                    *list(time.strptime(data.get(field), "%Y-%m-%d"))[:3])
             except Exception as e:
                 return str(e)
-    return 'OK'
     # 判断应该用insert还是update
-    # =====================To be continue...========================
-    dic = dict(zip(uc.CompanyFields, data))
-    # 正戏
     try:
         if UDID > 0:    # UDID存在，说明应该update
-            flag = table_Company.objects.filter(单位识别码__exact=UDID).update(**dic)
+            # 确保该项存在
+            flag = not table_Company.objects.filter(单位识别码=UDID)
+            if flag:
+                return '单位识别码为<%d>的记录尚不存在，无法修改，请检查' % UDID
+            # 数据合法性校验（是否存在重码）
+            flag = table_Company.objects.filter(
+                单位名称__exact=data.get('单位名称')).exclude(单位识别码=UDID)
+            if flag:
+                return '<%s>已存在，请检查' % data.get('单位名称')
+            flag = table_Company.objects.filter(
+                单位识别码__exact=UDID).update(**data)
             if flag:
                 return 'Done'
         else:           # UDID不存在，说明应该insert
             # 数据合法性校验（是否存在重码）
-            flag = table_Company.objects.filter(单位名称__exact=dic.get('单位名称'))
+            flag = table_Company.objects.filter(单位名称__exact=data.get('单位名称'))
             if flag:
-                return '<%s>已存在，请检查'
-            flag = table_Company.objects.create(**dic)
+                return '<%s>已存在，请检查' % data.get('单位名称')
+            # 数据合法性校验（是否未输入单位名称）
+            flag = not data.get('单位名称')
+            if flag:
+                return '<单位名称>未填写，请检查'
+            flag = table_Company.objects.create(**data)
             if flag:
                 return 'Done'
     except Exception as e:
         return str(e)
 
-
-
 # 立项管理
+
 
 def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='ORDER BY 立项识别码', order_list=[]):
     # 预自建过程
@@ -439,6 +456,140 @@ def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='ORDER
         return dictfetchall(cursor)
 
 
+def save_For_Initiation_GridDialog(**data):
+    '''
+        This function can insert/update data for table_Initiation.
+        input data({'立项识别码': 1, '项目名称': '北王安置房', ...}) which is a dictionary.
+        return 'Done' if success;
+        return Error Message if failed.
+    '''
+    # 参数合法性校验
+    if not data:
+        return '您未输入任何数据'
+    # 参数数量校验
+    if len(data) != len(uc.InitiationFields):
+        return '参数数量(%d)错误，应为(%d)个' % (len(data), len(uc.InitiationFields))
+    # 确保UDID是整数
+    try:
+        UDID = int(data.get('立项识别码') or 0)
+    except Exception as e:
+        return str(e)
+    # 确保传入的参数类型正确
+    dict_type = dict(zip(uc.InitiationFields, uc.InitiationFields_Type))
+    for field, value in data.items():
+        if field not in uc.InitiationFields:
+            return '无法存储<%s>，请重新输入' % field
+        _type = dict_type.get(field)
+        if (_type == '整数型' and not (type(value) == type(1) or value is None))\
+                or (_type == '浮点型' and not (type(value) == type(1.0) or type(value) == type(1) or type(value) == type(decimal.Decimal(1.0)) or value is None))\
+                or (_type == '字符串型' and not (type(value) == type('abc') or value is None))\
+                or (_type == '文本型' and not (type(value) == type('abc') or value is None)):
+            return '<%s:%s>类型(%s)错误，应为<%s>，请检查' % (field, str(value), str(type(value)), _type)
+        elif _type == '日期型':
+            try:
+                data[field] = datetime.date(
+                    *list(time.strptime(data.get(field), "%Y-%m-%d"))[:3])
+            except Exception as e:
+                return str(e)
+    # 判断应该用insert还是update
+    try:
+        # 项目名称不应为空
+        if not data.get('项目名称'):
+            return '请输入<%s>字段' % '项目名称'
+        # 如果有父项，项目名称应与父项项目名称一致
+        parentUDID = data.get('父项立项识别码') or 0
+        if parentUDID:
+            project = data.get('项目名称')
+            orm_init = table_Initiation.objects.filter(
+                立项识别码=parentUDID).values()
+            if orm_init:
+                parent_project = orm_init[0].get('项目名称') or ''
+                flag = project != parent_project
+                if flag:
+                    return '<项目名称>(%s)与<父项项目名称>(%s)不一致，请修改' % (project, parent_project)
+        # 父项应为空，或父项的父项...应为空，否则说明有循环引用象
+        for i in range(20):
+            if not parentUDID:
+                break
+            orm_init = table_Initiation.objects.filter(
+                立项识别码=parentUDID).values()
+            if orm_init:
+                parentUDID = orm_init[0].get('父项立项识别码')
+            else:
+                break
+        else:
+            return '该项深度超过20层或存在循环引用现象，请优化项目结构'
+        # update
+        if UDID > 0:
+            # 确保该项存在
+            flag = not table_Initiation.objects.filter(立项识别码=UDID)
+            if flag:
+                return '立项识别码为<%d>的记录尚不存在，无法修改，请检查' % UDID
+            # 项目名称、分项名称不应有重复
+            flag = table_Initiation.objects.filter(项目名称__exact=data.get(
+                '项目名称'), 分项名称__exact=data.get('分项名称')).exclude(立项识别码=UDID)
+            if flag:
+                return '<%s-%s>已存在，请检查' % (data.get('项目名称'), (data.get('分项名称') or ''))
+            # 查询一次数据库
+            old_data = read_For_Initiation_GridDialog(
+                'WHERE 立项识别码=%s', [UDID])[0]
+            # 项目概算应>=已付款
+            estimate = float(data.get('项目概算') or 0)
+            payed_estimate = float(old_data.get('概算已付款额') or 0)
+            if estimate < payed_estimate:
+                return '<项目概算>(%f)过低，请调整为不低于<概算已付款额>(%f)' % (estimate, payed_estimate)
+            # 项目概算应>=已分配概算
+            estimate = float(data.get('项目概算') or 0)
+            distributed_estimate = float(old_data.get('已分配概算') or 0)
+            if estimate < distributed_estimate:
+                return '<项目概算>(%f)过低，请调整为不低于<已分配概算>(%f)' % (estimate, distributed_estimate)
+            # 父项存在时，项目概算应<= 项目概算上限
+            parentUDID = data.get('父项立项识别码') or 0
+            estimate = float(data.get('项目概算') or 0)
+            old_estimate = float(old_data.get('项目概算') or 0)
+            parent_data = read_For_Initiation_GridDialog(
+                'WHERE 立项识别码=%s', [UDID])
+            if parent_data:
+                parent_estimate = float(parent_data[0].get('项目概算') or 0)
+                parent_distributed_estimate = float(
+                    parent_data[0].get('已分配概算') or 0)
+                limit_estimate = float(
+                    parent_estimate - parent_distributed_estimate + old_estimate)
+                if estimate > limit_estimate:
+                    return '<项目概算>(%f)过高，请调整为不高于(%f)' % (estimate, limit_estimate)
+            # 正戏
+            flag = table_Initiation.objects.filter(
+                立项识别码__exact=UDID).update(**data)
+            if flag:
+                return 'Done'
+        # insert
+        else:
+            # 确保项目名称、项目分项不重复
+            flag = table_Initiation.objects.filter(
+                项目名称__exact=data.get('项目名称'), 分项名称__exact=data.get('分项名称'))
+            if flag:
+                return '<%s-%s>已存在，请检查' % (data.get('项目名称'), (data.get('分项名称') or ''))
+            # 父项存在时，项目概算应<= 父项概算-父项已分配概算
+            parentUDID = data.get('父项立项识别码') or 0
+            estimate = float(data.get('项目概算') or 0)
+            parent_data = read_For_Initiation_GridDialog(
+                'WHERE 立项识别码=%s', [UDID])
+            if parent_data:
+                parent_estimate = float(parent_data[0].get('项目概算') or 0)
+                parent_distributed_estimate = float(
+                    parent_data[0].get('已分配概算') or 0)
+                limit_estimate = float(
+                    parent_estimate - parent_distributed_estimate)
+                if estimate > limit_estimate:
+                    return '<项目概算>(%f)过高，请调整为不高于(%f)' % (estimate, limit_estimate)
+            # 正戏
+            flag = table_Initiation.objects.create(**data)
+            if flag:
+                return 'Done'
+    except Exception as e:
+        return str(e)
+
+
 def get_All_Grandchildren(UDID):
     '''
         取得某项下全部子项、孙项等的立项识别码
@@ -474,6 +625,7 @@ def get_All_Grandchildren(UDID):
 
 # 招标管理
 
+
 def read_For_Bidding_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM
                  (SELECT           招标识别码, A.立项识别码 AS 立项识别码, 项目名称, 分项名称,
@@ -496,7 +648,89 @@ def read_For_Bidding_GridDialog(where_sql='', where_list=[], order_sql='', order
         cursor.execute(sql, sql_list)
         return dictfetchall(cursor)
 
+
+def save_For_Bidding_GridDialog(**data):
+    '''
+        This function can insert/update data for table_Bidding.
+        input data({'招标识别码': 1, '招标方式': '公开招标', ...}) which is a dictionary.
+        return 'Done' if success;
+        return Error Message if failed.
+    '''
+    # 参数合法性校验
+    if not data:
+        return '您未输入任何数据'
+    # 参数数量校验
+    if len(data) != len(uc.BiddingFields):
+        return '参数数量(%d)错误，应为(%d)个' % (len(data), len(uc.BiddingFields))
+    # 确保UDID是整数
+    try:
+        UDID = int(data.get('招标识别码') or 0)
+    except Exception as e:
+        return str(e)
+    # 确保传入的参数类型正确
+    dict_type = dict(zip(uc.BiddingFields, uc.BiddingFields_Type))
+    for field, value in data.items():
+        if field not in uc.BiddingFields:
+            return '无法存储<%s>，请重新输入' % field
+        _type = dict_type.get(field)
+        if (_type == '整数型' and not (type(value) == type(1) or value is None))\
+                or (_type == '浮点型' and not (type(value) == type(1.0) or type(value) == type(1) or type(value) == type(decimal.Decimal(1.0)) or value is None))\
+                or (_type == '字符串型' and not (type(value) == type('abc') or value is None))\
+                or (_type == '文本型' and not (type(value) == type('abc') or value is None)):
+            return '<%s:%s>类型(%s)错误，应为<%s>，请检查' % (field, str(value), str(type(value)), _type)
+        elif _type == '日期型':
+            try:
+                data[field] = datetime.date(
+                    *list(time.strptime(data.get(field), "%Y-%m-%d"))[:3])
+            except Exception as e:
+                return str(e)
+    # 判断应该用insert还是update
+    try:
+        # 立项识别码必须存在、对应的立项必须存在
+        InitUDID = data.get('立项识别码') or 0
+        Init_data = read_For_Initiation_GridDialog(
+            'WHERE 立项识别码=%s', [InitUDID])
+        flag = not (InitUDID and Init_data)
+        if flag:
+            return '立项信息错误'
+        # 对应的立项不应有子项
+        children_Count = Init_data[0].get('子项数量') or 0
+        if children_Count:
+            return '对应的立项不应有子项，请重新选择立项信息'
+        # 预算控制价不应超过项目概算
+        control_price = float(data.get('预算控制价') or 0)
+        estimate = float(Init_data[0].get('项目概算') or 0)
+        flag = control_price > estimate or control_price < 0
+        if flag:
+            return '<预算控制价>(%f)输入错误，请将值设置为[0, <项目概算>(%f)]之间' % (control_price, estimate)
+        # 中标价不应超过预算控制价
+        bid_price = float(data.get('中标价') or 0)
+        control_price = float(data.get('预算控制价') or 0)
+        flag = bid_price > control_price or bid_price < 0
+        if flag:
+            return '<中标价>(%f)输入错误，请将值设置为[0, <预算控制价>(%f)]之间' % (bid_price, control_price)
+        # update
+        if UDID > 0:
+            # 确保该项存在
+            flag = not table_Bidding.objects.filter(招标识别码=UDID)
+            if flag:
+                return '招标识别码为<%d>的记录尚不存在，无法修改，请检查' % UDID
+            # 正戏
+            flag = table_Bidding.objects.filter(
+                招标识别码__exact=UDID).update(**data)
+            if flag:
+                return 'Done'
+        # insert
+        else:
+            # 正戏
+            flag = table_Bidding.objects.create(**data)
+            if flag:
+                return 'Done'
+    except Exception as e:
+        return str(e)
+
 # 合同管理
+
 
 def read_For_Contract_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM
@@ -530,7 +764,104 @@ def read_For_Contract_GridDialog(where_sql='', where_list=[], order_sql='', orde
         cursor.execute(sql, sql_list)
         return dictfetchall(cursor)
 
+
+def save_For_Contract_GridDialog(**data):
+    '''
+        This function can insert/update data for table_Contract.
+        input data({'合同识别码': 1, '合同名称': '建设工程XX合同', ...}) which is a dictionary.
+        return 'Done' if success;
+        return Error Message if failed.
+    '''
+    # 参数合法性校验
+    if not data:
+        return '您未输入任何数据'
+    # 参数数量校验
+    if len(data) != len(uc.ContractFields):
+        return '参数数量(%d)错误，应为(%d)个' % (len(data), len(uc.ContractFields))
+    # 确保UDID是整数
+    try:
+        UDID = int(data.get('招标识别码') or 0)
+    except Exception as e:
+        return str(e)
+    # 确保传入的参数类型正确
+    dict_type = dict(zip(uc.ContractFields, uc.ContractFields_Type))
+    for field, value in data.items():
+        if field not in uc.ContractFields:
+            return '无法存储<%s>，请重新输入' % field
+        _type = dict_type.get(field)
+        if (_type == '整数型' and not (type(value) == type(1) or value is None))\
+                or (_type == '浮点型' and not (type(value) == type(1.0) or type(value) == type(1) or type(value) == type(decimal.Decimal(1.0)) or value is None))\
+                or (_type == '字符串型' and not (type(value) == type('abc') or value is None))\
+                or (_type == '文本型' and not (type(value) == type('abc') or value is None)):
+            return '<%s:%s>类型(%s)错误，应为<%s>，请检查' % (field, str(value), str(type(value)), _type)
+        elif _type == '日期型':
+            try:
+                data[field] = datetime.date(
+                    *list(time.strptime(data.get(field), "%Y-%m-%d"))[:3])
+            except Exception as e:
+                return str(e)
+    # 判断应该用insert还是update
+    try:
+        # 立项识别码必须存在、对应的立项必须存在
+        InitUDID = data.get('立项识别码') or 0
+        Init_data = read_For_Initiation_GridDialog(
+            'WHERE 立项识别码=%s', [InitUDID])
+        flag = not (InitUDID and Init_data)
+        if flag:
+            return '立项信息错误'
+        # 对应的立项不应有子项
+        children_Count = Init_data[0].get('子项数量') or 0
+        if children_Count:
+            return '对应的立项不应有子项，请重新选择立项信息'
+        # 招标识别码如果存在，应有对应招标项，招标项如果存在，应与立项信息相对应
+        BiddingUDID = data.get('招标识别码') or 0
+        Bidding_data = read_For_Bidding_GridDialog(
+            'WHERE 招标识别码=%s', [BiddingUDID])
+        flag = not (BiddingUDID and Bidding_data)
+        if flag:
+            return '招标信息错误'
+        # 合同签订值应>=0，招标项如果存在，<=中标价，否则应<=项目概算
+        sign_price = float(data.get('合同值_签订时') or 0)
+        estimate   = float(Init_data.get('项目概算') or 0)
+        bid_price  = float(Bidding_data.get('中标价') or 0)
+        if Bidding_data:
+            flag = sign_price < 0 or sign_price > bid_price
+            if flag:
+                return '<合同值_签订时>(%f)输入错误，请将值设置为[0, <中标价>(%f)]之间' % (sign_price, bid_price)
+        else:
+            flag = sign_price < 0 or sign_price > estimate
+            if flag:
+                return '<合同值_签订时>(%f)输入错误，请将值设置为[0, <项目概算>(%f)]之间' % (sign_price, estimate)
+        # 合同最终值应不应<0
+        final_price = float(data.get('合同值_最终值') or 0)
+        flag = final_price < 0
+        if flag:
+            return '<合同值_最终值>(%f)输入错误，请将值设置为非负数' % final_price
+        # 预算控制价不应超过项目概算
+        # ======================================写到这儿啦===================================================================
+        # 支付上限应<=合同最新值，>=合同已付款(若无该项，则为0)
+        # 当合同最终值不存在时，合同最新值应>=项目已付款(若无该项，则为0)，<=项目概算，否则应=项目最终值
+        # update
+        if UDID > 0:
+            # 确保该项存在
+            flag = not table_Contract.objects.filter(合同识别码=UDID)
+            if flag:
+                return '合同识别码为<%d>的记录尚不存在，无法修改，请检查' % UDID
+            # 正戏
+            flag = table_Contract.objects.filter(
+                合同识别码__exact=UDID).update(**data)
+            if flag:
+                return 'Done'
+        # insert
+        else:
+            # 正戏
+            flag = table_Contract.objects.create(**data)
+            if flag:
+                return 'Done'
+    except Exception as e:
+        return str(e)
 # 分包合同管理
+
 
 def read_For_SubContract_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM
@@ -561,6 +892,7 @@ def read_For_SubContract_GridDialog(where_sql='', where_list=[], order_sql='', o
 
 # 变更管理
 
+
 def read_For_Alteration_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM
              (SELECT           变更识别码, A.立项识别码, 项目名称, 分项名称, A.合同识别码, 合同编号,
@@ -582,6 +914,7 @@ def read_For_Alteration_GridDialog(where_sql='', where_list=[], order_sql='', or
         return dictfetchall(cursor)
 
 # 预算管理
+
 
 def read_For_Budget_GridDialog(where_sql='', where_list=[], order_sql='ORDER BY 预算识别码', order_list=[]):
     # 预自建过程
@@ -755,6 +1088,7 @@ def format_Budget_Details_By_Tree():
 
 # 付款管理
 
+
 def read_For_Payment_GridDialog(where_sql='', where_list=[], order_sql='', order_list=[]):
     sql = '''SELECT {} FROM
              (SELECT           A.付款识别码, 付款登记时间, 付款支付时间, A.立项识别码, I.项目名称, I.分项名称,
@@ -809,6 +1143,7 @@ def read_For_Payment_GridDialog(where_sql='', where_list=[], order_sql='', order
 
 # 其余查询API
 
+
 def get_Children_Count(UDID):
     '''
         make sure UDID is int.
@@ -820,6 +1155,7 @@ def get_Children_Count(UDID):
         return len(table_Initiation.objects.filter(父项立项识别码=UDID))
     except:
         return
+
 
 def new_get_All_Grandchildren_UDID(UDID):
     '''
@@ -847,6 +1183,7 @@ def new_get_All_Grandchildren_UDID(UDID):
     result.remove(UDID)
     result.sort()
     return result
+
 
 def get_All_Grandchildren_UDID(UDID):
     '''
@@ -880,6 +1217,7 @@ def get_All_Grandchildren_UDID(UDID):
     except:
         return []
 
+
 def get_All_Budget_Grandchildren_UDID(UDID):
     '''
         取得某预算下全部子项、孙项等的预算识别码
@@ -904,6 +1242,7 @@ def get_All_Budget_Grandchildren_UDID(UDID):
     result.remove(UDID)
     result.sort()
     return result
+
 
 def get_All_Budget_Grandchildren_UDID(UDID):
     '''
@@ -941,6 +1280,7 @@ def get_All_Budget_Grandchildren_UDID(UDID):
     except:
         return []
 
+
 def get_Count_Payment(list_UDID):
     '''
         make sure UDID is list with int.
@@ -952,6 +1292,7 @@ def get_Count_Payment(list_UDID):
         return len(table_Payment.objects.filter(立项识别码__in=list_UDID))
     except:
         return
+
 
 def get_Sum_Money_Payment(list_UDID):
     '''
@@ -991,7 +1332,6 @@ class getUserPermission():
         else:
             return False
 
-
     # 以下为打开网页或窗口的权限
 
     def can_Visit_Overview(self):
@@ -1020,7 +1360,6 @@ class getUserPermission():
         if not self.user_Is_Exist():
             return False
         return (self.__filterDict.get('查看%s信息' % classify) or 0) >= 2
-
 
     # 读取数据权限
 
@@ -1060,7 +1399,6 @@ class getUserPermission():
             return False
         return (self.__filterDict.get('查看%s信息' % classify) or 0) >= 3
 
-
     # 写入数据权限
 
     def can_Upload_Attachment(self, classify=''):
@@ -1085,19 +1423,20 @@ class getUserPermission():
             # [x, y]
             # x代表classfity对应的表名
             # y==0代表检验权限不需用到project，y==1则反之
-            '':         [0,                    0,],
-            '单位':     ['操作单位信息',         1,],
-            '立项':     ['允许操作立项的项目',    2,],
-            '招标':     ['允许操作招标的项目',    2,],
-            '合同':     ['允许操作合同的项目',    2,],
-            '预算':     ['操作预算信息',         1,],
-            '付款':     ['允许操作付款的项目',    2,],
-            '变更':     ['允许操作变更的项目',    2,],
-            '分包合同': ['允许操作分包合同的项目', 2,],
-            '概算':     ['允许调整概算的项目',    2,],
-            '合同额':   ['允许调整合同额的项目',   2,],
+            '':         [0,                    0, ],
+            '单位':     ['操作单位信息',         1, ],
+            '立项':     ['允许操作立项的项目',    2, ],
+            '招标':     ['允许操作招标的项目',    2, ],
+            '合同':     ['允许操作合同的项目',    2, ],
+            '预算':     ['操作预算信息',         1, ],
+            '付款':     ['允许操作付款的项目',    2, ],
+            '变更':     ['允许操作变更的项目',    2, ],
+            '分包合同': ['允许操作分包合同的项目', 2, ],
+            '概算':     ['允许调整概算的项目',    2, ],
+            '合同额':   ['允许调整合同额的项目',   2, ],
         }
-        field_name, flag = classfity_dict[classify]      # 看看要查的表是哪一种，需不需要project
+        field_name, flag = classfity_dict[
+            classify]      # 看看要查的表是哪一种，需不需要project
         if flag == 1:
             return bool(self.__filterDict.get(field_name))
         elif flag == 2:
@@ -1131,6 +1470,7 @@ class getUserPermission():
         return result
 
 # 操作OSS文件类
+
 
 class operateOSS():
     '''
