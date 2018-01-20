@@ -1218,7 +1218,7 @@ def get_All_Grandchildren_UDID(UDID):
         return []
 
 
-def get_All_Budget_Grandchildren_UDID(UDID):
+def new_get_All_Budget_Grandchildren_UDID(UDID):
     '''
         取得某预算下全部子项、孙项等的预算识别码
     '''
@@ -1664,7 +1664,7 @@ def save_For_Company(**data):
     return save_Input_Data('单位', **data)
 
 
-def save_For_Initiation(**data):
+def save_For_Initiation(checkEstimate=True, **data):
     '''
         This function can insert/update data for table_Initiation.
         input data({'立项识别码': 1, '项目名称': '北王安置房', ...}) which is a dictionary.
@@ -1687,10 +1687,13 @@ def save_For_Initiation(**data):
             if project != parent_project:
                 return (0, '<项目名称>(%s)与<父项项目名称>(%s)不一致，请修改' % (project, parent_project))
         # 父项应为空，或父项的父项...应为空，否则说明有循环引用象
+        UDID = data.get('立项识别码') or 0
         parent_UDID = data.get('父项立项识别码') or 0
         for i in range(100):
             if not parentUDID:
                 break
+            if UDID == parent_UDID > 0:
+                return (0, '该项存在循环引用现象，请优化项目结构')
             orm_init = table_Initiation.objects.filter(
                 立项识别码=parentUDID).values()
             if orm_init:
@@ -1698,40 +1701,41 @@ def save_For_Initiation(**data):
             else:
                 break
         else:
-            return '该项深度过深或存在循环引用现象，请优化项目结构'
-        # 项目概算应>=已付款，项目概算应>=已分配概算
-        UDIDs = [UDID] + get_All_Grandchildren_UDID(UDID)
-        orm_payment = table_Payment.objects.filter(立项识别码__in=UDIDs)
-        payed = float(sum([x.get('本次付款额') for x in orm_payment.values()]))
-        estimate = float(data.get('项目概算') or 0)
-        if estimate < payed:
-            return (0, '<项目概算>(%f)过低，请调整为不低于<概算已付款额>(%f)' % (estimate, payed))
-        orm_init = table_Initiation.objects.filter(
-            父项立项识别码__exact=UDID).values()
-        distributed_estimate = float(
-            sum([x.get('项目概算') for x in orm_init]))
-        if estimate < distributed_estimate:
-            return (0, '<项目概算>(%f)过低，请调整为不低于<已分配概算>(%f)' % (estimate, distributed_estimate))
-        # 父项存在时，项目概算应<= 项目概算上限
-        parent_UDID = data.get('父项立项识别码') or 0
-        if parent_UDID > 0:
-            orm_init = table_Initiation.objects.filter(
-                父项立项识别码__exact=parent_UDID).exclude(立项识别码__exact=UDID).values()
-            brother_estimate = float(
-                sum([x.get('项目概算') for x in orm_init]))
-            parent_estimate = float(table_Initiation.objects.filter(
-                立项识别码__exact=parent_UDID).values()[0].get('项目概算'))
-            limit_estimate = parent_estimate - brother_estimate
+            return (0, '该项深度过深，请优化项目结构')
+        if checkEstimate:
+            # 项目概算应>=已付款，项目概算应>=已分配概算
+            UDIDs = [UDID] + get_All_Grandchildren_UDID(UDID)
+            orm_payment = table_Payment.objects.filter(立项识别码__in=UDIDs)
+            payed = float(sum([x.get('本次付款额') for x in orm_payment.values()]))
             estimate = float(data.get('项目概算') or 0)
-            if estimate > limit_estimate:
-                return (0, '<项目概算>(%f)过高，请调整为不高于(%f)' % (estimate, limit_estimate))
+            if estimate < payed:
+                return (0, '<项目概算>(%f)过低，请调整为不低于<概算已付款额>(%f)' % (estimate, payed))
+            orm_init = table_Initiation.objects.filter(
+                父项立项识别码=UDID).values()
+            distributed_estimate = float(
+                sum([x.get('项目概算') for x in orm_init]))
+            if estimate < distributed_estimate:
+                return (0, '<项目概算>(%f)过低，请调整为不低于<已分配概算>(%f)' % (estimate, distributed_estimate))
+            # 父项存在时，项目概算应<= 项目概算上限
+            parent_UDID = data.get('父项立项识别码') or 0
+            if parent_UDID > 0:
+                orm_init = table_Initiation.objects.filter(
+                    父项立项识别码=parent_UDID).exclude(立项识别码=UDID).values()
+                brother_estimate = float(
+                    sum([x.get('项目概算') for x in orm_init]))
+                parent_estimate = float(table_Initiation.objects.filter(
+                    立项识别码=parent_UDID).values()[0].get('项目概算'))
+                limit_estimate = parent_estimate - brother_estimate
+                estimate = float(data.get('项目概算') or 0)
+                if estimate > limit_estimate:
+                    return (0, '<项目概算>(%f)过高，请调整为不高于(%f)' % (estimate, limit_estimate))
     except Exception as e:
         return (0, str(e))
     # 数据合法后存入数据库
     return save_Input_Data('立项', **data)
 
 
-def save_For_Bidding(**data):
+def save_For_Bidding(checkEstimate=True, **data):
     '''
         This function can insert/update data for table_Bidding.
         input data({'招标识别码': 1, '招标方式': '公开招标', ...}) which is a dictionary.
@@ -1752,11 +1756,12 @@ def save_For_Bidding(**data):
         if children:
             return (0, '对应的立项不应有子项，请重新选择立项信息')
         # 预算控制价不应超过项目概算
-        control_price = float(data.get('预算控制价') or 0)
-        estimate = float(orm_init[0].get('项目概算') or 0)
-        flag = control_price > estimate or control_price < 0
-        if flag:
-            return '<预算控制价>(%f)输入错误，请将值设置为[0, <项目概算>(%f)]之间' % (control_price, estimate)
+        if checkEstimate:
+            control_price = float(data.get('预算控制价') or 0)
+            estimate = float(orm_init[0].get('项目概算') or 0)
+            flag = control_price > estimate or control_price < 0
+            if flag:
+                return '<预算控制价>(%f)输入错误，请将值设置为[0, <项目概算>(%f)]之间' % (control_price, estimate)
         # 中标价不应超过预算控制价
         bid_price = float(data.get('中标价') or 0)
         control_price = float(data.get('预算控制价') or 0)
@@ -1769,7 +1774,7 @@ def save_For_Bidding(**data):
     return save_Input_Data('招标', **data)
 
 
-def save_For_Contract(**data):
+def save_For_Contract(checkEstimate=True, **data):
     '''
         This function can insert/update data for table_Contract.
         input data({'合同识别码': 1, '合同名称': '建设工程XX合同', ...}) which is a dictionary.
@@ -1807,11 +1812,12 @@ def save_For_Contract(**data):
             bid_price = float(orm_bidding[0].get('中标价') or 0)
             if not 0 <= sign_price <= bid_price:
                 return (0, '<合同值_签订时>(%f)输入错误，请将值设置为[0, <中标价>(%f)]之间' % (sign_price, bid_price))
-        orm_init = table_Initiation.objects.filter(立项识别码=InitUDID).values()
-        estimate = float(orm_init[0].get('项目概算') or 0)
-        flag = 0 <= sign_price <= estimate
-        if not flag:
-            return (0, '<合同值_签订时>(%f)输入错误，请将值设置为[0, <项目概算>(%f)]之间' % (sign_price, estimate))
+        if checkEstimate:
+            orm_init = table_Initiation.objects.filter(立项识别码=InitUDID).values()
+            estimate = float(orm_init[0].get('项目概算') or 0)
+            flag = 0 <= sign_price <= estimate
+            if not flag:
+                return (0, '<合同值_签订时>(%f)输入错误，请将值设置为[0, <项目概算>(%f)]之间' % (sign_price, estimate))
         # 合同最终值应不<0
         final_price = float(data.get('合同值_最终值') or 0)
         if final_price < 0:
@@ -1834,7 +1840,10 @@ def save_For_Contract(**data):
         ContractUDID = data.get('合同识别码') or 0
         orm_payment = table_Payment.objects.filter(合同识别码=ContractUDID)
         payed = float(sum([x.get('本次付款额') for x in orm_payment.values()]))
-        flag = last_price == final_price if final_price else payed <= last_price <= estimate
+        if checkEstimate:
+            flag = last_price == final_price if final_price else payed <= last_price <= estimate
+        else:
+            flag = last_price == final_price if final_price else payed <= last_price
         if not flag:
             return (0, '<合同值_最新值>输入错误，请检查')
     except Exception as e:
@@ -1933,15 +1942,55 @@ def save_For_Budget(**data):
         return flag
     try:
         # 父项应为空，或父项的父项...应为空，否则说明有循环引用象
+        UDID = data.get('预算识别码') or 0
+        parent_UDID = data.get('父项预算识别码') or 0
+        for i in range(100):
+            if not parentUDID:
+                break
+            if UDID == parent_UDID > 0:
+                return (0, '该项存在循环引用现象，请优化项目结构')
+            orm_budget = table_Budget.objects.filter(
+                预算识别码=parentUDID).values()
+            if orm_budget:
+                parentUDID = orm_budget[0].get('父项预算识别码')
+            else:
+                break
+        else:
+            return (0, '该项深度过深，请优化项目结构')
         # 预算总额应>=已付款，还应>=已分配预算
+        UDID = data.get('预算识别码') or 0
+        UDIDs = [UDID] + get_All_Budget_Grandchildren_UDID(UDID)
+        orm_payment = table_Payment.objects.filter(预算识别码__in=UDIDs)
+        payed = float(sum([x.get('本次付款额') for x in orm_payment.values()]))
+        budget = float(data.get('预算总额') or 0)
+        if budget < payed:
+            return (0, '<预算总额>(%f)过低，请调整为不低于<预算已付款额>(%f)' % (budget, payed))
+        orm_budget = table_Budget.objects.filter(
+            父项预算识别码=UDID).values()
+        distributed_budget = float(
+            sum([x.get('预算总额') for x in orm_budget]))
+        if budget < distributed_budget:
+            return (0, '<预算总额>(%f)过低，请调整为不低于<已分配预算>(%f)' % (budget, distributed_budget))
         # 父项存在时，预算总额应<= 项目预算上限
-        pass
+        UDID = data.get('预算识别码') or 0
+        parent_UDID = data.get('父项预算识别码') or 0
+        if parent_UDID > 0:
+            orm_budget = table_Budget.objects.filter(
+                父项预算识别码=parent_UDID).exclude(预算识别码=UDID).values()
+            brother_budget = float(
+                sum([x.get('预算总额') for x in orm_budget]))
+            parent_budget = float(table_Budget.objects.filter(
+                预算识别码=parent_UDID).values()[0].get('预算总额'))
+            limit_budget = parent_budget - brother_budget
+            budget = float(data.get('预算总额') or 0)
+            if budget > limit_budget:
+                return (0, '<预算总额>(%f)过高，请调整为不高于(%f)' % (budget, limit_budget))
     except Exception as e:
         return (0, str(e))
     return save_Input_Data('预算', **data)
 
 
-def save_For_Payment(**data):
+def save_For_Payment(checkEstimate=True, **data):
     '''
         This function can insert/update data for table_Payment.
         input data({'付款识别码': 1, '付款事由': '工程款', ...}) which is a dictionary.
@@ -1970,19 +2019,20 @@ def save_For_Payment(**data):
             0].get('立项识别码') == InitUDID
         if not flag:
             return (0, '合同信息错误')
-        # 本次付款额不得大于概算余额
-        InitUDID = data.get('立项识别码') or 0
-        orm_init = table_Initiation.objects.filter(立项识别码=InitUDID).values()
-        estimate = float(orm_init[0].get('项目概算') or 0)
-        PeymentUDID = data.get('付款识别码') or 0
-        orm_payment = table_Payment.objects.filter(
-            立项识别码=InitUDID).exclude(付款识别码=PeymentUDID).values()
-        payed_estimate = float(sum([x.get('本次付款额') for x in orm_payment]))
-        remaining_estimate = estimate - payed_estimate
-        this_pay = float(data.get('本次付款额') or 0)
-        flag = this_pay <= remaining_estimate
-        if not flag:
-            return (0, '<本次付款额>(%f)输入错误，其值应在[0, <概算余额>(%f)]之间，请调整' % (this_pay, remaining_estimate))
+        if checkEstimate:
+            # 本次付款额不得大于概算余额
+            InitUDID = data.get('立项识别码') or 0
+            orm_init = table_Initiation.objects.filter(立项识别码=InitUDID).values()
+            estimate = float(orm_init[0].get('项目概算') or 0)
+            PeymentUDID = data.get('付款识别码') or 0
+            orm_payment = table_Payment.objects.filter(
+                立项识别码=InitUDID).exclude(付款识别码=PeymentUDID).values()
+            payed_estimate = float(sum([x.get('本次付款额') for x in orm_payment]))
+            remaining_estimate = estimate - payed_estimate
+            this_pay = float(data.get('本次付款额') or 0)
+            flag = this_pay <= remaining_estimate
+            if not flag:
+                return (0, '<本次付款额>(%f)输入错误，其值应在[0, <概算余额>(%f)]之间，请调整' % (this_pay, remaining_estimate))
         # 预算不得为空，且本次付款额不得大于预算余额
         BudgetUDID = data.get('预算识别码') or 0
         orm_budget = table_Budget.objects.filter(预算识别码=BudgetUDID).values()
