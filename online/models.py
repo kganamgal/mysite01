@@ -91,6 +91,7 @@ class table_Company(models.Model):
         return self.单位名称
 
     class Meta:
+        unique_together = ('单位名称',)
         db_table = 'tabel_单位信息'
         verbose_name = '单位信息表'
         app_label = 'online'

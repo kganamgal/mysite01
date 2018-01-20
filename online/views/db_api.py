@@ -266,7 +266,7 @@ def read_For_Company_GridDialog(where_sql='', where_list=[], order_sql='', order
         # return [list(x) for x in cursor.fetchall()]
 
 
-def save_For_Company_GridDialog(**data):
+def old_save_For_Company_GridDialog(**data):
     '''
         This function can insert/update data for table_Company.
         input data({'单位识别码': 1, '单位名称': '青岛X公司', ...}) which is a dictionary.
@@ -456,7 +456,7 @@ def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='ORDER
         return dictfetchall(cursor)
 
 
-def save_For_Initiation_GridDialog(**data):
+def old_save_For_Initiation_GridDialog(**data):
     '''
         This function can insert/update data for table_Initiation.
         input data({'立项识别码': 1, '项目名称': '北王安置房', ...}) which is a dictionary.
@@ -649,7 +649,7 @@ def read_For_Bidding_GridDialog(where_sql='', where_list=[], order_sql='', order
         return dictfetchall(cursor)
 
 
-def save_For_Bidding_GridDialog(**data):
+def old_save_For_Bidding_GridDialog(**data):
     '''
         This function can insert/update data for table_Bidding.
         input data({'招标识别码': 1, '招标方式': '公开招标', ...}) which is a dictionary.
@@ -765,7 +765,7 @@ def read_For_Contract_GridDialog(where_sql='', where_list=[], order_sql='', orde
         return dictfetchall(cursor)
 
 
-def save_For_Contract_GridDialog(**data):
+def old_save_For_Contract_GridDialog(**data):
     '''
         This function can insert/update data for table_Contract.
         input data({'合同识别码': 1, '合同名称': '建设工程XX合同', ...}) which is a dictionary.
@@ -822,8 +822,8 @@ def save_For_Contract_GridDialog(**data):
             return '招标信息错误'
         # 合同签订值应>=0，招标项如果存在，<=中标价，否则应<=项目概算
         sign_price = float(data.get('合同值_签订时') or 0)
-        estimate   = float(Init_data.get('项目概算') or 0)
-        bid_price  = float(Bidding_data.get('中标价') or 0)
+        estimate = float(Init_data.get('项目概算') or 0)
+        bid_price = float(Bidding_data.get('中标价') or 0)
         if Bidding_data:
             flag = sign_price < 0 or sign_price > bid_price
             if flag:
@@ -1419,7 +1419,7 @@ class getUserPermission():
         '''
         if not self.user_Is_Exist():
             return False
-        classfity_dict = {
+        classify_dict = {
             # [x, y]
             # x代表classfity对应的表名
             # y==0代表检验权限不需用到project，y==1则反之
@@ -1435,7 +1435,7 @@ class getUserPermission():
             '概算':     ['允许调整概算的项目',    2, ],
             '合同额':   ['允许调整合同额的项目',   2, ],
         }
-        field_name, flag = classfity_dict[
+        field_name, flag = classify_dict[
             classify]      # 看看要查的表是哪一种，需不需要project
         if flag == 1:
             return bool(self.__filterDict.get(field_name))
@@ -1452,7 +1452,7 @@ class getUserPermission():
         '''
         if not self.user_Is_Exist():
             return False
-        classfity_dict = {
+        classify_dict = {
             '单位':     '操作单位信息',
             '立项':     '允许操作立项的项目',
             '招标':     '允许操作招标的项目',
@@ -1465,7 +1465,7 @@ class getUserPermission():
             '合同额':   '允许调整合同额的项目',
         }
         result = {}
-        for k, v in classfity_dict.items():
+        for k, v in classify_dict.items():
             result[k] = self.__filterDict.get(v)
         return result
 
@@ -1522,3 +1522,502 @@ class operateOSS():
         webpath = '%s信息/' % classify + '%d/' % UDID + filename
         result = self.bucket.sign_url('GET', webpath, 300)
         return result
+
+
+# 写操作
+
+def save_Input_Data(classify, **data):
+    '''
+        Insert or update the user-input data into DB-table.
+        Return (1, 'Done') if success, otherwise return (0, 'error info').
+    '''
+    classify_model_dict = {
+        '单位':     table_Company,
+        '立项':     table_Initiation,
+        '招标':     table_Bidding,
+        '合同':     table_Contract,
+        '预算':     table_Budget,
+        '付款':     table_Payment,
+        '变更':     table_Alteration,
+        '分包合同':  table_SubContract,
+    }
+    try:
+        UDID = int(data.get(classify + '识别码'))
+    except:
+        UDID = 0
+    try:
+        if UDID > 0:        # update
+            table_data = {classify + '识别码__exact': UDID}
+            flag = classify_model_dict.get(classify).objects.filter(
+                **table_data).update(**data)
+            if flag:
+                return (1, 'Done')
+        elif UDID == 0:     # insert
+            flag = classify_model_dict.get(classify).objects.create(**data)
+            if flag:
+                return (1, 'Done')
+    except Exception as e:
+        return (0, str(e))
+
+
+def common_Valid_Data(classify, **data):
+    '''
+        Check the data if valid.
+        return (1, 'OK') if valid, otherwise return (0, 'error info').
+    '''
+    try:
+        classify_model_dict = {
+            '单位':     table_Company,
+            '立项':     table_Initiation,
+            '招标':     table_Bidding,
+            '合同':     table_Contract,
+            '预算':     table_Budget,
+            '付款':     table_Payment,
+            '变更':     table_Alteration,
+            '分包合同':  table_SubContract,
+        }
+        classify_field_dict = {
+            '单位':     uc.CompanyFields,
+            '立项':     uc.InitiationFields,
+            '招标':     uc.BiddingFields,
+            '合同':     uc.ContractFields,
+            '预算':     uc.BudgetFields,
+            '付款':     uc.PaymentFields,
+            '变更':     uc.SubContractFields,
+            '分包合同':  uc.AlterationFields,
+        }
+        classify_type_dict = {
+            '单位':     uc.CompanyFields_Type,
+            '立项':     uc.InitiationFields_Type,
+            '招标':     uc.BiddingFields_Type,
+            '合同':     uc.ContractFields_Type,
+            '预算':     uc.BudgetFields_Type,
+            '付款':     uc.PaymentFields_Type,
+            '变更':     uc.SubContractFields_Type,
+            '分包合同':  uc.AlterationFields_Type,
+        }
+        fds = classify_field_dict.get(classify)      # 对应的字段
+        tps = classify_type_dict.get(classify)       # 对应的数据类型
+        # 检查data的字段以及类型是否与预期相符
+        if len(data) != len(fds):
+            return (0, '参数数量(%d)错误，应为(%d)个' % (len(data), len(fds)))
+        dict_type = dict(zip(fds, tps))
+        for field, value in data.items():
+            if field not in fds:
+                return (0, '无法存储<%s>，请重新输入' % field)
+            _type = dict_type.get(field)
+            if (_type == '整数型' and not (type(value) == type(1) or value is None))\
+                    or (_type == '浮点型' and not (type(value) == type(1.0) or type(value) == type(1) or type(value) == type(decimal.Decimal(1.0)) or value is None))\
+                    or (_type == '字符串型' and not (type(value) == type('abc') or value is None))\
+                    or (_type == '文本型' and not (type(value) == type('abc') or value is None)):
+                return (0, '<%s:%s>类型(%s)错误，应为<%s>，请检查' % (field, str(value), str(type(value)), _type))
+            elif _type == '日期型':
+                try:
+                    data[field] = datetime.date(
+                        *list(time.strptime(data.get(field), "%Y-%m-%d"))[:3])
+                except Exception as e:
+                    return (0, str(e))
+        # 若UDID > 0，查检该项是否存在
+        UDID = data.get(classify + '识别码') or 0
+        table_data = {classify + '识别码__exact': UDID}
+        tb = classify_model_dict.get(classify)      # 对应的models
+        if UDID > 0:
+            flag = tb.objects.filter(**table_data)
+            if not flag:
+                return (0, '<%s识别码：%d>对应的记录不存在，请检查' % (classify, UDID))
+        # 有无unique列重复
+        classify_unique_dict = {
+            '单位':     ['单位名称', ],
+            '立项':     ['项目名称', '分项名称', ],
+            '招标':     [],
+            '合同':     [],
+            '预算':     ['预算名称', '预算周期'],
+            '付款':     [],
+            '变更':     [],
+            '分包合同':  [],
+        }
+        uniq_filed = classify_unique_dict.get(classify)
+        if uniq_filed:
+            table_data = {}
+            for field in uniq_filed:
+                table_data[field + '__exact'] = data.get(field)
+            flag = tb.objects.filter(**table_data)
+            if flag:
+                unique_UDID = flag.values()[0].get(classify + '识别码')
+                if UDID == 0 or UDID != unique_UDID:
+                    return (0, '<%s>已存在，请检查' % '-'.join(list(table_data.values())))
+        return (1, 'OK')
+    except Exception as e:
+        return (0, str(e))
+
+
+def save_For_Company(**data):
+    '''
+        This function can insert/update data for table_Company.
+        input data({'单位识别码': 1, '单位名称': '青岛X公司', ...}) which is a dictionary.
+        return 'Done' if success;
+        return Error Message if failed.
+    '''
+    flag = common_Valid_Data('单位', **data)
+    if not flag[0]:
+        return flag
+    return save_Input_Data('单位', **data)
+
+
+def save_For_Initiation(**data):
+    '''
+        This function can insert/update data for table_Initiation.
+        input data({'立项识别码': 1, '项目名称': '北王安置房', ...}) which is a dictionary.
+        return 'Done' if success;
+        return Error Message if failed.
+    '''
+    flag = common_Valid_Data('立项', **data)
+    if not flag[0]:
+        return flag
+    try:
+        # 如果有父项，项目名称应与父项项目名称一致
+        UDID = data.get('立项识别码') or 0
+        parent_UDID = data.get('父项立项识别码') or 0
+        ptb = table_Initiation.objects.filter(
+            立项识别码__exact=parent_UDID).values()
+        flag = parent_UDID and ptb
+        if not flag:
+            parent_project = ptb[0].get('项目名称')
+            project = data.get('项目名称')
+            if project != parent_project:
+                return (0, '<项目名称>(%s)与<父项项目名称>(%s)不一致，请修改' % (project, parent_project))
+        # 父项应为空，或父项的父项...应为空，否则说明有循环引用象
+        parent_UDID = data.get('父项立项识别码') or 0
+        for i in range(100):
+            if not parentUDID:
+                break
+            orm_init = table_Initiation.objects.filter(
+                立项识别码=parentUDID).values()
+            if orm_init:
+                parentUDID = orm_init[0].get('父项立项识别码')
+            else:
+                break
+        else:
+            return '该项深度过深或存在循环引用现象，请优化项目结构'
+        # 项目概算应>=已付款，项目概算应>=已分配概算
+        UDIDs = [UDID] + get_All_Grandchildren_UDID(UDID)
+        orm_payment = table_Payment.objects.filter(立项识别码__in=UDIDs)
+        payed = float(sum([x.get('本次付款额') for x in orm_payment.values()]))
+        estimate = float(data.get('项目概算') or 0)
+        if estimate < payed:
+            return (0, '<项目概算>(%f)过低，请调整为不低于<概算已付款额>(%f)' % (estimate, payed))
+        orm_init = table_Initiation.objects.filter(
+            父项立项识别码__exact=UDID).values()
+        distributed_estimate = float(
+            sum([x.get('项目概算') for x in orm_init]))
+        if estimate < distributed_estimate:
+            return (0, '<项目概算>(%f)过低，请调整为不低于<已分配概算>(%f)' % (estimate, distributed_estimate))
+        # 父项存在时，项目概算应<= 项目概算上限
+        parent_UDID = data.get('父项立项识别码') or 0
+        if parent_UDID > 0:
+            orm_init = table_Initiation.objects.filter(
+                父项立项识别码__exact=parent_UDID).exclude(立项识别码__exact=UDID).values()
+            brother_estimate = float(
+                sum([x.get('项目概算') for x in orm_init]))
+            parent_estimate = float(table_Initiation.objects.filter(
+                立项识别码__exact=parent_UDID).values()[0].get('项目概算'))
+            limit_estimate = parent_estimate - brother_estimate
+            estimate = float(data.get('项目概算') or 0)
+            if estimate > limit_estimate:
+                return (0, '<项目概算>(%f)过高，请调整为不高于(%f)' % (estimate, limit_estimate))
+    except Exception as e:
+        return (0, str(e))
+    # 数据合法后存入数据库
+    return save_Input_Data('立项', **data)
+
+
+def save_For_Bidding(**data):
+    '''
+        This function can insert/update data for table_Bidding.
+        input data({'招标识别码': 1, '招标方式': '公开招标', ...}) which is a dictionary.
+        return 'Done' if success;
+        return Error Message if failed.
+    '''
+    flag = common_Valid_Data('招标', **data)
+    if not flag[0]:
+        return flag
+    try:
+        # 立项识别码必须存在、对应的立项必须存在，且不应有子项
+        InitUDID = data.get('立项识别码') or 0
+        orm_init = table_Initiation.objects.filter(立项识别码=InitUDID).values()
+        flag = InitUDID and orm_init
+        if not flag:
+            return (0, '立项信息错误')
+        children = table_Initiation.objects.filter(父项立项识别码=InitUDID).values()
+        if children:
+            return (0, '对应的立项不应有子项，请重新选择立项信息')
+        # 预算控制价不应超过项目概算
+        control_price = float(data.get('预算控制价') or 0)
+        estimate = float(orm_init[0].get('项目概算') or 0)
+        flag = control_price > estimate or control_price < 0
+        if flag:
+            return '<预算控制价>(%f)输入错误，请将值设置为[0, <项目概算>(%f)]之间' % (control_price, estimate)
+        # 中标价不应超过预算控制价
+        bid_price = float(data.get('中标价') or 0)
+        control_price = float(data.get('预算控制价') or 0)
+        flag = bid_price > control_price or bid_price < 0
+        if flag:
+            return '<中标价>(%f)输入错误，请将值设置为[0, <预算控制价>(%f)]之间' % (bid_price, control_price)
+    except Exception as e:
+        return (0, str(e))
+    # 数据合法后存入数据库
+    return save_Input_Data('招标', **data)
+
+
+def save_For_Contract(**data):
+    '''
+        This function can insert/update data for table_Contract.
+        input data({'合同识别码': 1, '合同名称': '建设工程XX合同', ...}) which is a dictionary.
+        return 'Done' if success;
+        return Error Message if failed.
+    '''
+    flag = common_Valid_Data('合同', **data)
+    if not flag[0]:
+        return flag
+    try:
+        # 立项识别码必须存在、对应的立项必须存在，且不应有子项
+        InitUDID = data.get('立项识别码') or 0
+        orm_init = table_Initiation.objects.filter(立项识别码=InitUDID).values()
+        flag = InitUDID and orm_init
+        if not flag:
+            return (0, '立项信息错误')
+        children = table_Initiation.objects.filter(父项立项识别码=InitUDID).values()
+        if children:
+            return (0, '对应的立项不应有子项，请重新选择立项信息')
+        # 招标识别码如果存在，应有对应招标项，招标项如果存在，应与立项信息相对应
+        BiddingUDID = data.get('招标识别码') or 0
+        orm_bidding = table_Bidding.objects.filter(招标识别码=BiddingUDID).values()
+        InitUDID = data.get('立项识别码') or 0
+        flag = not BiddingUDID or orm_bidding and orm_bidding[
+            0].get('立项识别码') == InitUDID
+        if not flag:
+            return (0, '招标信息错误')
+        # 合同签订值应>=0，<=项目概算，招标项如果存在，<=中标价
+        sign_price = float(data.get('合同值_签订时') or 0)
+        InitUDID = data.get('立项识别码') or 0
+        BiddingUDID = data.get('招标识别码') or 0
+        if BiddingUDID:
+            orm_bidding = table_Bidding.objects.filter(
+                招标识别码=BiddingUDID).values()
+            bid_price = float(orm_bidding[0].get('中标价') or 0)
+            if not 0 <= sign_price <= bid_price:
+                return (0, '<合同值_签订时>(%f)输入错误，请将值设置为[0, <中标价>(%f)]之间' % (sign_price, bid_price))
+        orm_init = table_Initiation.objects.filter(立项识别码=InitUDID).values()
+        estimate = float(orm_init[0].get('项目概算') or 0)
+        flag = 0 <= sign_price <= estimate
+        if not flag:
+            return (0, '<合同值_签订时>(%f)输入错误，请将值设置为[0, <项目概算>(%f)]之间' % (sign_price, estimate))
+        # 合同最终值应不<0
+        final_price = float(data.get('合同值_最终值') or 0)
+        if final_price < 0:
+            return (0, '<合同值_最终值>(%f)输入错误，请将值设置为>=0' % (final_price,))
+        # 支付上限应<=合同最新值，>=合同已付款(若无该项，则为0)
+        limit_price = float(data.get('支付上限') or 0)
+        last_price = float(data.get('合同值_最新值') or 0)
+        ContractUDID = data.get('合同识别码') or 0
+        orm_payment = table_Payment.objects.filter(合同识别码=ContractUDID)
+        payed = float(sum([x.get('本次付款额') for x in orm_payment.values()]))
+        flag = payed <= limit_price <= last_price
+        if not flag:
+            return (0, '<支付上限>(%f)输入错误，请将值设置为[<合同已付款>(%f), <合同值_最新值>(%f)]之间' % (limit_price, payed, last_price))
+        # 当合同最终值不存在时，合同最新值应>=项目已付款(若无该项，则为0)，<=项目概算，否则应=合同最终值
+        last_price = float(data.get('合同值_最新值') or 0)
+        final_price = float(data.get('合同值_最终值') or 0)
+        InitUDID = data.get('立项识别码') or 0
+        orm_init = table_Initiation.objects.filter(立项识别码=InitUDID).values()
+        estimate = float(orm_init[0].get('项目概算') or 0)
+        ContractUDID = data.get('合同识别码') or 0
+        orm_payment = table_Payment.objects.filter(合同识别码=ContractUDID)
+        payed = float(sum([x.get('本次付款额') for x in orm_payment.values()]))
+        flag = last_price == final_price if final_price else payed <= last_price <= estimate
+        if not flag:
+            return (0, '<合同值_最新值>输入错误，请检查')
+    except Exception as e:
+        return str(e)
+    # 数据合法后存入数据库
+    return save_Input_Data('合同', **data)
+
+
+def save_For_SubContract(**data):
+    '''
+        This function can insert/update data for table_SubContract.
+        input data({'分包合同识别码': 1, '分包合同名称': '建设工程XX合同', ...}) which is a dictionary.
+        return (1, 'Done') if success;
+        return (0, Error Message) if failed.
+    '''
+    flag = common_Valid_Data('分包合同', **data)
+    if not flag[0]:
+        return flag
+    try:
+        # 保证立项存在、合同存在，且立项合同一致
+        InitUDID = data.get('立项识别码') or 0
+        orm_init = table_Initiation.objects.filter(立项识别码=InitUDID).values()
+        flag = InitUDID and orm_init
+        if not flag:
+            return (0, '立项信息错误')
+        ContractUDID = data.get('合同识别码') or 0
+        orm_contract = table_Contract.objects.filter(
+            合同识别码=ContractUDID).values()
+        InitUDID = data.get('立项识别码') or 0
+        flag = not ContractUDID or orm_contract and orm_contract[
+            0].get('立项识别码') == InitUDID
+        if not flag:
+            return (0, '合同信息错误')
+        # 合同签订值应>=0，<=总包合同签订值
+        sign_price_Sub = float(data.get('分包合同值_签订时') or 0)
+        ContractUDID = data.get('合同识别码') or 0
+        orm_payment = table_Payment.objects.filter(合同识别码=ContractUDID).values()
+        sign_price = float(orm_payment[0].get('合同值_签订时') or 0)
+        flag = 0 <= sign_price_Sub <= sign_price
+        if not flag:
+            return (0, '<分包合同值_签订时>(%f)输入错误，请将值设置为[0, <总包合同值_签订时>(%f)]之间' % (sign_price_Sub, sign_price))
+        # 合同最终值应不<0
+        final_price_Sub = float(data.get('分包合同值_最终值') or 0)
+        if final_price_Sub < 0:
+            return (0, '<分包合同值_最终值>(%f)输入错误，请将值设置为>=0' % (final_price_Sub,))
+        # 当合同最终值存在时，合同值新值=合同最终值
+        final_price_Sub = float(data.get('分包合同值_最终值') or 0)
+        last_price_Sub = float(data.get('分包合同值_最新值') or 0)
+        flag = not final_price_Sub or last_price_Sub == final_price_Sub
+        if not flag:
+            return (0, '<分包合同值_最新值>输入错误，请检查')
+    except Exception as e:
+        return (0, str(e))
+    return save_Input_Data('分包合同', **data)
+
+
+def save_For_Alteration(**data):
+    '''
+        This function can insert/update data for table_Alteration.
+        input data({'变更识别码': 1, '变更类型': '批价', ...}) which is a dictionary.
+        return (1, 'Done') if success;
+        return (0, Error Message) if failed.
+    '''
+    flag = common_Valid_Data('变更', **data)
+    if not flag[0]:
+        return flag
+    try:
+        # 保证立项存在、合同存在，且立项合同一致
+        InitUDID = data.get('立项识别码') or 0
+        orm_init = table_Initiation.objects.filter(立项识别码=InitUDID).values()
+        flag = InitUDID and orm_init
+        if not flag:
+            return (0, '立项信息错误')
+        ContractUDID = data.get('合同识别码') or 0
+        orm_contract = table_Contract.objects.filter(
+            合同识别码=ContractUDID).values()
+        InitUDID = data.get('立项识别码') or 0
+        flag = not ContractUDID or orm_contract and orm_contract[
+            0].get('立项识别码') == InitUDID
+        if not flag:
+            return (0, '合同信息错误')
+    except Exception as e:
+        return (0, str(e))
+    return save_Input_Data('变更', **data)
+
+
+def save_For_Budget(**data):
+    '''
+        This function can insert/update data for table_Budget.
+        input data({'预算识别码': 1, '预算名称': '北王安置房工程款', ...}) which is a dictionary.
+        return (1, 'Done') if success;
+        return (0, Error Message) if failed.
+    '''
+    flag = common_Valid_Data('预算', **data)
+    if not flag[0]:
+        return flag
+    try:
+        # 父项应为空，或父项的父项...应为空，否则说明有循环引用象
+        # 预算总额应>=已付款，还应>=已分配预算
+        # 父项存在时，预算总额应<= 项目预算上限
+        pass
+    except Exception as e:
+        return (0, str(e))
+    return save_Input_Data('预算', **data)
+
+
+def save_For_Payment(**data):
+    '''
+        This function can insert/update data for table_Payment.
+        input data({'付款识别码': 1, '付款事由': '工程款', ...}) which is a dictionary.
+        return (1, 'Done') if success;
+        return (0, Error Message) if failed.
+    '''
+    flag = common_Valid_Data('付款', **data)
+    if not flag[0]:
+        return flag
+    try:
+        # 立项识别码必须存在、对应的立项必须存在，且不应有子项
+        InitUDID = data.get('立项识别码') or 0
+        orm_init = table_Initiation.objects.filter(立项识别码=InitUDID).values()
+        flag = InitUDID and orm_init
+        if not flag:
+            return (0, '立项信息错误')
+        children = table_Initiation.objects.filter(父项立项识别码=InitUDID).values()
+        if children:
+            return (0, '对应的立项不应有子项，请重新选择立项信息')
+        # 合同识别码如果存在，应有对应合同项，合同项如果存在，应与立项信息相对应
+        ContractUDID = data.get('合同识别码') or 0
+        orm_contract = table_Contract.objects.filter(
+            合同识别码=ContractUDID).values()
+        InitUDID = data.get('立项识别码') or 0
+        flag = not ContractUDID or orm_contract and orm_contract[
+            0].get('立项识别码') == InitUDID
+        if not flag:
+            return (0, '合同信息错误')
+        # 本次付款额不得大于概算余额
+        InitUDID = data.get('立项识别码') or 0
+        orm_init = table_Initiation.objects.filter(立项识别码=InitUDID).values()
+        estimate = float(orm_init[0].get('项目概算') or 0)
+        PeymentUDID = data.get('付款识别码') or 0
+        orm_payment = table_Payment.objects.filter(
+            立项识别码=InitUDID).exclude(付款识别码=PeymentUDID).values()
+        payed_estimate = float(sum([x.get('本次付款额') for x in orm_payment]))
+        remaining_estimate = estimate - payed_estimate
+        this_pay = float(data.get('本次付款额') or 0)
+        flag = this_pay <= remaining_estimate
+        if not flag:
+            return (0, '<本次付款额>(%f)输入错误，其值应在[0, <概算余额>(%f)]之间，请调整' % (this_pay, remaining_estimate))
+        # 预算不得为空，且本次付款额不得大于预算余额
+        BudgetUDID = data.get('预算识别码') or 0
+        orm_budget = table_Budget.objects.filter(预算识别码=BudgetUDID).values()
+        flag = BudgetUDID and orm_budget
+        if not flag:
+            return (0, '预算信息错误')
+        children = table_Budget.objects.filter(父项预算识别码=BudgetUDID).values()
+        if children:
+            return (0, '对应的预算不应有子项，请重新选择预算信息')
+        budget = float(orm_budget[0].get('预算总额') or 0)
+        PeymentUDID = data.get('付款识别码') or 0
+        orm_payment = table_Payment.objects.filter(
+            预算识别码=BudgetUDID).exclude(付款识别码=PeymentUDID).values()
+        payed_budget = float(sum([x.get('本次付款额') for x in orm_payment]))
+        remaining_budget = budget - payed_budget
+        this_pay = float(data.get('本次付款额') or 0)
+        flag = this_pay <= remaining_budget
+        if not flag:
+            return (0, '<本次付款额>(%f)输入错误，其值应在[0, <预算余额>(%f)]之间，请调整' % (this_pay, remaining_budget))
+        # 若合同存在，本次付款额不得大于合同余额
+        ContractUDID = data.get('合同识别码') or 0
+        if ContractUDID:
+            orm_contract = table_Contract.objects.filter(
+                合同识别码=ContractUDID).values()
+            limit_price = float(orm_contract[0].get('支付上限') or 0)
+            PeymentUDID = data.get('付款识别码') or 0
+            orm_payment = table_Payment.objects.filter(
+                合同识别码=ContractUDID).exclude(付款识别码=PeymentUDID).values()
+            payed_contract = float(sum([x.get('本次付款额') for x in orm_payment]))
+            remaining_contract = contract - payed_contract
+            this_pay = float(data.get('本次付款额') or 0)
+            flag = this_pay <= remaining_contract
+            if not flag:
+                return (0, '<本次付款额>(%f)输入错误，其值应在[0, <合同付款余额>(%f)]之间，请调整' % (this_pay, remaining_contract))
+    except Exception as e:
+        return str(e)
+    # 数据合法后存入数据库
+    return save_Input_Data('付款', **data)

@@ -14,7 +14,7 @@ from .background import *
 # Create your views here.
 
 # 表单
-class UserForm(forms.Form): 
+class UserForm(forms.Form):
     username = forms.CharField(label='用户名', max_length=50)
     password = forms.CharField(label='密　码', max_length=50, widget=forms.PasswordInput())
 
