@@ -42,23 +42,33 @@ urlpatterns = [
     # ajax
     url(r'ajax_table_data',               offical.ajax_table_data,
         name='ajax_table_data'),
+
     url(r'ajax_tree_data',                offical.ajax_tree_data,
         name='ajax_tree_data'),
+
     url(r'ajax_treeTable',                offical.ajax_treeTable,
         name='ajax_treeTable'),
+
     url(r'getDataForOverview',            offical.getDataForOverview,
         name='getDataForOverview'),
+
     url(r'get_Pie_Data',                  offical.get_Pie_Data,
         name='get_Pie_Data'),
+
     url(r'list_file',                     offical.list_file,
         name='list_file'),
+
     url(r'get_file_url',                  offical.get_file_url,
         name='get_file_url'),
+
     url(r'get_Write_Permission',          offical.get_Write_Permission,
         name='get_Write_Permission'),
+
     url(r'get_WritePermissionObj',        offical.get_WritePermissionObj,
         name='get_WritePermissionObj'),
 
+    url(r'ajax_save_data',                offical.ajax_save_data,
+        name='ajax_save_data'),
 
 
 

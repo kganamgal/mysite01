@@ -1651,7 +1651,7 @@ def common_Valid_Data(classify, **data):
         return (0, str(e))
 
 
-def save_For_Company(**data):
+def save_For_Company(checkEstimate=True, **data):
     '''
         This function can insert/update data for table_Company.
         input data({'单位识别码': 1, '单位名称': '青岛X公司', ...}) which is a dictionary.
@@ -1852,7 +1852,7 @@ def save_For_Contract(checkEstimate=True, **data):
     return save_Input_Data('合同', **data)
 
 
-def save_For_SubContract(**data):
+def save_For_SubContract(checkEstimate=True, **data):
     '''
         This function can insert/update data for table_SubContract.
         input data({'分包合同识别码': 1, '分包合同名称': '建设工程XX合同', ...}) which is a dictionary.
@@ -1900,7 +1900,7 @@ def save_For_SubContract(**data):
     return save_Input_Data('分包合同', **data)
 
 
-def save_For_Alteration(**data):
+def save_For_Alteration(checkEstimate=True, **data):
     '''
         This function can insert/update data for table_Alteration.
         input data({'变更识别码': 1, '变更类型': '批价', ...}) which is a dictionary.
@@ -1930,7 +1930,7 @@ def save_For_Alteration(**data):
     return save_Input_Data('变更', **data)
 
 
-def save_For_Budget(**data):
+def save_For_Budget(checkEstimate=True, **data):
     '''
         This function can insert/update data for table_Budget.
         input data({'预算识别码': 1, '预算名称': '北王安置房工程款', ...}) which is a dictionary.

@@ -166,7 +166,10 @@
       });
       // 新建
       $(document).on('click', '#id_btn_New', function() {
-        child_data['data_value'] = {};
+        child_data['data_value'] = {};      // 新建模式下填充起data_value的基本框架
+        for (var key in twoListToOneDict(child_data['data_head'], child_data['data_type'])) {
+          child_data['data_value'][key] = null;
+        };
         child_data['key_table'] = key_table;
         child_data['behavior'] = 'New';
         var key_url = dict_Chn_Eng[child_data['key_table']];
@@ -176,7 +179,6 @@
           type: 2,
           title: '新建<' + key_table + '信息>详情',
           area: ['100%', '100%'],
-          maxmin: true,
           closeBtn: 0,
           content: content_url.replace('ewhuvlk', key_url),
         });
@@ -201,7 +203,6 @@
           type: 2,
           title: '查看<' + key_table + '信息>详情',
           area: ['100%', '100%'],
-          maxmin: true,
           closeBtn: 0,
           content: content_url.replace('ewhuvlk', key_url),
         });

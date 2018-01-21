@@ -19,7 +19,10 @@ class UserForm(forms.Form):
     password = forms.CharField(label='密　码', max_length=50, widget=forms.PasswordInput())
 
 # Json的参数，用来转化date和decimal
+
+
 class CJsonEncoder(json.JSONEncoder):
+
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
             return obj.strftime('%Y-%m-%d %H:%M:%S')
@@ -118,6 +121,3 @@ def ajax_test_api_test(request):
     return_json = {'api_result': str(read_For_Company_GridDialog('WHERE 法定代表人=%s', ['姜民秀']))}
     return HttpResponse(json.dumps(return_json), content_type='application/json')
 
-# 测试
-def test(request):    
-    return render(request, 'test.html')

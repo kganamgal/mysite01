@@ -520,11 +520,12 @@ def get_Write_Permission(request):
     '''
     username = request.session.get('username')
     classify = request.POST.get('classify')
-    project  = request.POST.get('project')
+    project = request.POST.get('project')
     logUserOperation(request, 'read', sys._getframe().f_code.co_name,
                      'classify={}, project={}'.format(classify, project))
     result = getUserPermission(username).can_Write_Table(classify, project)
     return HttpResponse(json.dumps(result, ensure_ascii=False, cls=CJsonEncoder), content_type='application/json')
+
 
 def get_WritePermissionObj(request):
     '''
@@ -535,6 +536,7 @@ def get_WritePermissionObj(request):
     logUserOperation(request, 'read', sys._getframe().f_code.co_name, '')
     result = getUserPermission(username).get_Permission_Write_Table()
     return HttpResponse(json.dumps(result, ensure_ascii=False, cls=CJsonEncoder), content_type='application/json')
+
 
 def ajax_save_data(request):
     '''
@@ -550,79 +552,28 @@ def ajax_save_data(request):
         If sql is correct and done, return a string 'Done',
         otherwise, return a string which is errer.
     '''
-    classify = request.POST.get('classify') or ''
-    project  = request.POST.get('project') or ''
-    data     = request.POST.get('data') or []
-    username = request.session.get('username')
-    if not getUserPermission(username).can_Write_Table(classify):
-        Cnt = 'No Permission'
-        return HttpResponse(Cnt)
-    dict_Head = {
-        '单位':     uc.CompanyColFields,
-        '立项':     uc.InitiationColFields,
-        '招标':     uc.BiddingColFields,
-        '合同':     uc.ContractColFields,
-        '分包合同': uc.SubContractColFields,
-        '变更':     uc.AlterationColFields,
-        '预算':     uc.BudgetColFields,
-        '付款':     uc.PaymentColFields,
-    }
-    dict_Type = {
-        '单位':     uc.CompanyColFields_Type,
-        '立项':     uc.InitiationColFields_Type,
-        '招标':     uc.BiddingColFields_Type,
-        '合同':     uc.ContractColFields_Type,
-        '分包合同': uc.SubContractColFields_Type,
-        '变更':     uc.AlterationColFields_Type,
-        '预算':     uc.BudgetColFields_Type,
-        '付款':     uc.PaymentColFields_Type,
-    }
-    dict_API = {
-        '单位':     read_For_Company_GridDialog,
-        '立项':     read_For_Initiation_GridDialog,
-        '招标':     read_For_Bidding_GridDialog,
-        '合同':     read_For_Contract_GridDialog,
-        '分包合同': read_For_SubContract_GridDialog,
-        '变更':     read_For_Alteration_GridDialog,
-        '预算':     read_For_Budget_GridDialog,
-        '付款':     read_For_Payment_GridDialog,
-    }
     try:
-        # 取得被点击的tree-item的id，即立项识别码
-        Init_UDID = int(request.POST.get('Init_UDID'))
-        assert Init_UDID > 0
-        logUserOperation(request, 'read', sys._getframe().f_code.co_name,
-                         'key_table={}, Init_UDID={}'.format(key_table, Init_UDID))
-        # 取得该立项下全部后代节点
-        if key_table == '预算':
-            grandchildern_ids = get_All_Budget_Grandchildren_UDID(Init_UDID)
-            t_rows = dict_API[key_table](
-                'where 预算识别码 in %s', [grandchildern_ids + [Init_UDID]])
-            try:
-                t_UDID = dict_API[key_table]('where 预算识别码 = %s', [Init_UDID])[
-                    0].get(key_table + '识别码')
-            except:
-                t_UDID = None
-        else:
-            grandchildern_ids = get_All_Grandchildren_UDID(Init_UDID)
-            t_rows = dict_API[key_table](
-                'where 立项识别码 in %s', [grandchildern_ids + [Init_UDID]])
-            try:
-                t_UDID = dict_API[key_table]('where 立项识别码 = %s', [Init_UDID])[
-                    0].get(key_table + '识别码')
-            except:
-                t_UDID = None
-    except:
-        logUserOperation(request, 'read', sys._getframe().f_code.co_name,
-                         'key_table={}'.format(key_table))
-        t_rows = dict_API[key_table]()
-        t_UDID = None
-    t_head = dict_Head[key_table]
-    t_type = dict_Type[key_table]
-    return_json = {'t_head': json.dumps(t_head, ensure_ascii=False, cls=CJsonEncoder),
-                   't_type': json.dumps(t_type, ensure_ascii=False, cls=CJsonEncoder),
-                   't_rows': json.dumps(t_rows, ensure_ascii=False, cls=CJsonEncoder),
-                   't_UDID': t_UDID,
-                   }
-
-    return HttpResponse(json.dumps(return_json, ensure_ascii=False, cls=CJsonEncoder), content_type='application/json')
+        classify = request.POST.get('classify') or ''
+        project = request.POST.get('project') or ''
+        data = json.loads(request.POST.get('data')) or {}
+        username = request.session.get('username')
+        logUserOperation(request, 'write', sys._getframe().f_code.co_name, 'Try to ' + classify + ': ' + str(data))
+        if not getUserPermission(username).can_Write_Table(classify):
+            Cnt = 'No Permission'
+            return HttpResponse(Cnt)
+        dict_API = {
+            '单位':     save_For_Company,
+            '立项':     save_For_Initiation,
+            '招标':     save_For_Bidding,
+            '合同':     save_For_Contract,
+            '分包合同':  save_For_SubContract,
+            '变更':     save_For_Alteration,
+            '预算':     save_For_Budget,
+            '付款':     save_For_Payment,
+        }
+        save_API = dict_API.get(classify)
+        result = save_API(True, **data)
+        logUserOperation(request, 'write', sys._getframe().f_code.co_name, 'Success to ' + classify + ': ' + str(data))
+    except Exception as e:
+        result = (0, str(e))
+    return HttpResponse(result[1])
