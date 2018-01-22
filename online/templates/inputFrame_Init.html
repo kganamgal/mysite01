@@ -69,68 +69,62 @@
     });
 
     // 构造表单
-    var composing = [
-      {
-        'section_word':   '基本资料',
-        'section_btn':    true,
-        'key_word':       ['立项识别码',    '项目名称',     '分项名称',    'nextLine',     '立项时间',    '立项文件名称',],
-        'short_key':      [null,           null,          null,         null,           null,         null,],
-        'input_type':     ['text',         'text',       'text',       'nextLine',     'text',       'textarea'],
-        'value_type':     ['input',        'input',      'input',      'nextLine',     'input',      'text'],
-        'input_width':    [1,              1,             2,           'nextLine',      1,            4,],
-        'input_height':   [null,           null,          null,        'nextLine',      null,         50,],
-        'font_size':      [12,             12,            12,          'nextLine',      12,           12,],
-        'edit_btn':       [false,          false,         false,       'nextLine',      false,        false,],
-      },
-      {
-        'section_word':   '父项基本资料',
-        'section_btn':    true,
-        'key_word':       ['父项立项识别码', '父项项目名称', '父项分项名称', 'nextLine', '子项数量',],
-        'short_key':      [null,           null,          null,         'nextLine',   null,  ],
-        'input_type':     ['text',         'text',       'text',        'nextLine',  'text', ],
-        'value_type':     ['input',        'input',      'input',       'nextLine',  'input',],
-        'input_width':    [1,              1,             2,            'nextLine',   1,     ],
-        'input_height':   [null,           null,          null,         'nextLine',   null,  ],
-        'font_size':      [12,             12,            12,           'nextLine',   12,    ],
-        'edit_btn':       [false,          false,         false,        'nextLine',   false, ],
-      },
-      {
-        'section_word':   '单位资料',
-        'section_btn':    false,
-        'key_word':       ['建设单位识别码', '建设单位名称', 'nextLine',    '代建单位识别码', '代建单位名称', ],
-        'short_key':      [null,           null,          null,          null,           null,        ],
-        'input_type':     ['text',         'text',       'nextLine',    'text',         'text',       ],
-        'value_type':     ['input',        'input',      'nextLine',    'input',        'input',      ],
-        'input_width':    [1,              4,            'nextLine',    1,              4,            ],
-        'input_height':   [null,           null,         'nextLine',    null,           null,         ],
-        'font_size':      [12,             12,           'nextLine',    12,             12,           ],
-        'edit_btn':       [false,          true,         'nextLine',    false,          true,         ],
-      },
-      {
-        'section_word':   '概算资料',
-        'section_btn':    false,
-        'key_word':       ['项目概算', '父项项目概算', '项目概算上限', 'nextLine', '已分配概算', '未分配概算','概算分配比', 'nextLine', '概算已付款额', '概算可付余额','概算付款比',],
-        'short_key':      [null, null, null, 'nextLine', null, null, null, 'nextLine', null, null, null,],
-        'input_type':     ['text', 'text', 'text', 'nextLine', 'text', 'text', 'text', 'nextLine', 'text', 'text', 'text',],
-        'value_type':     ['float', 'float', 'float', 'nextLine', 'float', 'float', 'percent', 'nextLine', 'float', 'float', 'percent',],
-        'input_width':    [2, 1, 1, 'nextLine', 2, 1, 1, 'nextLine', 2, 1, 1,],
-        'input_height':   [null, null, null, 'nextLine', null, null, null, 'nextLine', null, null, null,],
-        'font_size':      [12, 12, 12, 'nextLine', 12, 12, 12, 'nextLine', 12, 12, 12,],
-        'edit_btn':       [true, false, false, 'nextLine', false, false, false, 'nextLine', false, false, false,],
-      },
-      {
-        'section_word':   '其他资料',
-        'section_btn':    true,
-        'key_word':       ['立项备注', ],
-        'short_key':      [null,      ],
-        'input_type':     ['textarea',],
-        'value_type':     ['text',    ],
-        'input_width':    [6,         ],
-        'input_height':   [100,       ],
-        'font_size':      [12,        ],
-        'edit_btn':       [false,     ],
-      },
-    ];
+    var composing = [{
+      'section_word': '基本资料',
+      'section_btn': true,
+      'key_word': ['立项识别码', '项目名称', '分项名称', 'nextLine', '立项时间', '立项文件名称', ],
+      'short_key': [null, null, null, null, null, null, ],
+      'input_type': ['text', 'text', 'text', 'nextLine', 'text', 'textarea'],
+      'value_type': ['input', 'input', 'input', 'nextLine', 'input', 'text'],
+      'input_width': [1, 1, 2, 'nextLine', 1, 4, ],
+      'input_height': [null, null, null, 'nextLine', null, 50, ],
+      'font_size': [12, 12, 12, 'nextLine', 12, 12, ],
+      'edit_btn': [false, false, false, 'nextLine', false, false, ],
+    }, {
+      'section_word': '父项基本资料',
+      'section_btn': true,
+      'key_word': ['父项立项识别码', '父项项目名称', '父项分项名称', 'nextLine', '子项数量', ],
+      'short_key': [null, null, null, 'nextLine', null, ],
+      'input_type': ['text', 'text', 'text', 'nextLine', 'text', ],
+      'value_type': ['input', 'input', 'input', 'nextLine', 'input', ],
+      'input_width': [1, 1, 2, 'nextLine', 1, ],
+      'input_height': [null, null, null, 'nextLine', null, ],
+      'font_size': [12, 12, 12, 'nextLine', 12, ],
+      'edit_btn': [false, false, false, 'nextLine', false, ],
+    }, {
+      'section_word': '单位资料',
+      'section_btn': false,
+      'key_word': ['建设单位识别码', '建设单位名称', 'nextLine', '代建单位识别码', '代建单位名称', ],
+      'short_key': [null, null, null, null, null, ],
+      'input_type': ['text', 'text', 'nextLine', 'text', 'text', ],
+      'value_type': ['input', 'input', 'nextLine', 'input', 'input', ],
+      'input_width': [1, 4, 'nextLine', 1, 4, ],
+      'input_height': [null, null, 'nextLine', null, null, ],
+      'font_size': [12, 12, 'nextLine', 12, 12, ],
+      'edit_btn': [false, true, 'nextLine', false, true, ],
+    }, {
+      'section_word': '概算资料',
+      'section_btn': false,
+      'key_word': ['项目概算', '父项项目概算', '项目概算上限', 'nextLine', '已分配概算', '未分配概算', '概算分配比', 'nextLine', '概算已付款额', '概算可付余额', '概算付款比', ],
+      'short_key': [null, null, null, 'nextLine', null, null, null, 'nextLine', null, null, null, ],
+      'input_type': ['text', 'text', 'text', 'nextLine', 'text', 'text', 'text', 'nextLine', 'text', 'text', 'text', ],
+      'value_type': ['float', 'float', 'float', 'nextLine', 'float', 'float', 'percent', 'nextLine', 'float', 'float', 'percent', ],
+      'input_width': [2, 1, 1, 'nextLine', 2, 1, 1, 'nextLine', 2, 1, 1, ],
+      'input_height': [null, null, null, 'nextLine', null, null, null, 'nextLine', null, null, null, ],
+      'font_size': [12, 12, 12, 'nextLine', 12, 12, 12, 'nextLine', 12, 12, 12, ],
+      'edit_btn': [true, false, false, 'nextLine', false, false, false, 'nextLine', false, false, false, ],
+    }, {
+      'section_word': '其他资料',
+      'section_btn': true,
+      'key_word': ['立项备注', ],
+      'short_key': [null, ],
+      'input_type': ['textarea', ],
+      'value_type': ['text', ],
+      'input_width': [6, ],
+      'input_height': [100, ],
+      'font_size': [12, ],
+      'edit_btn': [false, ],
+    }, ];
 
     var child_data = {};
     var dict_Chn_Eng = {
@@ -143,13 +137,13 @@
       '预算': 'Budget',
       '付款': 'Payment',
     };
-    var behavior       = parent.child_data['behavior'];
-    var key_frame      = parent.child_data['key_table'];
-    var data_head      = parent.child_data['data_head'];
-    var data_type      = parent.child_data['data_type'];
-    var data_value     = parent.child_data['data_value'];
+    var behavior = parent.child_data['behavior'];
+    var key_frame = parent.child_data['key_table'];
+    var data_head = parent.child_data['data_head'];
+    var data_type = parent.child_data['data_type'];
+    var data_value = parent.child_data['data_value'];
     var data_head_type = twoListToOneDict(data_head, data_type);
-    var permission     = {};
+    var permission = {};
     $(main);
 
     function main() {
@@ -164,42 +158,42 @@
       var section_word, section_btn;
       var key_word, input_type, input_width, input_height, font_size, edit_btn;
 
-      for (i = 0; i < composing.length; i++) {    // 遍历composing数组
+      for (i = 0; i < composing.length; i++) { // 遍历composing数组
         // 建立section头
         section_word = composing[i].section_word;
         section_btn = composing[i].section_btn;
-        div_section = $('<div name="Section_'+section_word+'"></div>');
+        div_section = $('<div name="Section_' + section_word + '"></div>');
         if (section_btn) {
-          html_sectionHead = $('<div class="row clearfix"><div class="col-sm-1" style="padding: 0px; margin: 0px;"><h5 style="text-align: center;">'+section_word+'</h5></div><div class="col-sm-1" style="padding: 0px; margin: 0px;"><button id="id_button_'+section_word+'" class="btn btn-default btn-edit" type="button">修改</button></div></div>');
-        }else{
-          html_sectionHead = $('<div class="row clearfix"><div class="col-sm-1" style="padding: 0px; margin: 0px;"><h5 style="text-align: center;">'+section_word+'</h5></div></div>');
+          html_sectionHead = $('<div class="row clearfix"><div class="col-sm-1" style="padding: 0px; margin: 0px;"><h5 style="text-align: center;">' + section_word + '</h5></div><div class="col-sm-1" style="padding: 0px; margin: 0px;"><button id="id_button_' + section_word + '" class="btn btn-default btn-edit" type="button">修改</button></div></div>');
+        } else {
+          html_sectionHead = $('<div class="row clearfix"><div class="col-sm-1" style="padding: 0px; margin: 0px;"><h5 style="text-align: center;">' + section_word + '</h5></div></div>');
         };
         div_section.append(html_sectionHead);
         // 遍历每一行
         html_row = $('<div class="row clearfix" style="margin-bottom: 6px;"></div>');
         for (j = 0; j < composing[i].key_word.length; j++) {
-          key_word     = composing[i].key_word[j];
-          short_key    = composing[i].short_key[j] || key_word;
-          input_type   = composing[i].input_type[j];
-          value_type   = composing[i].value_type[j];
-          input_width  = composing[i].input_width[j];
+          key_word = composing[i].key_word[j];
+          short_key = composing[i].short_key[j] || key_word;
+          input_type = composing[i].input_type[j];
+          value_type = composing[i].value_type[j];
+          input_width = composing[i].input_width[j];
           input_height = composing[i].input_height[j];
-          font_size    = composing[i].font_size[j];
-          edit_btn     = composing[i].edit_btn[j];
-          if (input_type == 'text' || input_type == 'date') {   // 对一般文本/日期 表单
-            html_unit = '<div class="col-sm-1" style="padding: 0px; margin: 0px;"><label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">'+short_key+'</label></div>';
-            if (edit_btn) {   // 附带<修改>按钮时
-              html_unit += '<div class="col-sm-'+input_width+'" style="padding: 0px; margin: 0px;"><div class="input-group"><input type="'+input_type+'" name="'+key_word+'" id="id_'+key_word+'" class="style_'+value_type+'" style="width: 100%;font-size: '+font_size+'px;" /><span class="input-group-btn"><button id="id_button_'+key_word+'" class="btn btn-default btn-edit" type="button">修改</button></span></div></div>';
-            }else{    // 不带<修改>按钮时
-              html_unit += '<div class="col-sm-'+input_width+'" style="padding: 0px; margin: 0px;"><input type="text" name="'+key_word+'" id="id_'+key_word+'" class="style_'+value_type+'" style="width: 100%;font-size: '+font_size+'px;" /></div>';
+          font_size = composing[i].font_size[j];
+          edit_btn = composing[i].edit_btn[j];
+          if (input_type == 'text' || input_type == 'date') { // 对一般文本/日期 表单
+            html_unit = '<div class="col-sm-1" style="padding: 0px; margin: 0px;"><label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">' + short_key + '</label></div>';
+            if (edit_btn) { // 附带<修改>按钮时
+              html_unit += '<div class="col-sm-' + input_width + '" style="padding: 0px; margin: 0px;"><div class="input-group"><input type="' + input_type + '" name="' + key_word + '" id="id_' + key_word + '" class="style_' + value_type + '" style="width: 100%;font-size: ' + font_size + 'px;" /><span class="input-group-btn"><button id="id_button_' + key_word + '" class="btn btn-default btn-edit" type="button">修改</button></span></div></div>';
+            } else { // 不带<修改>按钮时
+              html_unit += '<div class="col-sm-' + input_width + '" style="padding: 0px; margin: 0px;"><input type="text" name="' + key_word + '" id="id_' + key_word + '" class="style_' + value_type + '" style="width: 100%;font-size: ' + font_size + 'px;" /></div>';
             };
             // 将html添加进行
             html_row.append($(html_unit));
-          }else if (input_type == 'textarea') {   // 对富文本表单
-            html_unit = $('<div class="col-sm-1" style="padding: 0px; margin: 0px;"><label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">'+short_key+'</label></div><div class="col-sm-'+input_width+'" style="padding: 0px; margin: 0px;"><textarea type="text" name="'+key_word+'" id="id_'+key_word+'" class="style_'+value_type+'" style="resize: none; width: 100%; height: '+input_height+'px; text-align: left; font-size: '+font_size+'px;" /></textarea></div>');
+          } else if (input_type == 'textarea') { // 对富文本表单
+            html_unit = $('<div class="col-sm-1" style="padding: 0px; margin: 0px;"><label class="pull-right" style="font-size: 12px; padding-top: 4px; padding-right: 10px;">' + short_key + '</label></div><div class="col-sm-' + input_width + '" style="padding: 0px; margin: 0px;"><textarea type="text" name="' + key_word + '" id="id_' + key_word + '" class="style_' + value_type + '" style="resize: none; width: 100%; height: ' + input_height + 'px; text-align: left; font-size: ' + font_size + 'px;" /></textarea></div>');
             // 将html添加进行
             html_row.append(html_unit);
-          }else if (input_type == 'nextLine'){    // 对换行符
+          } else if (input_type == 'nextLine') { // 对换行符
             div_section.append(html_row);
             // 另起一行
             html_row = $('<div class="row clearfix" style="margin-bottom: 6px;"></div>');
@@ -262,7 +256,7 @@
           return;
         };
         // 检查概算值有无调整，如有调整，检查权限
-        
+
         // 询问是否需要确定要保存
         layer.open({
           type: 1,
@@ -289,9 +283,11 @@
                   // 将新值存入缓存
                   data_value = data_from_input;
                   // 刷新父页面的表格
-                  parent.$('#id_bootstrap_table').bootstrapTable('refresh', {silent: true});
+                  parent.$('#id_bootstrap_table').bootstrapTable('refresh', {
+                    silent: true
+                  });
                   return;
-                }else{
+                } else {
                   layer.alert('数据保存失败，错误信息：<br/>' + ret);
                   return;
                 };
@@ -301,15 +297,15 @@
         });
       });
       // 获取权限数据
-      $.ajax({    // 权限
+      $.ajax({ // 权限
         url: "{% url 'get_WritePermissionObj' %}",
         type: 'POST',
         data: {},
-        success: function(ret){
+        success: function(ret) {
           permission = ret;
           var project = $('#id_项目名称').val();
-          var flag = $.inArray(project, permission.立项.split('|')) >= 0 || (behavior == 'New' && permission.立项)    // 数组包含判断，包含>=0，不含<0
-          if (flag) {    // 有权限则激活相应按钮
+          var flag = $.inArray(project, permission.立项.split('|')) >= 0 || (behavior == 'New' && permission.立项) // 数组包含判断，包含>=0，不含<0
+          if (flag) { // 有权限则激活相应按钮
             $('#id_button_基本资料').removeAttr('disabled');
             $('#id_button_父项基本资料').removeAttr('disabled');
             $('#id_button_建设单位名称').removeAttr('disabled');
@@ -317,22 +313,30 @@
             $('#id_button_其他资料').removeAttr('disabled');
             $('#id_btn_Save').removeAttr('disabled');
           };
-          var flag = $.inArray(project, permission.概算.split('|')) >= 0 || (behavior == 'New' && permission.立项)    // 数组包含判断，包含>=0，不含<0
-          if (flag) {    // 有权限则激活相应按钮
+          var flag = $.inArray(project, permission.概算.split('|')) >= 0 || (behavior == 'New' && permission.立项) // 数组包含判断，包含>=0，不含<0
+          if (flag) { // 有权限则激活相应按钮
             $('#id_button_项目概算').removeAttr('disabled');
             $('#id_btn_Save').removeAttr('disabled');
           };
         },
       });
-      function call_inputer(inputer_labels, inputer_form_type, func_arg=function(){}, func_fill=function(){}) {
+
+      function call_inputer(inputer_labels, inputer_form_type, func_arg = function() {}, func_fill = function() {}) {
         // 构造标准化inputer参数及回调
         // arg1：需要用户输入的项；arg2：这几项的类型；arg3：自定义arg1、2；arg4：自定义回调填写方式
-        child_data['inputer_data'] = {'label': [], 'data': [], 'result_key': [], 'descriptoin': [], 'form_type': [], 'valid': [],};
+        child_data['inputer_data'] = {
+          'label': [],
+          'data': [],
+          'result_key': [],
+          'descriptoin': [],
+          'form_type': [],
+          'valid': [],
+        };
         for (var i in inputer_labels) {
           child_data['inputer_data']['label'].push(inputer_labels[i]);
-          child_data['inputer_data']['data'].push($('#id_'+inputer_labels[i]).val());
+          child_data['inputer_data']['data'].push($('#id_' + inputer_labels[i]).val());
           child_data['inputer_data']['result_key'].push(null);
-          child_data['inputer_data']['descriptoin'].push('（请在此处填写<strong>'+inputer_labels[i]+'</strong>）');
+          child_data['inputer_data']['descriptoin'].push('（请在此处填写<strong>' + inputer_labels[i] + '</strong>）');
           child_data['inputer_data']['form_type'].push(inputer_form_type[i]);
           child_data['inputer_data']['valid'].push(null);
         };
@@ -353,18 +357,19 @@
               return;
             };
             for (var i in inputer_labels) {
-              $('#id_'+inputer_labels[i]).val(body.find('#id_'+inputer_labels[i])[0].value);
+              $('#id_' + inputer_labels[i]).val(body.find('#id_' + inputer_labels[i])[0].value);
             };
             var fl = func_fill(body); // 如果函数没有返回值就认为正常，否则就将返回值警告出来
             if (fl) {
               layer.alert(fl);
-            }else{
+            } else {
               layer.close(index);
             };
           },
         });
       };
-      function call_table_inputer(key, dict_fill, func_fill=function(){}, func_valid=function(){}) {
+
+      function call_table_inputer(key, dict_fill, func_fill = function() {}, func_valid = function() {}) {
         // 打开立项管理页面
         child_data['key_table'] = key; // 立项 | 招标
         var key_url = dict_Chn_Eng[child_data['key_table']];
@@ -385,7 +390,7 @@
             var data = {};
             for (var i = 0; i < datas.length; i++) {
               for (k in datas[i]) {
-                if (datas[i][k] == data_uniqueid) {    // 如果主识别码==data_uniqueid
+                if (datas[i][k] == data_uniqueid) { // 如果主识别码==data_uniqueid
                   data = datas[i];
                 };
                 break;
@@ -398,12 +403,12 @@
             };
             for (var id in dict_fill) {
               var v = data[dict_fill[id]];
-              if (v > 0 && id.search('识别码') < 0) {  // 如果值是数字，就认为其应该可以格式化为千分位形式
-                $('#'+id).val(toThousands(v));
-              }else if (v === 0) {
-                $('#'+id).val(toThousands(v));
-              }else{
-                $('#'+id).val(v);
+              if (v > 0 && id.search('识别码') < 0) { // 如果值是数字，就认为其应该可以格式化为千分位形式
+                $('#' + id).val(toThousands(v));
+              } else if (v === 0) {
+                $('#' + id).val(toThousands(v));
+              } else {
+                $('#' + id).val(v);
               };
             };
             func_fill(data);
@@ -415,24 +420,31 @@
       $(document).on('click', '#id_button_基本资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
-        var inputer_labels    = [     // 需要接受用户修改的项
-                                 '项目名称',
-                                 '分项名称',
-                                 '立项时间',
-                                 '立项文件名称',
-                                ];
-        var inputer_form_type = [     // 对应的输入类型
-                                  'input',
-                                  'input',
-                                  'date',
-                                  'text',
-                                ];
-        child_data['inputer_data'] = {'label': [], 'data': [], 'result_key': [], 'descriptoin': [], 'form_type': [], 'valid': [],};
+        var inputer_labels = [ // 需要接受用户修改的项
+          '项目名称',
+          '分项名称',
+          '立项时间',
+          '立项文件名称',
+        ];
+        var inputer_form_type = [ // 对应的输入类型
+          'input',
+          'input',
+          'date',
+          'text',
+        ];
+        child_data['inputer_data'] = {
+          'label': [],
+          'data': [],
+          'result_key': [],
+          'descriptoin': [],
+          'form_type': [],
+          'valid': [],
+        };
         for (var i in inputer_labels) {
           child_data['inputer_data']['label'].push(inputer_labels[i]);
-          child_data['inputer_data']['data'].push($('#id_'+inputer_labels[i]).val());
+          child_data['inputer_data']['data'].push($('#id_' + inputer_labels[i]).val());
           child_data['inputer_data']['result_key'].push(null);
-          child_data['inputer_data']['descriptoin'].push('（请在此处填写<strong>'+inputer_labels[i]+'</strong>）');
+          child_data['inputer_data']['descriptoin'].push('（请在此处填写<strong>' + inputer_labels[i] + '</strong>）');
           child_data['inputer_data']['form_type'].push(inputer_form_type[i]);
           child_data['inputer_data']['valid'].push(null);
         };
@@ -452,7 +464,7 @@
               return;
             };
             for (var i in inputer_labels) {
-              $('#id_'+inputer_labels[i]).val(body.find('#id_'+inputer_labels[i])[0].value);
+              $('#id_' + inputer_labels[i]).val(body.find('#id_' + inputer_labels[i])[0].value);
             };
             layer.close(index);
           },
@@ -464,12 +476,12 @@
         // 2.进行业务逻辑
         // 打开立项管理页面
         var key = '立项';
-        var dict_fill = {   // 待填写input的id：表格行中相应列名
-          'id_父项立项识别码':     '立项识别码',
-          'id_父项项目名称':       '项目名称',
-          'id_项目名称':          '项目名称',
-          'id_父项分项名称':       '分项名称',
-          'id_父项项目概算':       '项目概算',
+        var dict_fill = { // 待填写input的id：表格行中相应列名
+          'id_父项立项识别码': '立项识别码',
+          'id_父项项目名称': '项目名称',
+          'id_项目名称': '项目名称',
+          'id_父项分项名称': '分项名称',
+          'id_父项项目概算': '项目概算',
         };
         call_table_inputer(
           key,
@@ -481,12 +493,11 @@
           },
           function(data) {
             var project = $('#id_项目名称').val();
-            var flag = $.inArray(project, permission.立项.split('|')) < 0    // 数组包含判断，包含>=0，不含<0
-            if (flag) {   // 如果没有权限操作该项目
-              return '你没有权限操作<'+project+'>的立项信息';
+            var flag = $.inArray(project, permission.立项.split('|')) < 0 // 数组包含判断，包含>=0，不含<0
+            if (flag) { // 如果没有权限操作该项目
+              return '你没有权限操作<' + project + '>的立项信息';
             };
-          },
-        );
+          });
       });
       // 修改建设单位
       $(document).on('click', '#id_button_建设单位名称', function() {
@@ -548,18 +559,25 @@
       $(document).on('click', '#id_button_项目概算', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
-        var inputer_labels    = [     // 需要接受用户修改的项
-                                 '项目概算',
-                                ];
-        var inputer_form_type = [     // 对应的输入类型
-                                  'input',
-                                ];
-        child_data['inputer_data'] = {'label': [], 'data': [], 'result_key': [], 'descriptoin': [], 'form_type': [], 'valid': [],};
+        var inputer_labels = [ // 需要接受用户修改的项
+          '项目概算',
+        ];
+        var inputer_form_type = [ // 对应的输入类型
+          'input',
+        ];
+        child_data['inputer_data'] = {
+          'label': [],
+          'data': [],
+          'result_key': [],
+          'descriptoin': [],
+          'form_type': [],
+          'valid': [],
+        };
         for (var i in inputer_labels) {
           child_data['inputer_data']['label'].push(inputer_labels[i]);
-          child_data['inputer_data']['data'].push($('#id_'+inputer_labels[i]).val());
+          child_data['inputer_data']['data'].push($('#id_' + inputer_labels[i]).val());
           child_data['inputer_data']['result_key'].push(null);
-          child_data['inputer_data']['descriptoin'].push('（请在此处填写<strong>'+inputer_labels[i]+'</strong>）');
+          child_data['inputer_data']['descriptoin'].push('（请在此处填写<strong>' + inputer_labels[i] + '</strong>）');
           child_data['inputer_data']['form_type'].push(inputer_form_type[i]);
           child_data['inputer_data']['valid'].push(null);
         };
@@ -571,8 +589,8 @@
         var num_estimate_payed = Number(estimate_payed.replace(/[\, ]/g, ''));
         var estimate_lower_limit = toThousands(Math.max(num_estimate_out, num_estimate_payed));
         var num_estimate_lower_limit = Math.max(num_estimate_out, num_estimate_payed);
-        child_data['inputer_data']['descriptoin'][0] = '（请在此处填写<strong>项目概算</strong>，输入值下限为已分配概算/概算已付款额二者最大值<strong>'+estimate_lower_limit+'</strong>，上限为项目概算上限<strong>'+estimate_limit+'</strong>，有效值2位小数）';
-        child_data['inputer_data']['valid'][0] = 'value.replace(/[\\, ]/g, "") >= '+num_estimate_lower_limit+' && value.replace(/[\\, ]/g, "") <= '+num_estimate_limit+' || value === ""';
+        child_data['inputer_data']['descriptoin'][0] = '（请在此处填写<strong>项目概算</strong>，输入值下限为已分配概算/概算已付款额二者最大值<strong>' + estimate_lower_limit + '</strong>，上限为项目概算上限<strong>' + estimate_limit + '</strong>，有效值2位小数）';
+        child_data['inputer_data']['valid'][0] = 'value.replace(/[\\, ]/g, "") >= ' + num_estimate_lower_limit + ' && value.replace(/[\\, ]/g, "") <= ' + num_estimate_limit + ' || value === ""';
         // 打开输入页面
         layer.open({
           type: 2,
@@ -598,18 +616,25 @@
       $(document).on('click', '#id_button_其他资料', function() {
         // 1.检查有无权限
         // 2.进行业务逻辑
-        var inputer_labels    = [     // 需要接受用户修改的项
-                                 '立项备注',
-                                ];
-        var inputer_form_type = [     // 对应的输入类型
-                                  'text',
-                                ];
-        child_data['inputer_data'] = {'label': [], 'data': [], 'result_key': [], 'descriptoin': [], 'form_type': [], 'valid': [],};
+        var inputer_labels = [ // 需要接受用户修改的项
+          '立项备注',
+        ];
+        var inputer_form_type = [ // 对应的输入类型
+          'text',
+        ];
+        child_data['inputer_data'] = {
+          'label': [],
+          'data': [],
+          'result_key': [],
+          'descriptoin': [],
+          'form_type': [],
+          'valid': [],
+        };
         for (var i in inputer_labels) {
           child_data['inputer_data']['label'].push(inputer_labels[i]);
-          child_data['inputer_data']['data'].push($('#id_'+inputer_labels[i]).val());
+          child_data['inputer_data']['data'].push($('#id_' + inputer_labels[i]).val());
           child_data['inputer_data']['result_key'].push(null);
-          child_data['inputer_data']['descriptoin'].push('（请在此处填写<strong>'+inputer_labels[i]+'</strong>）');
+          child_data['inputer_data']['descriptoin'].push('（请在此处填写<strong>' + inputer_labels[i] + '</strong>）');
           child_data['inputer_data']['form_type'].push(inputer_form_type[i]);
           child_data['inputer_data']['valid'].push(null);
         };
@@ -629,14 +654,14 @@
               return;
             };
             for (var i in inputer_labels) {
-              $('#id_'+inputer_labels[i]).val(body.find('#id_'+inputer_labels[i])[0].value);
+              $('#id_' + inputer_labels[i]).val(body.find('#id_' + inputer_labels[i])[0].value);
             };
             layer.close(index);
           },
         });
       });
       // 查看附件
-      if (behavior == 'View') {     // 查看模式
+      if (behavior == 'View') { // 查看模式
         // 激活附件模块
         $('#id_btn_Attach').removeAttr('disabled');
         $(document).on('click', '#id_btn_Attach', function() {
