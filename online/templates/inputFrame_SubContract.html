@@ -245,9 +245,70 @@
       $('#id_btn_Cancel').removeAttr('disabled');
       $(document).on('click', '#id_btn_Cancel', function() {
         // 检查有无改动
+        var flag = DictIsEqual(data_value, getDataFromUser(data_head_type));
+        if (!flag) {
+          layer.open({
+            type: 1,
+            btn: ['确定', '取消'],
+            title: '警告',
+            closeBtn: 0,
+            content: '<div style="margin: 20px;">数据已发生变动，尚未保存，确定要退出吗？<br/>点击<确定>不保存退出</div>',
+            yes: function(index, layero) {
+              // 关闭页面
+              var i = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+              parent.layer.close(i); //再执行关闭
+            },
+          });
+          return;
+        };
         // 关闭页面
         var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
         parent.layer.close(index); //再执行关闭
+      });
+      $(document).on('click', '#id_btn_Save', function() {
+        // 检查有无改动
+        var data_from_input = getDataFromUser(data_head_type);
+        var flag = DictIsEqual(data_value, data_from_input);
+        if (flag) {
+          layer.alert('数据无改动，无须保存');
+          return;
+        };
+        // 询问是否需要确定要保存
+        layer.open({
+          type: 1,
+          btn: ['确定', '取消'],
+          title: '提示',
+          closeBtn: 0,
+          content: '<div style="margin: 20px;">即将覆盖数据，确定要保存吗？<br/>点击<确定>保存</div>',
+          yes: function(index, layero) {
+            // 关闭本问询框
+            layer.close(index);
+            // 执行保存ajax
+            $.ajax({
+              url: "{% url 'ajax_save_data' %}",
+              type: 'POST',
+              data: {
+                'classify': '分包合同',
+                'project': data_from_input['项目名称'],
+                'data': JSON.stringify(data_from_input),
+              },
+              success: function after_save(ret) {
+                // 返回结果
+                if (ret == 'Done') {
+                  layer.alert('数据保存成功');
+                  // 将新值存入缓存
+                  data_value = data_from_input;
+                  // 刷新父页面的表格
+                  parent.$('#id_bootstrap_table').bootstrapTable('refresh', {silent: true});
+                  return;
+                }else{
+                  layer.alert('数据保存失败，错误信息：<br/>' + ret);
+                  return;
+                };
+              },
+            });
+          },
+        });
       });
       function call_inputer(inputer_labels, inputer_form_type, func_arg=function(){}, func_fill=function(){}) {
         // 构造标准化inputer参数及回调

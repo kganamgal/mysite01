@@ -24,14 +24,15 @@ from .db_api import *
 def logUserOperation(request, logname, how='', what=''):
     if logname == 'read':
         return
-    logging.getLogger(logname).info('《【%s《】《【%s《】《【%s《】《【%s《】《【%s《】' % (
-        str(datetime.datetime.now()),
-        request.META.get('HTTP_X_FORWARDED_FOR').split(
-            ',')[-1].strip() if request.META.get('HTTP_X_FORWARDED_FOR') else request.META.get('REMOTE_ADDR'),
-        request.session.get('username'),
-        how,
-        what,
-    ))
+    log_dict = {
+        'time': str(datetime.datetime.now()),
+        'user': request.session.get('username'),
+        'ip': request.META.get('HTTP_X_FORWARDED_FOR').split(',')[-1].strip() if request.META.get('HTTP_X_FORWARDED_FOR') else request.META.get('REMOTE_ADDR'),
+        'how': how,
+        'what': what,
+    }
+    log_text = json.dumps(log_dict, ensure_ascii=False, cls=CJsonEncoder)
+    logging.getLogger(logname).info(log_text)
 
 # 表单
 
@@ -557,7 +558,8 @@ def ajax_save_data(request):
         project = request.POST.get('project') or ''
         data = json.loads(request.POST.get('data')) or {}
         username = request.session.get('username')
-        logUserOperation(request, 'write', sys._getframe().f_code.co_name, 'Try to ' + classify + ': ' + str(data))
+        logUserOperation(request, 'write', sys._getframe().f_code.co_name, 'Try to ' +
+                         classify + ': ' + json.dumps(data, ensure_ascii=False, cls=CJsonEncoder))
         if not getUserPermission(username).can_Write_Table(classify):
             Cnt = 'No Permission'
             return HttpResponse(Cnt)
@@ -573,7 +575,8 @@ def ajax_save_data(request):
         }
         save_API = dict_API.get(classify)
         result = save_API(True, **data)
-        logUserOperation(request, 'write', sys._getframe().f_code.co_name, 'Success to ' + classify + ': ' + str(data))
+        logUserOperation(request, 'write', sys._getframe().f_code.co_name, 'Success to ' +
+                         classify + ': ' + json.dumps(data, ensure_ascii=False, cls=CJsonEncoder))
     except Exception as e:
         result = (0, str(e))
     return HttpResponse(result[1])
