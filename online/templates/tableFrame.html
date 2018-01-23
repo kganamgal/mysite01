@@ -218,8 +218,12 @@
       var datas = JSON.parse(ret.t_rows);
       var heads = JSON.parse(ret.t_head);
       var types = JSON.parse(ret.t_type);
+      var save_heads = JSON.parse(ret.t_save_head);
+      var save_types = JSON.parse(ret.t_save_type);
       child_data['data_head'] = heads;
       child_data['data_type'] = types;
+      child_data['data_save_head'] = save_heads;
+      child_data['data_save_type'] = save_types;
 
       // 构造columns
       // var columns = [{checkbox: true}];

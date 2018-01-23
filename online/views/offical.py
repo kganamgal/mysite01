@@ -441,6 +441,26 @@ def ajax_table_data(request):
         '预算':     uc.BudgetColLabels_Type,
         '付款':     uc.PaymentColLabels_Type,
     }
+    dict_Save_Head = {
+        '单位':     uc.CompanyFields,
+        '立项':     uc.InitiationFields,
+        '招标':     uc.BiddingFields,
+        '合同':     uc.ContractFields,
+        '分包合同': uc.SubContractFields,
+        '变更':     uc.AlterationFields,
+        '预算':     uc.BudgetFields,
+        '付款':     uc.PaymentFields,
+    }
+    dict_Save_Type = {
+        '单位':     uc.CompanyFields_Type,
+        '立项':     uc.InitiationFields_Type,
+        '招标':     uc.BiddingFields_Type,
+        '合同':     uc.ContractFields_Type,
+        '分包合同': uc.SubContractFields_Type,
+        '变更':     uc.AlterationFields_Type,
+        '预算':     uc.BudgetFields_Type,
+        '付款':     uc.PaymentFields_Type,
+    }
     dict_API = {
         '单位':     read_For_Company_GridDialog,
         '立项':     read_For_Initiation_GridDialog,
@@ -483,8 +503,12 @@ def ajax_table_data(request):
         t_UDID = None
     t_head = dict_Head[key_table]
     t_type = dict_Type[key_table]
+    t_save_head = dict_Save_Head[key_table]
+    t_save_type = dict_Save_Type[key_table]
     return_json = {'t_head': json.dumps(t_head, ensure_ascii=False, cls=CJsonEncoder),
                    't_type': json.dumps(t_type, ensure_ascii=False, cls=CJsonEncoder),
+                   't_save_head': json.dumps(t_save_head, ensure_ascii=False, cls=CJsonEncoder),
+                   't_save_type': json.dumps(t_save_type, ensure_ascii=False, cls=CJsonEncoder),
                    't_rows': json.dumps(t_rows, ensure_ascii=False, cls=CJsonEncoder),
                    't_UDID': t_UDID,
                    }
@@ -558,11 +582,55 @@ def ajax_save_data(request):
         project = request.POST.get('project') or ''
         data = json.loads(request.POST.get('data')) or {}
         username = request.session.get('username')
+        print(classify, project, getUserPermission(username).can_Write_Table(classify, project))
         logUserOperation(request, 'write', sys._getframe().f_code.co_name, 'Try to ' +
                          classify + ': ' + json.dumps(data, ensure_ascii=False, cls=CJsonEncoder))
-        if not getUserPermission(username).can_Write_Table(classify):
-            Cnt = 'No Permission'
-            return HttpResponse(Cnt)
+        # =========================检查权限=============================
+        # 对概算、合同有特殊算法
+        if classify == '立项' and getUserPermission(username).can_Write_Table('立项', project) and not getUserPermission(username).can_Write_Table('概算', project):
+            try:
+                UDID = int(data.get('立项识别码') or 0)
+            except:
+                return HttpResponse('立项识别码错误')
+            # 检测是否只有一种权限，立项/概算 # 如果是的话就查检对面的数据有无变动
+            # 有概算权的人一定要有立项权！！！
+            orm_init = table_Initiation.objects.filter(立项识别码=UDID).values()
+            estimate_new = float(data.get('项目概算') or 0)
+            if UDID and orm_init:
+                estimate_old = float(orm_init[0].get('项目概算') or 0)
+            else:
+                estimate_old = float(0)
+            if estimate_new != estimate_old:
+                return HttpResponse('No Permission')
+        elif classify == '合同' and getUserPermission(username).can_Write_Table('合同', project) and not getUserPermission(username).can_Write_Table('合同额', project):
+            try:
+                UDID = int(data.get('合同识别码') or 0)
+            except:
+                return HttpResponse('合同识别码错误')
+            # 检测是否只有一种权限，合同/合同额
+            orm_contract = table_Contract.objects.filter(
+                合同识别码=UDID).values()
+            contract_sign_new = float(data.get('合同值_签订时') or 0)
+            contract_new_new = float(data.get('合同值_最新值') or 0)
+            contract_final_new = float(data.get('合同值_最终值') or 0)
+            if UDID and orm_contract:
+                contract_sign_old = float(
+                    orm_contract[0].get('合同值_签订时') or 0)
+                contract_new_old = float(
+                    orm_contract[0].get('合同值_最新值') or 0)
+                contract_final_old = float(
+                    orm_contract[0].get('合同值_最终值') or 0)
+            else:
+                contract_sign_old = float(0)
+                contract_new_old = float(0)
+                contract_final_old = float(0)
+            flag = contract_sign_old == contract_sign_old and contract_new_old == contract_new_old and contract_final_old == contract_final_old
+            if not flag:
+                return HttpResponse('No Permission')
+        else:
+            if not getUserPermission(username).can_Write_Table(classify, project):
+                return HttpResponse('No Permission')
+        # =============================================================
         dict_API = {
             '单位':     save_For_Company,
             '立项':     save_For_Initiation,

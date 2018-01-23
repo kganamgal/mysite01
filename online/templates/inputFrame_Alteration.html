@@ -227,7 +227,11 @@
       $('#id_btn_Cancel').removeAttr('disabled');
       $(document).on('click', '#id_btn_Cancel', function() {
         // 检查有无改动
-        var flag = DictIsEqual(data_value, getDataFromUser(data_head_type));
+        var data_save_head = parent.child_data['data_save_head'];
+        var data_save_type = parent.child_data['data_save_type'];
+        var data_save_head_type = twoListToOneDict(data_save_head, data_save_type);
+        var data_from_input = getDataFromUser(data_save_head_type);
+        var flag = DictIsEqual(data_from_input, data_value);
         if (!flag) {
           layer.open({
             type: 1,
@@ -249,8 +253,11 @@
       });
       $(document).on('click', '#id_btn_Save', function() {
         // 检查有无改动
-        var data_from_input = getDataFromUser(data_head_type);
-        var flag = DictIsEqual(data_value, data_from_input);
+        var data_save_head = parent.child_data['data_save_head'];
+        var data_save_type = parent.child_data['data_save_type'];
+        var data_save_head_type = twoListToOneDict(data_save_head, data_save_type);
+        var data_from_input = getDataFromUser(data_save_head_type);
+        var flag = DictIsEqual(data_from_input, data_value);
         if (flag) {
           layer.alert('数据无改动，无须保存');
           return;
@@ -271,7 +278,7 @@
               type: 'POST',
               data: {
                 'classify': '变更',
-                'project': data_from_input['项目名称'],
+                'project': $('#id_项目名称')[0].value,
                 'data': JSON.stringify(data_from_input),
               },
               success: function after_save(ret) {

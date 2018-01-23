@@ -1613,8 +1613,9 @@ def common_Valid_Data(classify, **data):
                 return (0, '<%s:%s>类型(%s)错误，应为<%s>，请检查' % (field, str(value), str(type(value)), _type))
             elif _type == '日期型':
                 try:
-                    data[field] = datetime.date(
-                        *list(time.strptime(data.get(field), "%Y-%m-%d"))[:3])
+                    if data.get(field):
+                        data[field] = datetime.date(
+                            *list(time.strptime(data.get(field), "%Y-%m-%d"))[:3])
                 except Exception as e:
                     return (0, str(e))
         # 若UDID > 0，查检该项是否存在
@@ -1677,10 +1678,10 @@ def save_For_Initiation(checkEstimate=True, **data):
     try:
         # 如果有父项，项目名称应与父项项目名称一致
         UDID = data.get('立项识别码') or 0
-        parent_UDID = data.get('父项立项识别码') or 0
+        parentUDID = data.get('父项立项识别码') or 0
         ptb = table_Initiation.objects.filter(
-            立项识别码__exact=parent_UDID).values()
-        flag = parent_UDID and ptb
+            立项识别码__exact=parentUDID).values()
+        flag = parentUDID and ptb
         if not flag:
             parent_project = ptb[0].get('项目名称')
             project = data.get('项目名称')
@@ -1688,11 +1689,11 @@ def save_For_Initiation(checkEstimate=True, **data):
                 return (0, '<项目名称>(%s)与<父项项目名称>(%s)不一致，请修改' % (project, parent_project))
         # 父项应为空，或父项的父项...应为空，否则说明有循环引用象
         UDID = data.get('立项识别码') or 0
-        parent_UDID = data.get('父项立项识别码') or 0
+        parentUDID = data.get('父项立项识别码') or 0
         for i in range(100):
             if not parentUDID:
                 break
-            if UDID == parent_UDID > 0:
+            if UDID == parentUDID > 0:
                 return (0, '该项存在循环引用现象，请优化项目结构')
             orm_init = table_Initiation.objects.filter(
                 立项识别码=parentUDID).values()
@@ -1717,14 +1718,14 @@ def save_For_Initiation(checkEstimate=True, **data):
             if estimate < distributed_estimate:
                 return (0, '<项目概算>(%f)过低，请调整为不低于<已分配概算>(%f)' % (estimate, distributed_estimate))
             # 父项存在时，项目概算应<= 项目概算上限
-            parent_UDID = data.get('父项立项识别码') or 0
-            if parent_UDID > 0:
+            parentUDID = data.get('父项立项识别码') or 0
+            if parentUDID > 0:
                 orm_init = table_Initiation.objects.filter(
-                    父项立项识别码=parent_UDID).exclude(立项识别码=UDID).values()
+                    父项立项识别码=parentUDID).exclude(立项识别码=UDID).values()
                 brother_estimate = float(
                     sum([x.get('项目概算') for x in orm_init]))
                 parent_estimate = float(table_Initiation.objects.filter(
-                    立项识别码=parent_UDID).values()[0].get('项目概算'))
+                    立项识别码=parentUDID).values()[0].get('项目概算'))
                 limit_estimate = parent_estimate - brother_estimate
                 estimate = float(data.get('项目概算') or 0)
                 if estimate > limit_estimate:
@@ -1761,13 +1762,13 @@ def save_For_Bidding(checkEstimate=True, **data):
             estimate = float(orm_init[0].get('项目概算') or 0)
             flag = control_price > estimate or control_price < 0
             if flag:
-                return '<预算控制价>(%f)输入错误，请将值设置为[0, <项目概算>(%f)]之间' % (control_price, estimate)
+                return (0, '<预算控制价>(%f)输入错误，请将值设置为[0, <项目概算>(%f)]之间' % (control_price, estimate))
         # 中标价不应超过预算控制价
         bid_price = float(data.get('中标价') or 0)
         control_price = float(data.get('预算控制价') or 0)
         flag = bid_price > control_price or bid_price < 0
         if flag:
-            return '<中标价>(%f)输入错误，请将值设置为[0, <预算控制价>(%f)]之间' % (bid_price, control_price)
+            return (0, '<中标价>(%f)输入错误，请将值设置为[0, <预算控制价>(%f)]之间' % (bid_price, control_price))
     except Exception as e:
         return (0, str(e))
     # 数据合法后存入数据库
@@ -1943,11 +1944,11 @@ def save_For_Budget(checkEstimate=True, **data):
     try:
         # 父项应为空，或父项的父项...应为空，否则说明有循环引用象
         UDID = data.get('预算识别码') or 0
-        parent_UDID = data.get('父项预算识别码') or 0
+        parentUDID = data.get('父项预算识别码') or 0
         for i in range(100):
             if not parentUDID:
                 break
-            if UDID == parent_UDID > 0:
+            if UDID == parentUDID > 0:
                 return (0, '该项存在循环引用现象，请优化项目结构')
             orm_budget = table_Budget.objects.filter(
                 预算识别码=parentUDID).values()
@@ -1973,14 +1974,14 @@ def save_For_Budget(checkEstimate=True, **data):
             return (0, '<预算总额>(%f)过低，请调整为不低于<已分配预算>(%f)' % (budget, distributed_budget))
         # 父项存在时，预算总额应<= 项目预算上限
         UDID = data.get('预算识别码') or 0
-        parent_UDID = data.get('父项预算识别码') or 0
-        if parent_UDID > 0:
+        parentUDID = data.get('父项预算识别码') or 0
+        if parentUDID > 0:
             orm_budget = table_Budget.objects.filter(
-                父项预算识别码=parent_UDID).exclude(预算识别码=UDID).values()
+                父项预算识别码=parentUDID).exclude(预算识别码=UDID).values()
             brother_budget = float(
                 sum([x.get('预算总额') for x in orm_budget]))
             parent_budget = float(table_Budget.objects.filter(
-                预算识别码=parent_UDID).values()[0].get('预算总额'))
+                预算识别码=parentUDID).values()[0].get('预算总额'))
             limit_budget = parent_budget - brother_budget
             budget = float(data.get('预算总额') or 0)
             if budget > limit_budget:

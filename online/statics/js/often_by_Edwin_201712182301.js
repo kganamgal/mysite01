@@ -461,11 +461,11 @@ function getDataFromUser(head_type) {
     if (value === '') {
       value = null
     }else if (head_type[key] == '整数型') {
-      value = parseInt(value.replace(/\,/g, ''));
+      value = parseInt(value.replace(/\,/g, '') || 0);
     }else if (head_type[key] == '浮点型') {
-      value = parseFloat(value.replace(/\,/g, ''));
+      value = parseFloat(value.replace(/\,/g, '') || 0);
     }else if (head_type[key] == '百分比') {
-      value = parseFloat(value.replace(/\%/g, '')) / 100;
+      value = parseFloat(value.replace(/\%/g, '') || 0) / 100;
     };
     data[key] = value;
   };
@@ -475,6 +475,7 @@ function getDataFromUser(head_type) {
 function DictIsEqual(dict1, dict2) {
   for (var key in dict1) {
     if (dict1[key] !== dict2[key]) {
+      // console.log(key, dict1[key], dict2[key]);
       return false;
     };
   };
