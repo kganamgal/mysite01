@@ -458,6 +458,7 @@ function getDataFromUser(head_type) {
   var data = {};
   for (var key in head_type) {
     var value = $('#id_' + key).val();
+    // console.log(key, value);
     if (value === '') {
       value = null
     }else if (head_type[key] == '整数型') {

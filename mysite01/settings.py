@@ -167,6 +167,11 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': 'online/log/write.log',
         },
+        'delete': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'online/log/delete.log',
+        },
         'login_out': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
@@ -181,6 +186,11 @@ LOGGING = {
         },
         'write': {
             'handlers': ['write'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'delete': {
+            'handlers': ['delete'],
             'level': 'INFO',
             'propagate': True,
         },

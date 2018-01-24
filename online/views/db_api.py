@@ -1157,6 +1157,18 @@ def get_Children_Count(UDID):
         return
 
 
+def get_Budget_Children_Count(UDID):
+    '''
+        make sure UDID is int.
+        get the count of a clicked item's budget children.
+        return int or None.
+    '''
+    try:
+        UDID = int(UDID)
+        return len(table_Budget.objects.filter(父项预算识别码=UDID))
+    except:
+        return
+
 def new_get_All_Grandchildren_UDID(UDID):
     '''
         make sure UDID is int.
@@ -2072,3 +2084,40 @@ def save_For_Payment(checkEstimate=True, **data):
         return str(e)
     # 数据合法后存入数据库
     return save_Input_Data('付款', **data)
+
+
+# 删除操作
+
+def del_For_All(classify, UDID):
+    '''
+        This function can delte all records for all tables.
+        return (1, 'Done') if success.if
+        return (0, Error Message) if failed.
+    '''
+    classify_model_dict = {
+        '单位':     table_Company,
+        '立项':     table_Initiation,
+        '招标':     table_Bidding,
+        '合同':     table_Contract,
+        '预算':     table_Budget,
+        '付款':     table_Payment,
+        '变更':     table_Alteration,
+        '分包合同':  table_SubContract,
+    }
+    try:
+        UDID = int(UDID)
+    except:
+        UDID = 0
+    if UDID:
+        try:
+            table_data = {classify + '识别码': UDID}
+            for _, table in classify_model_dict.items():
+                try:
+                    table.objects.filter(**table_data).delete()
+                except:
+                    pass
+            return (1, 'Done')
+        except Exception as e:
+            return (0, str(e))
+    else:
+        return (0, '识别码输入错误')

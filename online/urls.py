@@ -70,6 +70,9 @@ urlpatterns = [
     url(r'ajax_save_data',                offical.ajax_save_data,
         name='ajax_save_data'),
 
+    url(r'ajax_del_data',                 offical.ajax_del_data,
+        name='ajax_del_data'),
+
 
 
 ]

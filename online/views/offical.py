@@ -582,7 +582,7 @@ def ajax_save_data(request):
         project = request.POST.get('project') or ''
         data = json.loads(request.POST.get('data')) or {}
         username = request.session.get('username')
-        print(classify, project, getUserPermission(username).can_Write_Table(classify, project))
+        # print(classify, project, getUserPermission(username).can_Write_Table(classify, project))
         logUserOperation(request, 'write', sys._getframe().f_code.co_name, 'Try to ' +
                          classify + ': ' + json.dumps(data, ensure_ascii=False, cls=CJsonEncoder))
         # =========================检查权限=============================
@@ -647,4 +647,70 @@ def ajax_save_data(request):
                          classify + ': ' + json.dumps(data, ensure_ascii=False, cls=CJsonEncoder))
     except Exception as e:
         result = (0, str(e))
+    return HttpResponse(result[1])
+
+
+def ajax_del_data(request):
+    '''
+        There is 3 argument(classify, project, UDID) to input.
+        classify is classify(单位/立项/合同...) of an item.
+        project is project(北王安置房/1609工程...) of an item.
+        UDID is a int for very item's ID.
+        To use this funciton, you must have "can_Write_Table(classify, project)"-permission.
+        If you have permission, commit sql,
+        Otherwise, return a string 'No Permission'.
+        If sql is correct and done, return a string 'Done',
+        otherwise, return a string which is errer.
+    '''
+    # try:
+    # 记录日志
+    classify = request.POST.get('classify') or ''
+    project = request.POST.get('project') or ''
+    UDID = int(request.POST.get('UDID') or 0)
+    username = request.session.get('username')
+    logUserOperation(request, 'delete', sys._getframe().f_code.co_name, 'Try to ' +
+                     classify + ': ' + str(UDID))
+    # 查验权限
+    if not getUserPermission(username).can_Write_Table(classify, project):
+        return HttpResponse('No Permission')
+    # 检查有无子项，有子项不准删
+    classify_model_dict = {
+        '单位':     table_Company,
+        '立项':     table_Initiation,
+        '招标':     table_Bidding,
+        '合同':     table_Contract,
+        '预算':     table_Budget,
+        '付款':     table_Payment,
+        '变更':     table_Alteration,
+        '分包合同':  table_SubContract,
+    }
+    if classify == '立项':
+        Count_Children = get_Children_Count(UDID) or 0
+        if Count_Children:
+            return HttpResponse('该立项下仍有子项，无法删除')
+    elif classify == '预算':
+        Count_Children = get_Budget_Children_Count(UDID) or 0
+        if Count_Children:
+            return HttpResponse('该预算项下仍有子项，无法删除')
+    # 备份
+    bak_data = {}
+    table_data = {classify + '识别码': UDID}
+    for name, table in classify_model_dict.items():
+        try:
+            each_data = list(table.objects.filter(**table_data).values())
+            bak_data[name] = json.dumps(
+                each_data, ensure_ascii=False, cls=CJsonEncoder)
+        except:
+            pass
+    # 执行
+    result = del_For_All(classify, UDID)
+    # 记录最终日志（含可还原信息
+    if result[0]:
+        logUserOperation(request, 'delete', sys._getframe().f_code.co_name,
+                     'Success to delete: ' + json.dumps(bak_data, ensure_ascii=False, cls=CJsonEncoder))
+    else:
+        logUserOperation(request, 'delete', sys._getframe().f_code.co_name,
+                     'Failed to delete: ' + json.dumps(bak_data, ensure_ascii=False, cls=CJsonEncoder))
+    # except Exception as e:
+    #     result = (0, str(e))
     return HttpResponse(result[1])
