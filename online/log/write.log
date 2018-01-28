@@ -1,0 +1,8 @@
+{"time": "2018-01-28 08:37:56.994175", "user": null, "ip": "127.0.0.1", "how": "get_file_upload_passwords", "what": "Try to upload: {\"classify\": \"立项\", \"UDID\": 42, \"filenames\": null}"}
+{"time": "2018-01-28 11:47:54.208245", "user": "guxiang", "ip": "127.0.0.1", "how": "get_file_upload_passwords", "what": "Try to upload: {\"classify\": \"合同\", \"UDID\": 21, \"filenames\": null}"}
+{"time": "2018-01-28 11:59:23.245109", "user": "guxiang", "ip": "127.0.0.1", "how": "get_file_upload_passwords", "what": "Try to upload: {\"classify\": \"单位\", \"UDID\": 5, \"filenames\": null}"}
+{"time": "2018-01-28 11:59:56.402277", "user": "guxiang", "ip": "127.0.0.1", "how": "get_file_upload_passwords", "what": "Try to upload: {\"classify\": \"单位\", \"UDID\": 5, \"filenames\": null}"}
+{"time": "2018-01-28 12:02:04.315374", "user": "guxiang", "ip": "127.0.0.1", "how": "get_file_upload_passwords", "what": "Try to upload: {\"classify\": \"单位\", \"UDID\": 5, \"filenames\": null}"}
+{"time": "2018-01-28 12:02:56.129220", "user": "guxiang", "ip": "127.0.0.1", "how": "get_file_upload_passwords", "what": "Try to upload: {\"classify\": \"单位\", \"UDID\": 5, \"filenames\": null}"}
+{"time": "2018-01-28 12:08:01.459340", "user": "guxiang", "ip": "127.0.0.1", "how": "get_file_upload_passwords", "what": "Try to upload: {\"classify\": \"单位\", \"UDID\": 5, \"filenames\": null}"}
+{"time": "2018-01-28 12:09:50.090046", "user": "guxiang", "ip": "127.0.0.1", "how": "get_file_upload_passwords", "what": "Try to upload: {\"classify\": \"付款\", \"UDID\": 55, \"filenames\": null}"}

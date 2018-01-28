@@ -39,9 +39,9 @@ urlpatterns = [
     url(r'^inputer/(\w*/*)$',
         offical.inputer,                 name='inputer'),
 
-    # 输入测试上传界面
-    url(r'^test/$',
-        offical.test,                    name='test'),
+    # 输入上传界面
+    url(r'^uploader/$',
+        offical.uploader,                name='uploader'),
 
     # ajax
     url(r'ajax_table_data',               offical.ajax_table_data,
@@ -64,6 +64,9 @@ urlpatterns = [
 
     url(r'get_file_url',                  offical.get_file_url,
         name='get_file_url'),
+
+    url(r'get_file_upload_passwords',     offical.get_file_upload_passwords,
+        name='get_file_upload_passwords'),
 
     url(r'get_Write_Permission',          offical.get_Write_Permission,
         name='get_Write_Permission'),

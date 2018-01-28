@@ -20,7 +20,7 @@ from django.views.decorators.cache import never_cache
 from django.db.models import Count, Min, Max, Sum
 import pandas as pd
 import numpy as np
-import hashlib
+import hashlib, base64, hmac
 import sys
 import json
 import decimal
@@ -1413,14 +1413,38 @@ class getUserPermission():
 
     # 写入数据权限
 
-    def can_Upload_Attachment(self, classify=''):
+    def can_Upload_Attachment(self, classify='', UDID=0):
         '''
-            If a user is exist, and his field(查看单位信息) >= 2, then return True.
+            If a user is exist, and his field(操作XX信息) is True,
+            or his field(允许操作XX的项目) contains the project,
+            then return True.
             Otherwise return False.
         '''
         if not self.user_Is_Exist():
             return False
-        return (self.__filterDict.get('查看%s信息' % classify) or 0) >= 2
+        classify_dict = {
+            # [x, y]
+            # x代表classfity对应的表名
+            # y==0代表检验权限不需用到project，y==1则反之
+            '':         [0,                    0, ],
+            '单位':     ['操作单位信息',         1, ],
+            '立项':     ['允许操作立项的项目',    2, ],
+            '招标':     ['允许操作招标的项目',    2, ],
+            '合同':     ['允许操作合同的项目',    2, ],
+            '预算':     ['操作预算信息',         1, ],
+            '付款':     ['允许操作付款的项目',    2, ],
+            '变更':     ['允许操作变更的项目',    2, ],
+            '分包合同': ['允许操作分包合同的项目', 2, ],
+        }
+        return True
+        # ============= project=查询数据库 ===========================
+        field_name, flag = classify_dict[
+            classify]      # 看看要查的表是哪一种，需不需要project
+        if flag == 1:
+            return bool(self.__filterDict.get(field_name))
+        elif flag == 2:
+            project_list = (self.__filterDict.get(field_name) or '').split('|')
+            return bool(project and project in project_list)
 
     def can_Write_Table(self, classify='', project=''):
         '''
@@ -1547,15 +1571,38 @@ class operateOSS():
         result = self.bucket.sign_url('GET', webpath, 300)
         return result
 
-    def get_upload_url(self):
-        import base64
-        import hmac
-        import sha
-        import urllib
-        h = hmac.new("OtxrzxIsfpFjA7SwPzILwy8Bw21TLhquhboDYROV",
-                     "GET\n\n\n1141889120\n/oss-example/oss-api.pdf",
-                     sha)
-        urllib.quote (base64.encodestring(h.digest()).strip())
+    def get_upload_keys(self, classify='', UDID=0):
+        '''
+            使用阿里云OSS2，经同前端页面上传文件，需要accessID、policyBase64、signature三段验证
+            本函数用于计算上述三段密码
+        '''
+        # 基础密钥
+        accessKey= 'LTAIM0JcwMEM8IU7';
+        accessKeySecret= 'ms3LIZzYjyqcJqRgVNJotWkkf0Jpxp'
+        host = 'http://{}.oss-cn-shanghai.aliyuncs.com'.format(self.__bucket_name)
+        # 验证字段
+        now = datetime.datetime.utcnow()
+        nowS300 = now + datetime.timedelta(seconds=300)
+        timeOut = nowS300.strftime('%Y-%m-%dT%H:%M:%S.000Z')
+        policy = {
+            "expiration": timeOut,
+            "conditions": [
+                ["content-length-range", 0, 5*1024*1024*1024], # 文件大小不得>5G
+                {"bucket": "sy-erp"},
+                ["starts-with", "$key", "%s信息/%d/" % (classify, UDID)],
+            ],
+        }
+        policyText = json.dumps(policy).strip()
+        policyBase64 = base64.b64encode(policyText.encode(encoding='utf-8')).decode()
+        h = hmac.new(accessKeySecret.encode(encoding='utf-8'), policyBase64.encode(encoding='utf-8'), hashlib.sha1)
+        signature = base64.b64encode(h.digest()).decode()
+        return {
+                'policy': policy,
+                'accessKey': accessKey,
+                'policyBase64': policyBase64,
+                'signature': signature,
+                'host': host,
+               }
 
 
 def get_oss2_token():

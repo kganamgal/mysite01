@@ -194,8 +194,8 @@ def inputer(request, key_table):
     #     return render(request, 'attachFrame.html')
     return render(request, 'inputer.html')
 
-def test(request):
-    return render(request, 'test.html')
+def uploader(request):
+    return render(request, 'uploader.html')
 
 # --------------------AJAX--------------------
 
@@ -407,6 +407,33 @@ def get_file_url(request):
         logUserOperation(request, 'read', sys._getframe().f_code.co_name,
                          'url_file={}'.format(url_file))
         return HttpResponse(json.dumps({'url_file': url_file, },
+                                       ensure_ascii=False), content_type='application/json')
+
+
+def get_file_upload_passwords(request):
+    '''
+        There is 3 arguments(UDID, classify, filenames) to input.
+        UDID is the only identification code of an item.
+        classify is classify(单位/立项/合同...) of an item.
+        This function can return a JSON which contain policy、accessKey、policyBase64、signature.
+        To use this funciton, you must have "can_Upload_Attachment(classify, UDID)"-permission.
+        Otherwise, return a string 'No Permission'.
+    '''
+    classify = request.POST.get('classify') or ''
+    # if not getUserPermission(request.session.get('username')).can_Upload_Attachment(classify):
+    #     Cnt = 'No Permission'
+    #     return HttpResponse(Cnt)
+    # 取构造policy的参数
+    try:
+        UDID = int(request.POST.get('UDID'))
+        assert UDID > 0
+    except:
+        return HttpResponse(json.dumps({}, ensure_ascii=False), content_type='application/json')
+    filenames = request.POST.get('filenames')
+    result = operateOSS().get_upload_keys(classify, UDID)
+    logUserOperation(request, 'write', sys._getframe().f_code.co_name,
+                 'Try to upload: ' + json.dumps({'classify': classify, 'UDID': UDID, 'filenames': filenames}, ensure_ascii=False, cls=CJsonEncoder))
+    return HttpResponse(json.dumps(result,
                                        ensure_ascii=False), content_type='application/json')
 
 
