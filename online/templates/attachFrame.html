@@ -16,13 +16,15 @@
 <body>
   <!-- 不可见部分 -->
   <!-- <input type="file" id="id_file_dialog"> style="display: none;" mce_style="display:none"> -->
-  <a href="#" id="id_file_download" style="display: none;" download=""><span id="id_a_span">123</span></a>
+  <!-- <a href="#" id="id_file_download" style="display: none;" download=""><span id="id_a_span">123</span></a> -->
+  <a href="#" id="id_file_download" style="display: none;"><span id="id_a_span">123</span></a>
+  <input id="id_file_upload" type="file" multiple style="display: none;">
   <div id="id_container" class="container-fluid">
     <!-- 按钮列 -->
     <div class="row clearfix" style="margin: 0px;">
       <div class="btn-toolbar" role="toolbar" style="float: right;">
-         <button class="btn btn-default btn-01" style="" type="button" id="id_btn_Download">下载</button>
-         <button class="btn btn-default btn-01" style="" type="button" id="id_btn_Upload" disabled="disabled">上传</button>
+         <button class="btn btn-default btn-01" style="" type="button" id="id_btn_Download">查看</button>
+         <button class="btn btn-default btn-01" style="" type="button" id="id_btn_Upload">上传</button>
          <button class="btn btn-default btn-01" style="" type="button" id="id_btn_Delete" disabled="disabled">删除</button>
       </div>
     </div>
@@ -162,6 +164,12 @@
         //   $('#id_file_download').attr("href", url_file);
         //   $('#id_a_span').click();
         // });
+      });
+      $(document).on('click', '#id_btn_Upload', function() {
+        $('#id_file_upload').click();
+      });
+      $(document).on('change', '#id_file_upload', function(event) {
+        var files = this.files;
       });
     }
   </script>

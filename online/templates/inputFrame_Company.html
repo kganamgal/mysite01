@@ -333,15 +333,15 @@
                 'project': null,
                 'UDID': UDID,
               },
-              success: function after_save(ret) {
+              success: function (ret) {
                 // 返回结果
                 if (ret == 'Done') {
-                  layer.alert('信息删除成功');
                   // 刷新父页面的表格
                   parent.$('#id_bootstrap_table').bootstrapTable('refresh', {silent: true});
                   // 关闭页面
                   var i = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
                   parent.layer.close(i); //再执行关闭
+                  parent.layer.alert('信息删除成功');
                 } else {
                   layer.alert('数据删除失败，错误信息：<br/>' + ret);
                 };

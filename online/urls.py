@@ -39,6 +39,10 @@ urlpatterns = [
     url(r'^inputer/(\w*/*)$',
         offical.inputer,                 name='inputer'),
 
+    # 输入测试上传界面
+    url(r'^test/$',
+        offical.test,                    name='test'),
+
     # ajax
     url(r'ajax_table_data',               offical.ajax_table_data,
         name='ajax_table_data'),

@@ -36,6 +36,7 @@
     <!-- 按钮组 -->
     <div id="id_btns" class="row clearfix" style="margin-top: 4px;">
       <div class="btn-toolbar" role="toolbar" style="float: right;">
+        <button class="btn btn-default btn-01 btn-bottom" id="id_btn_Delete">删除</button>
         <button class="btn btn-default btn-01 btn-bottom" id="id_btn_Attach">查看附件</button>
         <button class="btn btn-default btn-01 btn-bottom" id="id_btn_Table" >生成表格</button>
         <button class="btn btn-default btn-01 btn-bottom" id="id_btn_Save"  >保存</button>
@@ -262,8 +263,6 @@
           layer.alert('数据无改动，无须保存');
           return;
         };
-        // 检查概算值有无调整，如有调整，检查权限
-
         // 询问是否需要确定要保存
         layer.open({
           type: 1,
@@ -283,20 +282,70 @@
                 'project': $('#id_项目名称')[0].value,
                 'data': JSON.stringify(data_from_input),
               },
-              success: function after_save(ret) {
+              success: function (ret) {
                 // 返回结果
                 if (ret == 'Done') {
                   layer.alert('数据保存成功');
                   // 将新值存入缓存
-                  data_value = data_from_input;
+                  // data_value = data_from_input;
                   // 刷新父页面的表格
-                  parent.$('#id_bootstrap_table').bootstrapTable('refresh', {
-                    silent: true
-                  });
-                  return;
-                } else {
+                  parent.$('#id_bootstrap_table').bootstrapTable('refresh', {silent: true});
+                  // 将本页面关闭
+                  var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                  parent.layer.close(index); //再执行关闭
+                }else{
                   layer.alert('数据保存失败，错误信息：<br/>' + ret);
-                  return;
+                };
+              },
+            });
+          },
+        });
+      });
+      $(document).on('click', '#id_btn_Delete', function() {
+        // 取得子项数量
+        var count_children = parseInt($('#id_子项数量').val()) || 0;
+        if (count_children > 0) {
+          layer.alert('该项下仍有子项，无法删除');
+          return;
+        };
+        // 取得立项识别码
+        var UDID = parseInt($('#id_立项识别码').val()) || 0;
+        // 询问是否需要确定要删除
+        layer.open({
+          type: 1,
+          btn: ['确定', '取消'],
+          title: '警告',
+          closeBtn: 0,
+          content: '<div style="margin: 20px;">即将删除该记录，可能会导致其他模块信息出错，请<strong>先确认</strong>该立项未应用在任何立项、招标、合同、付款等信息中。<br/>一旦删除，将连同相关的招标、合同、付款等信息一并删除，且<strong>无法恢复</strong>，您确定要删除吗？<br/>在下方文本框中输入<strong>DELETE</strong>后，点击<确定>删除<input id="id_ifdel" style="width: 95%;"></div>',
+          yes: function(index, layero) {
+            // 核对是否输入了delete
+            var input_message = $('#id_ifdel').val();
+            if (input_message.toLowerCase() !== 'delete') {
+              layer.alert('请输入"DELETE"6个英文字母后，再点击<确定>按钮完成删除');
+              return;
+            };
+            // 关闭本问询框
+            layer.close(index);
+            // 执行保存ajax
+            $.ajax({
+              url: "{% url 'ajax_del_data' %}",
+              type: 'POST',
+              data: {
+                'classify': '立项',
+                'project': $('#id_项目名称').val(),
+                'UDID': UDID,
+              },
+              success: function (ret) {
+                // 返回结果
+                if (ret == 'Done') {
+                  layer.alert('信息删除成功');
+                  // 刷新父页面的表格
+                  parent.$('#id_bootstrap_table').bootstrapTable('refresh', {silent: true});
+                  // 关闭页面
+                  var i = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                  parent.layer.close(i); //再执行关闭
+                } else {
+                  layer.alert('数据删除失败，错误信息：<br/>' + ret);
                 };
               },
             });
@@ -324,6 +373,9 @@
           if (flag) { // 有权限则激活相应按钮
             $('#id_button_项目概算').removeAttr('disabled');
             $('#id_btn_Save').removeAttr('disabled');
+            if ($('#id_立项识别码').val()) {
+              $('#id_btn_Delete').removeAttr('disabled');
+            };
           };
         },
       });

@@ -194,6 +194,9 @@ def inputer(request, key_table):
     #     return render(request, 'attachFrame.html')
     return render(request, 'inputer.html')
 
+def test(request):
+    return render(request, 'test.html')
+
 # --------------------AJAX--------------------
 
 

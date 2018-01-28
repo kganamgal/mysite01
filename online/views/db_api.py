@@ -3,7 +3,7 @@
 # @Author: Administrator
 # @Date:   2017-11-06 10:13:37
 # @Last Modified by:   Administrator
-# @Last Modified time: 2017-12-21 09:06:48
+# @Last Modified time: 2018-01-26 16:14:09
 
 # thePD = pd.DataFrame(list(table_Initiation.objects.values('立项识别码',
 # '父项立项识别码')))
@@ -1500,8 +1500,20 @@ class operateOSS():
         '''
             Connecting server.
         '''
+        # auth = oss2.Auth('LTAIiM9nh4F41qKR',
+        #                  'FIWNICi6h6mJxaPFz5nU4Zu32yraIn')    # 密码为w开头6位，这是主AccessKey
+        # AccessKey（上传）： LTAIrkWvDZ8O0uKl OGb9nLoXLTLPr7aijotKxom5cMsEON
+        # dowunload： LTAI2EUy5v6DPE5n qW9xhU4wgxCnfLSJ1d8tI76BChMAwh
+        # child1： LTAIKgbaM5kVbrv7 WDu796XDmZYDHCTfA36eEVsba54hTo
+        # WEB直传: http://oss-demo.aliyuncs.com/oss-h5-upload-js-direct/index.html?spm=5176.doc31925.2.5.Xm9CsO
+        # OSS安全令牌：  https://ram.console.aliyun.com/#/role/fastAuthorize?request=%7B%22serviceCode%22:%22OSS%22%7D
+        #       AccessKey: LTAIPaFh3fUlBsfe
+        #       AccessKeySecret: 2TXRKPMb1EHLQTA7oEn74Ru3s6PlID
+        #       RoleArn: acs:ram::1964398227627600:role/aliyunosstokengeneratorrole
+        #       RoleSessionName: external-username
+        #       DurationSeconds: 3600
         auth = oss2.Auth('LTAIiM9nh4F41qKR',
-                         'FIWNICi6h6mJxaPFz5nU4Zu32yraIn')    # 密码为w开头6位
+                         'FIWNICi6h6mJxaPFz5nU4Zu32yraIn')    # 只读AccessKey
         self.bucket = oss2.Bucket(
             auth, 'http://oss-cn-shanghai.aliyuncs.com', self.__bucket_name)
 
@@ -1535,6 +1547,39 @@ class operateOSS():
         result = self.bucket.sign_url('GET', webpath, 300)
         return result
 
+    def get_upload_url(self):
+        import base64
+        import hmac
+        import sha
+        import urllib
+        h = hmac.new("OtxrzxIsfpFjA7SwPzILwy8Bw21TLhquhboDYROV",
+                     "GET\n\n\n1141889120\n/oss-example/oss-api.pdf",
+                     sha)
+        urllib.quote (base64.encodestring(h.digest()).strip())
+
+
+def get_oss2_token():
+    '''
+        return a token for uploader.
+    '''
+    from aliyunsdkcore import client
+    from aliyunsdksts.request.v20150401 import AssumeRoleRequest
+    import json
+    import oss2
+    endpoint = 'oss-cn-shanghai.aliyuncs.com'
+    bucket_name = 'sy-erp'
+    access_key_id = 'LTAIrkWvDZ8O0uKl'
+    access_key_secret = 'OGb9nLoXLTLPr7aijotKxom5cMsEON'
+    role_arn = 'acs:ram::1964398227627600:role/oss-erp-upload'
+    clt = client.AcsClient(access_key_id, access_key_secret, 'cn-shanghai')
+    req = AssumeRoleRequest.AssumeRoleRequest()
+    # 为了简化讨论，这里没有设置Duration、Policy等，更多细节请参考RAM、STS的相关文档。
+    req.set_accept_format('json')  # 设置返回值格式为JSON
+    req.set_RoleArn(role_arn)
+    req.set_RoleSessionName('session-name')
+    body = clt.do_action_with_exception(req)
+    toekn = json.loads(body)
+    return body
 
 # 写操作
 
