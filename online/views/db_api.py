@@ -99,7 +99,51 @@ def dictfetchall(cursor):
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 # 树型数据
+class treeModel:
+    '''
+        an node of a tree.
+    '''
+    def __init__(self, Id, value, fatherId):
+        self.Id       = Id
+        self.value    = value
+        self.fatherId = fatherId
+        self.children = []
 
+    def __str__(self):
+        return '%d-%s' % (self.Id, self.value)
+
+    def addChild(self, *child):
+       self.children += child
+
+    def getChildrenIds(self):
+        '''
+            get all children(son/daughter-like)'s Id by a list.
+        '''
+        result = []
+        for item in self.children:
+            result.append(item.Id)
+        return result
+
+    def getGrandChildrenIds(self):
+        '''
+            get all grandchildren(grandson/grandgrandson-like)'s Id by a list.
+        '''
+        pass
+
+def read_For_InitTree():
+    '''
+        从立项表中读取数据，整理成treeModel数据结构，方便本地计算子项信息
+    '''
+    qs = table_Initiation.objects.values_list('立项识别码', '父项立项识别码', '项目名称', '分项名称')
+    tm = {}
+    for item in qs:
+        Id, fatherId, value = item[0], item[1], item[3] or item[2]
+        tm[Id] = treeModel(Id, value, fatherId)
+    for item in qs:
+        Id, fatherId = item[0], item[1]
+        if fatherId:
+            tm[fatherId].addChild(tm[Id])
+    return tm
 
 def format_Details_By_Tree():
     # 预自建过程
@@ -243,7 +287,7 @@ def read_For_TreeList():
         return dictfetchall(cursor)
 
 
-def old_read_For_TreeList():
+def new_read_For_TreeList():
     # 正式
     sql = '''SELECT 立项识别码 AS Id, ifnull(分项名称, 项目名称) AS name, 父项立项识别码 AS PId
                FROM tabel_立项信息

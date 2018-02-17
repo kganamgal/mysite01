@@ -258,7 +258,7 @@ def getDataForOverview(request):
             mystring += '</br>本项目签订的合同名称：{}，合同类别：{}'.format(
                 Contract_Infos[0].get('合同名称'), Contract_Infos[0].get('合同类别'))
         else:
-            mystring += '</br>本项目未签订合同'
+            mystring += ''
         if Bidding_Infos:
             mystring += '</br>通过<strong>{}</strong>方式确定了供应商：<strong>{}</strong>'.format(
                 Bidding_Infos[0].get('招标方式'), Bidding_Infos[0].get('中标单位名称'))
