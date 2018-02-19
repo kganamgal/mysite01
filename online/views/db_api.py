@@ -20,7 +20,10 @@ from django.views.decorators.cache import never_cache
 from django.db.models import Count, Min, Max, Sum
 import pandas as pd
 import numpy as np
-import hashlib, base64, hmac
+import math
+import hashlib
+import base64
+import hmac
 import sys
 import json
 import decimal
@@ -99,51 +102,153 @@ def dictfetchall(cursor):
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 # 树型数据
+
+
 class treeModel:
     '''
         an node of a tree.
     '''
-    def __init__(self, Id, value, fatherId):
-        self.Id       = Id
-        self.value    = value
+
+    def __init__(self, Id, value, fatherId, estimate, init_pay):
+        self.Id = Id
+        self.value = value
         self.fatherId = fatherId
+        self.estimate = estimate
+        self.init_pay = init_pay
         self.children = []
+        self.children_pay = 0
+        self.info = []
 
     def __str__(self):
         return '%d-%s' % (self.Id, self.value)
 
     def addChild(self, *child):
-       self.children += child
+        self.children += child
 
     def getChildrenIds(self):
         '''
             get all children(son/daughter-like)'s Id by a list.
         '''
         result = []
-        for item in self.children:
-            result.append(item.Id)
+        for child in self.children:
+            result.append(child.Id)
         return result
 
-    def getGrandChildrenIds(self):
+    def getGrandChildrenCounts(self):
+        '''
+            get all grandchildren(grandson/grandgrandson-like)'s count by a list.
+        '''
+        global treeModel_recursion_childrenCounts_list_result
+        treeModel_recursion_childrenCounts_list_result = []
+        return self.recursion_childrenCounts()
+
+    def recursion_childrenCounts(self):
+        global treeModel_recursion_childrenCounts_list_result
+        treeModel_recursion_childrenCounts_list_result.append({'立项识别码': self.Id, '子项数量': len(self.children)})
+        for child in self.children:
+            child.recursion_childrenCounts()
+        return treeModel_recursion_childrenCounts_list_result
+
+    def getGrandChildrenIds(self, sortable=False):
         '''
             get all grandchildren(grandson/grandgrandson-like)'s Id by a list.
         '''
-        pass
+        global treeModel_recursion_childrenId_list_result
+        treeModel_recursion_childrenId_list_result = []
+        result = self.recursion_childrenId()
+        result.remove(self.Id)
+        sortable and result.sort()
+        return result
 
-def read_For_InitTree():
+    def recursion_childrenId(self):
+        global treeModel_recursion_childrenId_list_result
+        treeModel_recursion_childrenId_list_result.append(self.Id)
+        for child in self.children:
+            child.recursion_childrenId()
+        return treeModel_recursion_childrenId_list_result
+
+    def getGrandChildrenPayment(self):
+        '''
+            get all grandchildren(grandson/grandgrandson-like)'s Payment by a number.
+        '''
+        global treeModel_recursion_childrenPayment_list_result
+        treeModel_recursion_childrenPayment_list_result = []
+        return sum(self.recursion_childrenPayment())
+
+    def recursion_childrenPayment(self):
+        global treeModel_recursion_childrenPayment_list_result
+        treeModel_recursion_childrenPayment_list_result.append(self.init_pay)
+        for child in self.children:
+            child.recursion_childrenPayment()
+        return treeModel_recursion_childrenPayment_list_result
+
+    def getEachChildrenInfo(self):
+        '''
+            get each grandchildren(grandson/grandgrandson-like)'s Info by a number.
+        '''
+        global treeModel_recursion_childrenInfo_list_result
+        treeModel_recursion_childrenInfo_list_result = []
+        return self.recursion_childrenInfo()
+
+    def recursion_childrenInfo(self):
+        global treeModel_recursion_childrenInfo_list_result
+        for child in self.children:
+            child.recursion_childrenInfo()
+            self.children_pay += child.init_pay or 0 + child.children_pay or 0
+            self.children_estimate += child.estimate or 0
+        payed = self.children_pay or 0 + self.init_pay or 0
+        treeModel_recursion_childrenInfo_list_result.append(
+            {'立项识别码': self.Id, '概算已付款额': payed, '已分配概算':self.children_estimate})
+        return treeModel_recursion_childrenInfo_list_result
+
+    def printTree(self, layer=0):
+        print('  ' * layer + '%d-%s' % (self.Id, self.value))
+        for child in self.children:
+            child.printTree(layer + 1)
+
+
+def read_For_InitTree(UDID=0):
     '''
         从立项表中读取数据，整理成treeModel数据结构，方便本地计算子项信息
     '''
-    qs = table_Initiation.objects.values_list('立项识别码', '父项立项识别码', '项目名称', '分项名称')
+    qs_Init    = table_Initiation.objects.values(
+                   '立项识别码', '父项立项识别码', '项目名称', '分项名称', '项目概算')
+    qs_Payment = table_Payment.objects.values(
+                   '立项识别码', '本次付款额')
+    df_Init    = pd.DataFrame(list(qs_Init)).fillna('')
+    df_Payment = pd.DataFrame(list(qs_Payment)).fillna('')
+    df_sumpay = df_Payment[['本次付款额']].groupby(df_Payment['立项识别码']).sum().reset_index() # 按立项识别码聚合本次付款额
+    df = pd.merge(df_Init, df_sumpay, on='立项识别码', how='left')
+    js = df.to_dict('records')
     tm = {}
+    tm[0] = treeModel(0, 'root', None, None, None)
+    for item in js:
+        Id, fatherId, value = int(item.get('立项识别码') or 0), int(item.get('父项立项识别码') or 0), item.get('分项名称') or item.get('项目名称')
+        estimate = item.get('项目概算')
+        init_pay = decimal.Decimal(0) if math.isnan(item.get('本次付款额')) else item.get('本次付款额')
+        tm[Id] = treeModel(Id, value, fatherId, estimate, init_pay)
+    for item in js:
+        Id, fatherId = int(item.get('立项识别码') or 0), int(item.get('父项立项识别码') or 0)
+        tm[fatherId or 0].addChild(tm[Id])
+    return tm[UDID]
+
+
+def base_read_For_InitTree(UDID=0):
+    '''
+        从立项表中读取数据，整理成treeModel数据结构，方便本地计算子项信息
+    '''
+    qs = table_Initiation.objects.values_list(
+        '立项识别码', '父项立项识别码', '项目名称', '分项名称')
+    tm = {}
+    tm[0] = treeModel(0, 'root', None)
     for item in qs:
         Id, fatherId, value = item[0], item[1], item[3] or item[2]
         tm[Id] = treeModel(Id, value, fatherId)
     for item in qs:
         Id, fatherId = item[0], item[1]
-        if fatherId:
-            tm[fatherId].addChild(tm[Id])
-    return tm
+        tm[fatherId or 0].addChild(tm[Id])
+    return tm[UDID]
+
 
 def format_Details_By_Tree():
     # 预自建过程
@@ -500,6 +605,56 @@ def read_For_Initiation_GridDialog(where_sql='', where_list=[], order_sql='ORDER
         return dictfetchall(cursor)
 
 
+def new_read_For_Initiation_GridDialog(column_name='', comparison=None, operator='='):
+    '''
+        使用pandas来分析orm得来的数据库原始记录，得到前端需要的数据
+        func('立项识别码', 42)
+        func('立项识别码', [43, 44], 'in')
+    '''
+    # 从数据库读取原始信息
+    qs_Init = table_Initiation.objects.values()
+    qs_Company = table_Company.objects.values()
+    qs_Payment = table_Payment.objects.values()
+    parent_child_tree = read_For_InitTree().getEachChildrenInfo()  # 生成立项数据的父子树
+    # 将原始信息转化成dataframe格式
+    df_Init = pd.DataFrame(list(qs_Init)).fillna('')
+    df_Company = pd.DataFrame(list(qs_Company)).fillna('')
+    df_Payment = pd.DataFrame(list(qs_Payment)).fillna('')
+    df_parent_child_tree = pd.DataFrame(parent_child_tree).fillna('')
+    # 开始连接各表
+    df = pd.merge(df_Init, df_Init[['立项识别码', '项目名称', '分项名称', '项目概算']],
+                  left_on='父项立项识别码', right_on='立项识别码', suffixes=('',  '_Parent'), how='left')
+    df['父项项目名称'] = df['项目名称_Parent']
+    df['父项分项名称'] = df['分项名称_Parent']
+    df['父项项目概算'] = df['项目概算_Parent']
+    df = pd.merge(df, df_Company[['单位识别码', '单位名称']],
+                  left_on='建设单位识别码', right_on='单位识别码', how='left')
+    df['建设单位名称'] = df['单位名称']
+    df = pd.merge(df, df_Company[['单位识别码', '单位名称']],
+                  left_on='代建单位识别码', right_on='单位识别码', suffixes=('', '_1'), how='left')
+    df['代建单位名称'] = df['单位名称_1']
+    df = pd.merge(df, df_parent_child_tree,
+                  on='立项识别码', suffixes=('', '_2'), how='left')
+    # 筛选需要显示的字段
+    result = df[['立项识别码', '项目名称', '分项名称',
+                 '父项立项识别码', '父项项目名称', '父项分项名称',
+                 '父项项目概算', '子项数量',
+                 '建设单位识别码', '建设单位名称',
+                 '代建单位识别码', '代建单位名称',
+                 '项目概算', '已分配概算', '概算已付款额',
+                 '立项文件名称', '立项时间',
+                 '立项备注',
+                 ]].fillna('')
+
+    if column_name and operator == '=':
+        result = result[result[column_name] == comparison]
+    elif column_name and operator == 'in':
+        result = result[result[column_name].isin(comparison)]
+    result = result.to_dict('records')
+    result = sorted(result, key=lambda x: x.get('立项识别码'), reverse=False)
+    return result
+
+
 def old_save_For_Initiation_GridDialog(**data):
     '''
         This function can insert/update data for table_Initiation.
@@ -691,6 +846,55 @@ def read_For_Bidding_GridDialog(where_sql='', where_list=[], order_sql='', order
     with connection.cursor() as cursor:
         cursor.execute(sql, sql_list)
         return dictfetchall(cursor)
+
+
+def new_read_For_Bidding_GridDialog(column_name='', comparison=None, operator='='):
+    qs_Init = table_Initiation.objects.values()
+    qs_Bidding = table_Bidding.objects.values()
+    qs_Company = table_Company.objects.values()
+    df_Init = pd.DataFrame(list(qs_Init)).fillna('')
+    df_Bidding = pd.DataFrame(list(qs_Bidding)).fillna('')
+    df_Company = pd.DataFrame(list(qs_Company)).fillna('')
+    df = pd.merge(df_Bidding, df_Init, on='立项识别码', how='left')
+    df = pd.merge(df, df_Company, left_on='建设单位识别码',
+                  right_on='单位识别码', suffixes=('',  '1'), how='left')
+    df['建设单位识别码'] = df['单位识别码']
+    df['建设单位名称'] = df['单位名称']
+    df = pd.merge(df, df_Company, left_on='代建单位识别码',
+                  right_on='单位识别码', suffixes=('',  '2'), how='left')
+    df['代建单位识别码'] = df['单位识别码']
+    df['代建单位名称'] = df['单位名称']
+    df = pd.merge(df, df_Company, left_on='招标单位识别码',
+                  right_on='单位识别码', suffixes=('',  '3'), how='left')
+    df['招标单位识别码'] = df['单位识别码']
+    df['招标单位名称'] = df['单位名称']
+    df = pd.merge(df, df_Company, left_on='招标代理识别码',
+                  right_on='单位识别码', suffixes=('',  '4'), how='left')
+    df['招标代理识别码'] = df['单位识别码']
+    df['招标代理名称'] = df['单位名称']
+    df = pd.merge(df, df_Company, left_on='中标单位识别码',
+                  right_on='单位识别码', suffixes=('',  '5'), how='left')
+    df['中标单位识别码'] = df['单位识别码']
+    df['中标单位名称'] = df['单位名称']
+    result = df[['招标识别码', '立项识别码', '项目名称', '分项名称',
+                 '建设单位识别码', '建设单位名称',
+                 '代建单位识别码', '代建单位名称',
+                 '招标方式',
+                 '招标单位识别码', '招标单位名称',
+                 '招标代理识别码', '招标代理名称',
+                 '项目概算', '预算控制价',
+                 '招标文件定稿时间', '公告邀请函发出时间', '开标时间', '中标通知书发出时间',
+                 '中标单位识别码', '中标单位名称',
+                 '中标价',
+                 '招标备注',
+                 ]].fillna('')
+    if column_name and operator == '=':
+        result = result[result[column_name] == comparison]
+    elif column_name and operator == 'in':
+        result = result[result[column_name].isin(comparison)]
+    result = result.to_dict('records')
+    result = sorted(result, key=lambda x: x.get('招标识别码'), reverse=False)
+    return result
 
 
 def old_save_For_Bidding_GridDialog(**data):
@@ -1213,6 +1417,7 @@ def get_Budget_Children_Count(UDID):
     except:
         return
 
+
 def new_get_All_Grandchildren_UDID(UDID):
     '''
         make sure UDID is int.
@@ -1621,9 +1826,10 @@ class operateOSS():
             本函数用于计算上述三段密码
         '''
         # 基础密钥
-        accessKey= 'LTAIM0JcwMEM8IU7';
-        accessKeySecret= 'ms3LIZzYjyqcJqRgVNJotWkkf0Jpxp'
-        host = 'http://{}.oss-cn-shanghai.aliyuncs.com'.format(self.__bucket_name)
+        accessKey = 'LTAIM0JcwMEM8IU7'
+        accessKeySecret = 'ms3LIZzYjyqcJqRgVNJotWkkf0Jpxp'
+        host = 'http://{}.oss-cn-shanghai.aliyuncs.com'.format(
+            self.__bucket_name)
         # 验证字段
         now = datetime.datetime.utcnow()
         nowS300 = now + datetime.timedelta(seconds=300)
@@ -1631,22 +1837,24 @@ class operateOSS():
         policy = {
             "expiration": timeOut,
             "conditions": [
-                ["content-length-range", 0, 5*1024*1024*1024], # 文件大小不得>5G
+                ["content-length-range", 0, 5 * 1024 * 1024 * 1024],  # 文件大小不得>5G
                 {"bucket": "sy-erp"},
                 ["starts-with", "$key", "%s信息/%d/" % (classify, UDID)],
             ],
         }
         policyText = json.dumps(policy).strip()
-        policyBase64 = base64.b64encode(policyText.encode(encoding='utf-8')).decode()
-        h = hmac.new(accessKeySecret.encode(encoding='utf-8'), policyBase64.encode(encoding='utf-8'), hashlib.sha1)
+        policyBase64 = base64.b64encode(
+            policyText.encode(encoding='utf-8')).decode()
+        h = hmac.new(accessKeySecret.encode(encoding='utf-8'),
+                     policyBase64.encode(encoding='utf-8'), hashlib.sha1)
         signature = base64.b64encode(h.digest()).decode()
         return {
-                'policy': policy,
-                'accessKey': accessKey,
-                'policyBase64': policyBase64,
-                'signature': signature,
-                'host': host,
-               }
+            'policy': policy,
+            'accessKey': accessKey,
+            'policyBase64': policyBase64,
+            'signature': signature,
+            'host': host,
+        }
 
 
 def get_oss2_token():
@@ -1673,6 +1881,7 @@ def get_oss2_token():
     return body
 
 # 写操作
+
 
 def save_Input_Data(classify, **data):
     '''
