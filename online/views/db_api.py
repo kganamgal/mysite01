@@ -117,6 +117,7 @@ class treeModel:
         self.init_pay = init_pay
         self.children = []
         self.children_pay = 0
+        self.children_estimate = 0
         self.info = []
 
     def __str__(self):
@@ -144,7 +145,8 @@ class treeModel:
 
     def recursion_childrenCounts(self):
         global treeModel_recursion_childrenCounts_list_result
-        treeModel_recursion_childrenCounts_list_result.append({'立项识别码': self.Id, '子项数量': len(self.children)})
+        treeModel_recursion_childrenCounts_list_result.append(
+            {'立项识别码': self.Id, '子项数量': len(self.children)})
         for child in self.children:
             child.recursion_childrenCounts()
         return treeModel_recursion_childrenCounts_list_result
@@ -198,7 +200,7 @@ class treeModel:
             self.children_estimate += child.estimate or 0
         payed = self.children_pay or 0 + self.init_pay or 0
         treeModel_recursion_childrenInfo_list_result.append(
-            {'立项识别码': self.Id, '概算已付款额': payed, '已分配概算':self.children_estimate})
+            {'立项识别码': self.Id, '概算已付款额': payed, '已分配概算':self.children_estimate, '子项数量': len(self.children)})
         return treeModel_recursion_childrenInfo_list_result
 
     def printTree(self, layer=0):
@@ -211,24 +213,28 @@ def read_For_InitTree(UDID=0):
     '''
         从立项表中读取数据，整理成treeModel数据结构，方便本地计算子项信息
     '''
-    qs_Init    = table_Initiation.objects.values(
-                   '立项识别码', '父项立项识别码', '项目名称', '分项名称', '项目概算')
+    qs_Init = table_Initiation.objects.values(
+        '立项识别码', '父项立项识别码', '项目名称', '分项名称', '项目概算')
     qs_Payment = table_Payment.objects.values(
-                   '立项识别码', '本次付款额')
-    df_Init    = pd.DataFrame(list(qs_Init)).fillna('')
+        '立项识别码', '本次付款额')
+    df_Init = pd.DataFrame(list(qs_Init)).fillna('')
     df_Payment = pd.DataFrame(list(qs_Payment)).fillna('')
-    df_sumpay = df_Payment[['本次付款额']].groupby(df_Payment['立项识别码']).sum().reset_index() # 按立项识别码聚合本次付款额
+    df_sumpay = df_Payment[['本次付款额']].groupby(
+        df_Payment['立项识别码']).sum().reset_index()  # 按立项识别码聚合本次付款额
     df = pd.merge(df_Init, df_sumpay, on='立项识别码', how='left')
     js = df.to_dict('records')
     tm = {}
     tm[0] = treeModel(0, 'root', None, None, None)
     for item in js:
-        Id, fatherId, value = int(item.get('立项识别码') or 0), int(item.get('父项立项识别码') or 0), item.get('分项名称') or item.get('项目名称')
+        Id, fatherId, value = int(item.get('立项识别码') or 0), int(
+            item.get('父项立项识别码') or 0), item.get('分项名称') or item.get('项目名称')
         estimate = item.get('项目概算')
-        init_pay = decimal.Decimal(0) if math.isnan(item.get('本次付款额')) else item.get('本次付款额')
+        init_pay = decimal.Decimal(0) if math.isnan(
+            item.get('本次付款额')) else item.get('本次付款额')
         tm[Id] = treeModel(Id, value, fatherId, estimate, init_pay)
     for item in js:
-        Id, fatherId = int(item.get('立项识别码') or 0), int(item.get('父项立项识别码') or 0)
+        Id, fatherId = int(item.get('立项识别码') or 0), int(
+            item.get('父项立项识别码') or 0)
         tm[fatherId or 0].addChild(tm[Id])
     return tm[UDID]
 
@@ -635,16 +641,24 @@ def new_read_For_Initiation_GridDialog(column_name='', comparison=None, operator
     df['代建单位名称'] = df['单位名称_1']
     df = pd.merge(df, df_parent_child_tree,
                   on='立项识别码', suffixes=('', '_2'), how='left')
+    df = pd.merge(df, df_parent_child_tree,
+                  left_on='父项立项识别码', right_on='立项识别码', suffixes=('', '_3'), how='left')
     # 筛选需要显示的字段
-    result = df[['立项识别码', '项目名称', '分项名称',
-                 '父项立项识别码', '父项项目名称', '父项分项名称',
-                 '父项项目概算', '子项数量',
-                 '建设单位识别码', '建设单位名称',
-                 '代建单位识别码', '代建单位名称',
-                 '项目概算', '已分配概算', '概算已付款额',
-                 '立项文件名称', '立项时间',
-                 '立项备注',
-                 ]].fillna('')
+    df['概算可付余额'] = df['项目概算'] - df['概算已付款额']
+    df['父项已分配概算'] = df['已分配概算_3']
+    df['项目概算上限'] = df['父项项目概算'] - df['父项已分配概算'] + df['项目概算']
+
+    def flag(x1, x2):
+        if not x1:
+            return 0
+        elif x2:
+            return float(x1) / float(x2)
+        else:
+            return None
+    df['未分配概算'] = df['项目概算'] - df['已分配概算']
+    df['概算付款比'] = pd.DataFrame(list(map(flag, df['概算已付款额'], df['项目概算'])))
+    df['概算分配比'] = pd.DataFrame(list(map(flag, df['已分配概算'], df['项目概算'])))
+    result = df[uc.InitiationColLabels].fillna('')
 
     if column_name and operator == '=':
         result = result[result[column_name] == comparison]
@@ -871,23 +885,12 @@ def new_read_For_Bidding_GridDialog(column_name='', comparison=None, operator='=
     df = pd.merge(df, df_Company, left_on='招标代理识别码',
                   right_on='单位识别码', suffixes=('',  '4'), how='left')
     df['招标代理识别码'] = df['单位识别码']
-    df['招标代理名称'] = df['单位名称']
+    df['招标代理单位名称'] = df['单位名称']
     df = pd.merge(df, df_Company, left_on='中标单位识别码',
                   right_on='单位识别码', suffixes=('',  '5'), how='left')
     df['中标单位识别码'] = df['单位识别码']
     df['中标单位名称'] = df['单位名称']
-    result = df[['招标识别码', '立项识别码', '项目名称', '分项名称',
-                 '建设单位识别码', '建设单位名称',
-                 '代建单位识别码', '代建单位名称',
-                 '招标方式',
-                 '招标单位识别码', '招标单位名称',
-                 '招标代理识别码', '招标代理名称',
-                 '项目概算', '预算控制价',
-                 '招标文件定稿时间', '公告邀请函发出时间', '开标时间', '中标通知书发出时间',
-                 '中标单位识别码', '中标单位名称',
-                 '中标价',
-                 '招标备注',
-                 ]].fillna('')
+    result = df[uc.BiddingColLabels].fillna('')
     if column_name and operator == '=':
         result = result[result[column_name] == comparison]
     elif column_name and operator == 'in':
@@ -1012,6 +1015,77 @@ def read_For_Contract_GridDialog(where_sql='', where_list=[], order_sql='', orde
         cursor.execute(sql, sql_list)
         return dictfetchall(cursor)
 
+
+def new_read_For_Contract_GridDialog(column_name='', comparison=None, operator='='):
+    '''
+        使用pandas来分析orm得来的数据库原始记录，得到前端需要的数据
+        func('立项识别码', 42)
+        func('立项识别码', [43, 44], 'in')
+    '''
+    # 从数据库读取原始信息
+    qs_Init = table_Initiation.objects.values()
+    qs_Company = table_Company.objects.values()
+    qs_Bidding = table_Bidding.objects.values()
+    qs_Contract = table_Contract.objects.values()
+    qs_Payment = table_Payment.objects.values()
+    # 将原始信息转化成dataframe格式
+    df_Init = pd.DataFrame(list(qs_Init)).fillna('')
+    df_Company = pd.DataFrame(list(qs_Company)).fillna('')
+    df_Bidding = pd.DataFrame(list(qs_Bidding)).fillna('')
+    df_Contract = pd.DataFrame(list(qs_Contract)).fillna('')
+    df_Payment = pd.DataFrame(list(qs_Payment)).fillna('')
+    df_sumpay = df_Payment[['本次付款额']].groupby(
+        df_Payment['合同识别码']).sum().reset_index()  # 按立项识别码聚合本次付款额
+    # 开始连接各表
+    df = pd.merge(df_Contract, df_Init[['立项识别码', '项目名称', '分项名称', '项目概算', '建设单位识别码', '代建单位识别码']],
+                  on='立项识别码', suffixes=('',  '_Init'), how='left')
+    df = pd.merge(df, df_Bidding[['招标识别码', '招标方式', '中标价', '招标单位识别码', '中标单位识别码']],
+                  on='招标识别码', suffixes=('',  '_Bidding'), how='left')
+    df = pd.merge(df, df_Company[['单位识别码', '单位名称']],
+                  left_on='建设单位识别码', right_on='单位识别码', suffixes=('',  '_建设单位'), how='left')
+    df = pd.merge(df, df_Company[['单位识别码', '单位名称']],
+                  left_on='代建单位识别码', right_on='单位识别码', suffixes=('',  '_代建单位'), how='left')
+    df = pd.merge(df, df_Company[['单位识别码', '单位名称']],
+                  left_on='招标单位识别码', right_on='单位识别码', suffixes=('',  '_招标单位'), how='left')
+    df = pd.merge(df, df_Company[['单位识别码', '单位名称']],
+                  left_on='中标单位识别码', right_on='单位识别码', suffixes=('',  '_中标单位'), how='left')
+    df = pd.merge(df, df_Company[['单位识别码', '单位名称']],
+                  left_on='甲方识别码', right_on='单位识别码', suffixes=('',  '_甲方单位'), how='left')
+    df = pd.merge(df, df_Company[['单位识别码', '单位名称']],
+                  left_on='乙方识别码', right_on='单位识别码', suffixes=('',  '_乙方单位'), how='left')
+    df = pd.merge(df, df_Company[['单位识别码', '单位名称']],
+                  left_on='丙方识别码', right_on='单位识别码', suffixes=('',  '_丙方单位'), how='left')
+    df = pd.merge(df, df_Company[['单位识别码', '单位名称']],
+                  left_on='丁方识别码', right_on='单位识别码', suffixes=('',  '_丁方单位'), how='left')
+    df['建设单位名称'] = df['单位名称']
+    df['代建单位名称'] = df['单位名称_代建单位']
+    df['招标单位名称'] = df['单位名称_招标单位']
+    df['中标单位名称'] = df['单位名称_中标单位']
+    df['甲方单位名称'] = df['单位名称_甲方单位']
+    df['乙方单位名称'] = df['单位名称_乙方单位']
+    df['丙方单位名称'] = df['单位名称_丙方单位']
+    df['丁方单位名称'] = df['单位名称_丁方单位']
+    df = pd.merge(df, df_sumpay,
+                  on='合同识别码', suffixes=('',  '合同已付'), how='left')
+    df['已付款'] = df['本次付款额']
+
+    def flag(x1, x2):
+        if not x1:
+            return 0
+        elif x2:
+            return float(x1) / float(x2)
+        else:
+            return None
+    df['已付款占概算'] = pd.DataFrame(list(map(flag, df['已付款'], df['项目概算'])))
+    df['已付款占合同'] = pd.DataFrame(list(map(flag, df['已付款'], df['合同值_最新值'])))
+    result = df[uc.ContractColLabels].fillna('')
+    if column_name and operator == '=':
+        result = result[result[column_name] == comparison]
+    elif column_name and operator == 'in':
+        result = result[result[column_name].isin(comparison)]
+    result = result.to_dict('records')
+    result = sorted(result, key=lambda x: x.get('立项识别码'), reverse=False)
+    return result
 
 def old_save_For_Contract_GridDialog(**data):
     '''
