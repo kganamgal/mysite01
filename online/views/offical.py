@@ -23,7 +23,8 @@ from .db_api import *
 
 def logUserOperation(request, logname, how='', what=''):
     if logname == 'read':
-        return
+        # return
+        pass
     log_dict = {
         'time': str(datetime.datetime.now()),
         'user': request.session.get('username'),

@@ -1,0 +1,36 @@
+{"time": "2018-03-27 13:26:05.671639", "user": "guxiang", "ip": "127.0.0.1", "how": "ajax_treeTable", "what": ""}
+{"time": "2018-03-27 13:26:06.734888", "user": "guxiang", "ip": "127.0.0.1", "how": "get_Pie_Data", "what": "UDID=128"}
+{"time": "2018-03-27 13:26:06.952303", "user": "guxiang", "ip": "127.0.0.1", "how": "getDataForOverview", "what": "UDID=128"}
+{"time": "2018-03-27 13:26:29.857224", "user": "guxiang", "ip": "127.0.0.1", "how": "get_Pie_Data", "what": "UDID=177"}
+{"time": "2018-03-27 13:26:30.021469", "user": "guxiang", "ip": "127.0.0.1", "how": "getDataForOverview", "what": "UDID=177"}
+{"time": "2018-03-27 13:26:31.219210", "user": "guxiang", "ip": "127.0.0.1", "how": "get_Pie_Data", "what": "UDID=177"}
+{"time": "2018-03-27 13:26:31.427654", "user": "guxiang", "ip": "127.0.0.1", "how": "getDataForOverview", "what": "UDID=177"}
+{"time": "2018-03-27 13:26:33.050145", "user": "guxiang", "ip": "127.0.0.1", "how": "ajax_table_data", "what": "key_table=合同, Init_UDID=177"}
+{"time": "2018-03-27 13:26:33.059993", "user": "guxiang", "ip": "127.0.0.1", "how": "ajax_tree_data", "what": "key_tree=立项"}
+{"time": "2018-03-27 13:26:37.711679", "user": "guxiang", "ip": "127.0.0.1", "how": "get_Pie_Data", "what": "UDID=177"}
+{"time": "2018-03-27 13:26:37.883619", "user": "guxiang", "ip": "127.0.0.1", "how": "getDataForOverview", "what": "UDID=177"}
+{"time": "2018-03-27 13:26:39.091794", "user": "guxiang", "ip": "127.0.0.1", "how": "ajax_table_data", "what": "key_table=招标, Init_UDID=177"}
+{"time": "2018-03-27 13:26:39.107828", "user": "guxiang", "ip": "127.0.0.1", "how": "ajax_tree_data", "what": "key_tree=立项"}
+{"time": "2018-03-27 13:26:40.932096", "user": "guxiang", "ip": "127.0.0.1", "how": "get_WritePermissionObj", "what": ""}
+{"time": "2018-03-27 13:26:42.790575", "user": "guxiang", "ip": "127.0.0.1", "how": "list_file", "what": "key_frame=招标, UDID=40"}
+{"time": "2018-03-27 13:32:21.575039", "user": "guxiang", "ip": "127.0.0.1", "how": "get_Pie_Data", "what": "UDID=128"}
+{"time": "2018-03-27 13:32:21.834618", "user": "guxiang", "ip": "127.0.0.1", "how": "getDataForOverview", "what": "UDID=128"}
+{"time": "2018-03-27 13:32:22.355630", "user": "guxiang", "ip": "127.0.0.1", "how": "get_Pie_Data", "what": "UDID=177"}
+{"time": "2018-03-27 13:32:22.608026", "user": "guxiang", "ip": "127.0.0.1", "how": "getDataForOverview", "what": "UDID=177"}
+{"time": "2018-03-27 13:32:25.103760", "user": "guxiang", "ip": "127.0.0.1", "how": "ajax_table_data", "what": "key_table=招标, Init_UDID=177"}
+{"time": "2018-03-27 13:32:25.107530", "user": "guxiang", "ip": "127.0.0.1", "how": "ajax_tree_data", "what": "key_tree=立项"}
+{"time": "2018-03-27 13:32:26.927391", "user": "guxiang", "ip": "127.0.0.1", "how": "get_WritePermissionObj", "what": ""}
+{"time": "2018-03-27 13:32:44.288316", "user": "guxiang", "ip": "127.0.0.1", "how": "list_file", "what": "key_frame=招标, UDID=40"}
+{"time": "2018-03-27 13:37:36.638108", "user": "guxiang", "ip": "127.0.0.1", "how": "ajax_table_data", "what": "key_table=招标"}
+{"time": "2018-03-27 13:37:36.665409", "user": "guxiang", "ip": "127.0.0.1", "how": "ajax_tree_data", "what": "key_tree=立项"}
+{"time": "2018-03-27 13:38:32.280705", "user": "guxiang", "ip": "127.0.0.1", "how": "get_WritePermissionObj", "what": ""}
+{"time": "2018-03-27 13:38:34.325541", "user": "guxiang", "ip": "127.0.0.1", "how": "list_file", "what": "key_frame=招标, UDID=13"}
+{"time": "2018-03-27 13:38:37.391841", "user": "guxiang", "ip": "127.0.0.1", "how": "get_file_url", "what": "url_file=http://xilverp.oss-cn-shanghai.aliyuncs.com/%E6%8B%9B%E6%A0%87%E4%BF%A1%E6%81%AF%2F13%2Fread.log?OSSAccessKeyId=LTAIiM9nh4F41qKR&Expires=1522158217&Signature=W5NpSdXxIjJmxNCEkgX1WSiMASE%3D"}
+{"time": "2018-03-27 13:39:44.521590", "user": "guxiang", "ip": "127.0.0.1", "how": "list_file", "what": "key_frame=招标, UDID=13"}
+{"time": "2018-03-27 13:45:00.998953", "user": "guxiang", "ip": "127.0.0.1", "how": "get_Pie_Data", "what": "UDID=177"}
+{"time": "2018-03-27 13:45:01.185820", "user": "guxiang", "ip": "127.0.0.1", "how": "getDataForOverview", "what": "UDID=177"}
+{"time": "2018-03-27 13:45:02.547239", "user": "guxiang", "ip": "127.0.0.1", "how": "ajax_table_data", "what": "key_table=招标, Init_UDID=177"}
+{"time": "2018-03-27 13:45:02.567658", "user": "guxiang", "ip": "127.0.0.1", "how": "ajax_tree_data", "what": "key_tree=立项"}
+{"time": "2018-03-27 13:45:04.561622", "user": "guxiang", "ip": "127.0.0.1", "how": "get_WritePermissionObj", "what": ""}
+{"time": "2018-03-27 13:45:07.181351", "user": "guxiang", "ip": "127.0.0.1", "how": "list_file", "what": "key_frame=招标, UDID=40"}
+{"time": "2018-03-27 13:45:13.901340", "user": "guxiang", "ip": "127.0.0.1", "how": "list_file", "what": "key_frame=招标, UDID=40"}

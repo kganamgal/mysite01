@@ -1676,6 +1676,7 @@ class getUserPermission():
         '''
         if not self.user_Is_Exist():
             return False
+        return True    # 保留此行则每个用户都可以
         return self.__filterDict.get('查看数据概览')
 
     def can_Visit_Table(self, classify=''):
@@ -1685,6 +1686,7 @@ class getUserPermission():
         '''
         if not self.user_Is_Exist():
             return False
+        return True    # 保留此行则每个用户都可以
         return self.__filterDict.get('查看%s信息' % classify)
 
     def can_Visit_Attachment(self, classify=''):
@@ -1694,6 +1696,7 @@ class getUserPermission():
         '''
         if not self.user_Is_Exist():
             return False
+        return True    # 保留此行则每个用户都可以
         return (self.__filterDict.get('查看%s信息' % classify) or 0) >= 2
 
     # 读取数据权限
@@ -1705,6 +1708,7 @@ class getUserPermission():
         '''
         if not self.user_Is_Exist():
             return False
+        return True    # 保留此行则每个用户都可以
         return self.__filterDict.get('查看数据概览')
 
     def can_Read_Table(self, classify=''):
@@ -1714,6 +1718,7 @@ class getUserPermission():
         '''
         if not self.user_Is_Exist():
             return False
+        return True    # 保留此行则每个用户都可以
         return self.__filterDict.get('查看%s信息' % classify)
 
     def can_Get_Attachment_List(self, classify=''):
@@ -1723,6 +1728,7 @@ class getUserPermission():
         '''
         if not self.user_Is_Exist():
             return False
+        return True    # 保留此行则每个用户都可以
         return (self.__filterDict.get('查看%s信息' % classify) or 0) >= 2
 
     def can_Download_Attachment(self, classify=''):
@@ -1732,6 +1738,7 @@ class getUserPermission():
         '''
         if not self.user_Is_Exist():
             return False
+        return True    # 保留此行则每个用户都可以
         return (self.__filterDict.get('查看%s信息' % classify) or 0) >= 3
 
     # 写入数据权限
@@ -1745,6 +1752,7 @@ class getUserPermission():
         '''
         if not self.user_Is_Exist():
             return False
+        return True    # 保留此行则每个用户都可以
         classify_dict = {
             # [x, y]
             # x代表classfity对应的表名
@@ -1778,6 +1786,7 @@ class getUserPermission():
         '''
         if not self.user_Is_Exist():
             return False
+        return True    # 保留此行则每个用户都可以
         classify_dict = {
             # [x, y]
             # x代表classfity对应的表名
@@ -1811,6 +1820,7 @@ class getUserPermission():
         '''
         if not self.user_Is_Exist():
             return False
+        return True    # 保留此行则每个用户都可以
         classify_dict = {
             '单位':     '操作单位信息',
             '立项':     '允许操作立项的项目',
@@ -1835,7 +1845,7 @@ class operateOSS():
     '''
         Operation of Ali-OSS2.
     '''
-    __bucket_name = 'sy-erp'
+    __bucket_name = 'xilverp'
 
     def __init__(self):
         '''
@@ -1900,8 +1910,8 @@ class operateOSS():
             本函数用于计算上述三段密码
         '''
         # 基础密钥
-        accessKey = 'LTAIM0JcwMEM8IU7'
-        accessKeySecret = 'ms3LIZzYjyqcJqRgVNJotWkkf0Jpxp'
+        accessKey = 'LTAIiM9nh4F41qKR'
+        accessKeySecret = 'FIWNICi6h6mJxaPFz5nU4Zu32yraIn'
         host = 'http://{}.oss-cn-shanghai.aliyuncs.com'.format(
             self.__bucket_name)
         # 验证字段
@@ -1912,7 +1922,7 @@ class operateOSS():
             "expiration": timeOut,
             "conditions": [
                 ["content-length-range", 0, 5 * 1024 * 1024 * 1024],  # 文件大小不得>5G
-                {"bucket": "sy-erp"},
+                {"bucket": "xilverp"},
                 ["starts-with", "$key", "%s信息/%d/" % (classify, UDID)],
             ],
         }
@@ -1940,9 +1950,9 @@ def get_oss2_token():
     import json
     import oss2
     endpoint = 'oss-cn-shanghai.aliyuncs.com'
-    bucket_name = 'sy-erp'
-    access_key_id = 'LTAIrkWvDZ8O0uKl'
-    access_key_secret = 'OGb9nLoXLTLPr7aijotKxom5cMsEON'
+    bucket_name = 'xilverp'
+    access_key_id = 'LTAIiM9nh4F41qKR'
+    access_key_secret = 'FIWNICi6h6mJxaPFz5nU4Zu32yraIn'
     role_arn = 'acs:ram::1964398227627600:role/oss-erp-upload'
     clt = client.AcsClient(access_key_id, access_key_secret, 'cn-shanghai')
     req = AssumeRoleRequest.AssumeRoleRequest()
